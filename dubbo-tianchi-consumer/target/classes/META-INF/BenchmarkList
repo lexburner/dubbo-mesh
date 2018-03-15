@@ -1,0 +1,1 @@
+JMH S 40 com.alibaba.dubbo.demo.consumer.Consumer S 62 com.alibaba.dubbo.demo.consumer.generated.Consumer_add_jmhTest S 3 add S 3 All I 3 100 A 1 1 1 E E E E E E E E E E E E E E U 12 MICROSECONDS E T 6 100 ms 
