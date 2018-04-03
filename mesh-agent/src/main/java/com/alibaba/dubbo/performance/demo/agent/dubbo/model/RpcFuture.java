@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.dubbo.model;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
 import java.util.concurrent.*;
 
@@ -23,7 +23,7 @@ public class RpcFuture implements Future<Object> {
     }
 
     @Override
-    public Object get() throws InterruptedException, ExecutionException {
+    public Object get() throws InterruptedException {
          //boolean b = latch.await(100, TimeUnit.MICROSECONDS);
         latch.await();
         try {
@@ -35,7 +35,7 @@ public class RpcFuture implements Future<Object> {
     }
 
     @Override
-    public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public Object get(long timeout, TimeUnit unit) throws InterruptedException {
         boolean b = latch.await(timeout,unit);
         return response.getBytes();
     }

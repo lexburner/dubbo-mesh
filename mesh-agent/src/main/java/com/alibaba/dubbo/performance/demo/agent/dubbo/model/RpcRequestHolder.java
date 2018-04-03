@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.dubbo.model;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
 import java.util.concurrent.ConcurrentHashMap;
 

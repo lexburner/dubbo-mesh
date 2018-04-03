@@ -9,6 +9,6 @@
     <dubbo:protocol serialization="fastjson" name="dubbo" port="20889" />
     <dubbo:provider server="netty4" />
 
-    <bean id="helloService" class="com.alibaba.dubbo.performance.demo123.provider.HelloService"/>
-    <dubbo:service serialization="fastjson" interface="com.alibaba.dubbo.performance.demo123.provider.IHelloService" ref="helloService"/>
+    <bean id="helloService" class="com.alibaba.dubbo.performance.demo.provider.HelloService"/>
+    <dubbo:service serialization="fastjson" interface="com.alibaba.dubbo.performance.demo.provider.IHelloService" ref="helloService"/>
 </beans>

@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.dubbo.model;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -6,8 +6,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public class Request {
     private static AtomicLong atomicLong = new AtomicLong();
     private long id;
-    private String interfaceName = "com.alibaba.dubbo.performance.demo123.provider.IHelloService";
-    private String methodName = "hello";
+    private String interfaceName = "com.alibaba.dubbo.performance.demo.provider.IHelloService";
+    private String methodName = "hash";
     private String dubboVersion = "2.6.0";
     private String version = "0.0.0";
     private String parameterTypesString = "Ljava/lang/String;";

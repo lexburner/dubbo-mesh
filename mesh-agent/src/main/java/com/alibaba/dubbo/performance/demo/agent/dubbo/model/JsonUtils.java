@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.dubbo.model;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.SerializeWriter;
@@ -26,7 +26,7 @@ public class JsonUtils {
         writer.flush();
     }
 
-    public static void writeBytes(byte[] b, PrintWriter writer) throws IOException {
+    public static void writeBytes(byte[] b, PrintWriter writer) {
         writer.print(new String(b));
         writer.flush();
     }

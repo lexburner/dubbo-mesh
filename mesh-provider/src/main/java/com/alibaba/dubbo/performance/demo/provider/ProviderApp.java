@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo123.provider;
+package com.alibaba.dubbo.performance.demo.provider;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

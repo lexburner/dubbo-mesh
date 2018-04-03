@@ -14,12 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.performance.demo.dubbo.model;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,12 +41,6 @@ public class RpcInvocation implements Serializable {
     public RpcInvocation() {
     }
 
-    public RpcInvocation(String methodName, String parameterTypes, byte[] arguments) {
-        this.methodName = methodName;
-        this.parameterTypes = parameterTypes;
-        this.arguments = arguments == null ? new byte[0] : arguments;
-    }
-
     public String getMethodName() {
         return methodName;
     }
@@ -59,10 +51,6 @@ public class RpcInvocation implements Serializable {
 
     public String getParameterTypes() {
         return parameterTypes;
-    }
-
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
     }
 
     public void setParameterTypes(String parameterTypes) {
@@ -80,7 +68,7 @@ public class RpcInvocation implements Serializable {
 
     public void setAttachment(String key, String value) {
         if (attachments == null) {
-            attachments = new HashMap<String, String>();
+            attachments = new HashMap<>();
         }
         attachments.put(key, value);
     }
