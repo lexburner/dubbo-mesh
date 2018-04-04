@@ -22,7 +22,7 @@ public class RpcClient {
     private ConnecManager connectManager;
 
     public RpcClient(IRegistry registry){
-        this.connectManager = new ConnecManager(registry);
+        this.connectManager = new ConnecManager();
     }
 
     public Object invoke(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
