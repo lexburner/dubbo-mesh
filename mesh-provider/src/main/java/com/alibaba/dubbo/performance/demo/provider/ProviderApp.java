@@ -14,6 +14,6 @@ public class ProviderApp {
 
     public static void main(String[] args) throws IOException {
         SpringApplication.run(ProviderApp.class,args);
-        System.in.read();
+//        System.in.read();
     }
 }
