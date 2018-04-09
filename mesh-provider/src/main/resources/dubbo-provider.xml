@@ -6,7 +6,7 @@
 
     <dubbo:application name="demo-provider"/>
     <dubbo:registry address="zookeeper://127.0.0.1:2181" register="false" subscribe="false"/>
-    <dubbo:protocol serialization="fastjson" name="dubbo" port="20889" />
+    <dubbo:protocol serialization="fastjson" name="dubbo" />
     <dubbo:provider server="netty4" />
 
     <bean id="helloService" class="com.alibaba.dubbo.performance.demo.provider.HelloService"/>
