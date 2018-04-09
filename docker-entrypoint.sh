@@ -7,7 +7,7 @@ if [[ "$1" == "consumer" ]]; then
         -Xmx2G \
         -Dlogs.dir=/root/logs \
         /root/dists/mesh-consumer.jar \
-        > /root/logs/consumer.out 2>&1 &
+        > /dev/null 2>&1 &
 elif [[ "$1" == "provider-small" ]]; then
   echo "Starting small provider service..."
   nohup java -jar \
@@ -17,7 +17,7 @@ elif [[ "$1" == "provider-small" ]]; then
         -Ddubbo.application.qos.enable=false \
         -Dlogs.dir=/root/logs \
         /root/dists/mesh-provider.jar \
-        > /root/logs/provider.out 2>&1 &
+        > /dev/null 2>&1 &
 elif [[ "$1" == "provider-medium" ]]; then
   echo "Starting medium provider service..."
   nohup java -jar \
@@ -27,7 +27,7 @@ elif [[ "$1" == "provider-medium" ]]; then
         -Ddubbo.application.qos.enable=false \
         -Dlogs.dir=/root/logs \
         /root/dists/mesh-provider.jar \
-        > /root/logs/provider.out 2>&1 &
+        > /dev/null 2>&1 &
 elif [[ "$1" == "provider-large" ]]; then
   echo "Starting large provider service..."
   nohup java -jar \
@@ -37,7 +37,7 @@ elif [[ "$1" == "provider-large" ]]; then
         -Ddubbo.application.qos.enable=false \
         -Dlogs.dir=/root/logs \
         /root/dists/mesh-provider.jar \
-        > /root/logs/provider.out 2>&1 &
+        > /dev/null 2>&1 &
 else
   echo "Unrecognized arguments, exit."
   exit 1
