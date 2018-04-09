@@ -21,7 +21,8 @@ public class ConnecManager {
             initBootstrap();
         }
 
-        Channel channel = bootstrap.connect("127.0.0.1", 20889).sync().channel();
+        int port = Integer.valueOf(System.getProperty("dubbo.protocol.port"));
+        Channel channel = bootstrap.connect("127.0.0.1", port).sync().channel();
         return channel;
     }
 
