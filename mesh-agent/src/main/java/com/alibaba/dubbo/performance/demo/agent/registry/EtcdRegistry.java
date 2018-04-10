@@ -42,7 +42,7 @@ public class EtcdRegistry implements IRegistry{
         if ("provider".equals(type)){
             // 如果是provider，去etcd注册服务
             try {
-                int port = Integer.valueOf(System.getProperty("dubbo.protocol.port"));
+                int port = Integer.valueOf(System.getProperty("server.port"));
                 register("com.alibaba.dubbo.performance.demo.provider.IHelloService",port);
             } catch (Exception e) {
                 e.printStackTrace();
