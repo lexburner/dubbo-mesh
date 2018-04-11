@@ -49,14 +49,12 @@ public class HelloController {
         }
     }
 
-    //@RequestMapping(value = "/provider")
     public byte[] provider(String interfaceName,String method,String parameterTypesString,String parameter) throws Exception {
 
         Object result = rpcClient.invoke(interfaceName,method,parameterTypesString,parameter);
         return (byte[]) result;
     }
 
-    //@RequestMapping(value = "/consumer")
     public Integer consumer(String interfaceName,String method,String parameterTypesString,String parameter) throws Exception {
 
         List<Endpoint> endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");

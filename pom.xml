@@ -9,19 +9,15 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>mesh-consumer</module>
-        <module>mesh-provider</module>
         <module>mesh-agent</module>
     </modules>
 
 
     <properties>
-        <dubbo.version>2.6.0</dubbo.version>
+        <!--<dubbo.version>2.6.0</dubbo.version>-->
         <zkclient.version>0.1</zkclient.version>
         <netty4.version>4.0.35.Final</netty4.version>
         <springboot.version>1.5.7.RELEASE</springboot.version>
-        <protostuff.version>1.5.2</protostuff.version>
-        <objenesis.version>2.6</objenesis.version>
         <junit.version>4.12</junit.version>
 
         <project.version>1.0-SNAPSHOT</project.version>
@@ -43,11 +39,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>dubbo</artifactId>
-                <version>${dubbo.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.github.sgroschupf</groupId>
                 <artifactId>zkclient</artifactId>
                 <version>${zkclient.version}</version>
@@ -56,22 +47,6 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>
                 <version>${netty4.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.protostuff</groupId>
-                <artifactId>protostuff-core</artifactId>
-                <version>${protostuff.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.protostuff</groupId>
-                <artifactId>protostuff-runtime</artifactId>
-                <version>${protostuff.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.objenesis</groupId>
-                <artifactId>objenesis</artifactId>
-                <version>${objenesis.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
