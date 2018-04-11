@@ -14,8 +14,6 @@
 
 
     <properties>
-        <!--<dubbo.version>2.6.0</dubbo.version>-->
-        <zkclient.version>0.1</zkclient.version>
         <netty4.version>4.0.35.Final</netty4.version>
         <springboot.version>1.5.7.RELEASE</springboot.version>
         <junit.version>4.12</junit.version>
@@ -39,11 +37,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.github.sgroschupf</groupId>
-                <artifactId>zkclient</artifactId>
-                <version>${zkclient.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>
                 <version>${netty4.version}</version>
@@ -53,11 +46,6 @@
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.javassist</groupId>
-                <artifactId>javassist</artifactId>
-                <version>3.20.0-GA</version>
             </dependency>
             <dependency>
                 <groupId>com.alibaba</groupId>
