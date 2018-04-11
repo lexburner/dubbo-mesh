@@ -31,7 +31,6 @@ elif [[ "$1" == "provider-medium" ]]; then
        -Xms1536M \
        -Xmx1536M \
        -Dtype=provider \
-       -Dserver.port=30001 \
        -Ddubbo.protocol.port=20890 \
        -Detcd.url=$ETCD_URL \
        -Dlogs.dir=/root/logs \
