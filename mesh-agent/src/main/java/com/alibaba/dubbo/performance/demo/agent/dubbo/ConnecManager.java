@@ -13,16 +13,34 @@ public class ConnecManager {
 
     private Bootstrap bootstrap;
 
-    public ConnecManager(){
+    private Channel channel;
+    private Object lock = new Object();
+
+    public ConnecManager() {
     }
 
     public Channel getChannel() throws Exception {
-        if ( null == bootstrap){
-            initBootstrap();
+        if (null != channel) {
+            return channel;
         }
 
-        int port = Integer.valueOf(System.getProperty("dubbo.protocol.port"));
-        Channel channel = bootstrap.connect("127.0.0.1", port).sync().channel();
+        if (null == bootstrap) {
+            synchronized (lock) {
+                if (null == bootstrap) {
+                    initBootstrap();
+                }
+            }
+        }
+
+        if (null == channel) {
+            synchronized (lock){
+                if (null == channel){
+                    int port = Integer.valueOf(System.getProperty("dubbo.protocol.port"));
+                    channel = bootstrap.connect("127.0.0.1", port).sync().channel();
+                }
+            }
+        }
+
         return channel;
     }
 

@@ -5,6 +5,7 @@ import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
 import com.alibaba.fastjson.JSON;
+import okhttp3.*;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -32,6 +34,10 @@ public class HelloController {
 
     private RpcClient rpcClient = new RpcClient(registry);
     private Random random = new Random();
+    private List<Endpoint> endpoints = null;
+    private Object lock = new Object();
+    private OkHttpClient httpClient = new OkHttpClient();
+
 
     @RequestMapping(value = "")
     public Object invoke(@RequestParam("interface") String interfaceName,
@@ -57,32 +63,35 @@ public class HelloController {
 
     public Integer consumer(String interfaceName,String method,String parameterTypesString,String parameter) throws Exception {
 
-        List<Endpoint> endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
+        if (null == endpoints){
+            synchronized (lock){
+                if (null == endpoints){
+                    endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
+                }
+            }
+        }
+
         // 简单的负载均衡，随机取一个
         Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
 
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpPost post = new HttpPost(url);
 
-        List<NameValuePair> urlParameters = new ArrayList<>();
-        urlParameters.add(new BasicNameValuePair("interface",interfaceName));
-        urlParameters.add(new BasicNameValuePair("method",method));
-        urlParameters.add(new BasicNameValuePair("parameterTypesString",parameterTypesString));
-        urlParameters.add(new BasicNameValuePair("parameter",parameter));
+        RequestBody requestBody = new FormBody.Builder()
+                .add("interface",interfaceName)
+                .add("method",method)
+                .add("parameterTypesString",parameterTypesString)
+                .add("parameter",parameter)
+                .build();
 
-        post.setEntity(new UrlEncodedFormEntity(urlParameters));
+        Request request = new Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .build();
 
-        HttpResponse response = client.execute(post);
-        logger.info("Sending 'POST' request to URL : " + url);
-        logger.info("Response Code : " + response.getStatusLine().getStatusCode());
-
-        HttpEntity entity = response.getEntity();
-        int contentLength = (int) entity.getContentLength();
-
-        byte[] responseBuffer = new byte[contentLength];
-        entity.getContent().read(responseBuffer);
-
-        return JSON.parseObject(responseBuffer, Integer.class);
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+            byte[] bytes = response.body().bytes();
+            return JSON.parseObject(bytes, Integer.class);
+        }
     }
 }
