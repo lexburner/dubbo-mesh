@@ -32,7 +32,8 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
         byteBuf.readBytes(data);
 
         // HEADER_LENGTH + 1，忽略header & Response value type的读取，直接读取实际Return value
-        byte[] subArray = Arrays.copyOfRange(data,HEADER_LENGTH + 1, data.length);
+        // dubbo返回的body中，前后各有一个换行，去掉
+        byte[] subArray = Arrays.copyOfRange(data,HEADER_LENGTH + 2, data.length - 1);
 
         String s = new String(subArray);
 
