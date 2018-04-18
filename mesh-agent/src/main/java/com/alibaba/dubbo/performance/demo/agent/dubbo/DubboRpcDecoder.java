@@ -16,24 +16,26 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
 
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
-       list.add(decode2(byteBuf));
-    }
 
-    /**
-     * Demo为简单起见，直接从特定字节位开始读取了的返回值，demo未做：
-     * 1. 请求头判断
-     * 2. 返回值类型判断
-     *
-     * @param byteBuf
-     * @return
-     */
-    private Object decode2(ByteBuf byteBuf){
-        byte[] data = new byte[byteBuf.readableBytes()];
-        byteBuf.readBytes(data);
+        // TCP粘包
+        if (byteBuf.readableBytes() < HEADER_LENGTH){
+            return;
+        }
 
-        // HEADER_LENGTH + 1，忽略header & Response value type的读取，直接读取实际Return value
+        // 获取bytebuf的字节流，不改变reader index
+        byte[] bytes = new byte[byteBuf.readableBytes()];
+        byteBuf.getBytes(byteBuf.readerIndex(),bytes);
+        // 获取数据长度
+        int len = Bytes.bytes2int(Arrays.copyOfRange(bytes, HEADER_LENGTH - 4, HEADER_LENGTH));
+        if (byteBuf.readableBytes() < 16 + len){
+            return;
+        }
+
+        byte[] data = new byte[16 + len];
+        byteBuf.getBytes(byteBuf.readerIndex(), data, 0, HEADER_LENGTH + len);
+
         // dubbo返回的body中，前后各有一个换行，去掉
-        byte[] subArray = Arrays.copyOfRange(data,HEADER_LENGTH + 2, data.length - 1);
+        byte[] subArray = Arrays.copyOfRange(data,HEADER_LENGTH + 2, data.length -1 );
 
         String s = new String(subArray);
 
@@ -43,6 +45,10 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
         RpcResponse response = new RpcResponse();
         response.setRequestId(String.valueOf(requestId));
         response.setBytes(subArray);
-        return response;
+
+        list.add(response);
+
+        byteBuf.readerIndex(HEADER_LENGTH + len);
+        byteBuf.discardReadBytes();
     }
 }
