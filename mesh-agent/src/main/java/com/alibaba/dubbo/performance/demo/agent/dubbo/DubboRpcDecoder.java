@@ -27,7 +27,6 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
                 try {
                     msg = decode2(byteBuf);
                 } catch (Exception e) {
-                    System.err.println("decode error.");
                     throw e;
                 }
                 if (msg == DecodeResult.NEED_MORE_INPUT) {
@@ -91,7 +90,6 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
         byte[] subArray = Arrays.copyOfRange(data,HEADER_LENGTH + 2, data.length -1 );
 
         String s = new String(subArray);
-        System.err.println(s);
 
         byte[] requestIdBytes = Arrays.copyOfRange(data,4,12);
         long requestId = Bytes.bytes2long(requestIdBytes,0);
