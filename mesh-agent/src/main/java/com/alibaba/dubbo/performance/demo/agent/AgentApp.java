@@ -28,9 +28,9 @@ public class AgentApp {
         SpringApplication.run(AgentApp.class,args);
 
         String type = System.getProperty("type");   // 获取type参数
-        if ("provider".equals(type)){
-            new AgentServerConnecManager().initBootstrap();
-        }
+//        if ("provider".equals(type)){
+//            new AgentServerConnecManager().initBootstrap();
+//        }
         if ("consumer".equals(type)){
             OkHttpClient httpClient = new OkHttpClient();
             String url = "";
@@ -48,15 +48,21 @@ public class AgentApp {
                         .url(url)
                         .post(requestBody)
                         .build();
-                for (int i=0;i<10;i++){
-                    try (Response response = httpClient.newCall(request).execute()) {
-                        if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-                    }
+                for (int i=0;i<1000;i++){
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try (Response response = httpClient.newCall(request).execute()) {
+                                if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
                 }
             }catch (Exception e){
                 e.printStackTrace();
             }
-
 
         }
     }

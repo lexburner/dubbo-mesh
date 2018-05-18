@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Random;
 
-@RestController
+//@RestController
 public class HelloNettyController {
 
     private Logger logger = LoggerFactory.getLogger(HelloNettyController.class);
