@@ -45,6 +45,7 @@ public class AgentClientConnecManager {
                 if (null == channel){
                     try{
                         channel = bootstrap.connect(agentEndpoint.getHost(), agentEndpoint.getPort()).sync().channel();
+                        channelPool.put(agentEndpoint, channel);
                     }catch (Exception e){
                         logger.error("连接失败",e );
                     }

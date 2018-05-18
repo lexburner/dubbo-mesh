@@ -9,7 +9,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 public class ConnecManager {
-    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(1);
+    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
 
     private Bootstrap bootstrap;
 
