@@ -15,10 +15,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
-//@RestController
-public class HelloController {
+@RestController
+public class HelloNettyController {
 
-    private Logger logger = LoggerFactory.getLogger(HelloController.class);
+    private Logger logger = LoggerFactory.getLogger(HelloNettyController.class);
     
     private IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
 
