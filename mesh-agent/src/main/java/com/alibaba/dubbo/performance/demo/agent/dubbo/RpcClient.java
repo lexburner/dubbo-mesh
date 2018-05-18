@@ -21,7 +21,7 @@ public class RpcClient {
 
     private ConnecManager connectManager;
 
-    public RpcClient(IRegistry registry){
+    public RpcClient(){
         this.connectManager = new ConnecManager();
     }
 

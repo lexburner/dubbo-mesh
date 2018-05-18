@@ -1,15 +1,21 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.server;
 
+import com.alibaba.dubbo.performance.demo.agent.registry.IpHelper;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AgentServerConnecManager {
-    EventLoopGroup bossGroup = new NioEventLoopGroup(4);
-    EventLoopGroup workerGroup = new NioEventLoopGroup(4);
+
+    Logger logger = LoggerFactory.getLogger(AgentServerConnecManager.class);
+
+    EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+    EventLoopGroup workerGroup = new NioEventLoopGroup(1);
 
     private ServerBootstrap bootstrap;
 
@@ -22,9 +28,10 @@ public class AgentServerConnecManager {
                 .childHandler(new AgentServerInitializer())
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
                 .childOption(ChannelOption.TCP_NODELAY, true);
-
-            ChannelFuture future = bootstrap.bind("127.0.0.1", 9111);
-            future.syncUninterruptibly();
+            int port = Integer.valueOf(System.getProperty("server.port"));
+            ChannelFuture future = bootstrap.bind(IpHelper.getHostIp(), port+50);
+            logger.info("agent server export port at {}:{}",IpHelper.getHostIp(), port+50);
+//            future.syncUninterruptibly();
         }catch (Exception e){
             e.printStackTrace();
         }

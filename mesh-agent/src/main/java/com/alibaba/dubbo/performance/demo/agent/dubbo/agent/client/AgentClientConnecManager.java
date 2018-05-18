@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.client;
 
+import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -7,19 +8,26 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AgentClientConnecManager {
-    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
+    Logger logger = LoggerFactory.getLogger(AgentClientConnecManager.class);
+    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(1);
+
+    private ConcurrentHashMap<Endpoint,Channel> channelPool = new ConcurrentHashMap<>();
 
     private Bootstrap bootstrap;
 
-    private Channel channel;
-    private Object lock = new Object();
+    private final Object lock = new Object();
 
     public AgentClientConnecManager() {
     }
 
-    public Channel getChannel() throws Exception {
+    public Channel getChannel(Endpoint agentEndpoint) throws Exception {
+        Channel channel = channelPool.get(agentEndpoint);
         if (null != channel) {
             return channel;
         }
@@ -35,7 +43,12 @@ public class AgentClientConnecManager {
         if (null == channel) {
             synchronized (lock){
                 if (null == channel){
-                    channel = bootstrap.connect("127.0.0.1", 9111).sync().channel();
+                    try{
+                        channel = bootstrap.connect(agentEndpoint.getHost(), agentEndpoint.getPort()).sync().channel();
+                    }catch (Exception e){
+                        logger.error("连接失败",e );
+                    }
+
                 }
             }
         }

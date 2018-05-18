@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.server;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -16,6 +17,6 @@ public class AgentServerInitializer extends ChannelInitializer<SocketChannel> {
         ChannelPipeline pipeline = socketChannel.pipeline();
         pipeline.addLast(new AgentServerDecoder());
         pipeline.addLast(new AgentServerEncoder());
-        pipeline.addLast(new AgentServerHandler());
+        pipeline.addLast(new AgentServerHandler(new RpcClient()));
     }
 }
