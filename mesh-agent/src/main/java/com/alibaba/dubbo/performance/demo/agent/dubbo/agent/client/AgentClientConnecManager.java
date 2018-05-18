@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AgentClientConnecManager {
     Logger logger = LoggerFactory.getLogger(AgentClientConnecManager.class);
-    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(1);
+    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
 
     private ConcurrentHashMap<Endpoint,Channel> channelPool = new ConcurrentHashMap<>();
 
