@@ -1,13 +1,14 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
+import com.alibaba.dubbo.performance.demo.agent.loadbalance.RoundRobinLoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
-import okhttp3.*;
 import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.Dsl;
 import org.asynchttpclient.ListenableFuture;
-import org.asynchttpclient.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -16,10 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Random;
+import static org.asynchttpclient.Dsl.*;
 
 @RestController
 public class HelloAsyncController {
@@ -29,11 +27,18 @@ public class HelloAsyncController {
     private IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
 
     private RpcClient rpcClient = new RpcClient();
-    private Random random = new Random();
-    private List<Endpoint> endpoints = null;
+    RoundRobinLoadBalance loadBalance = new RoundRobinLoadBalance();
     private Object lock = new Object();
-    private AsyncHttpClient asyncHttpClient = org.asynchttpclient.Dsl.asyncHttpClient();
+    private AsyncHttpClient asyncHttpClient;
 
+    HelloAsyncController(){
+        DefaultAsyncHttpClientConfig.Builder builder = new DefaultAsyncHttpClientConfig.Builder();
+        builder.setKeepAlive(true);
+        asyncHttpClient = asyncHttpClient(builder);
+        System.out.println(asyncHttpClient.getConfig().getMaxConnectionsPerHost());
+        System.out.println(asyncHttpClient.getConfig().getMaxConnections());
+        System.out.println(asyncHttpClient.getConfig().getIoThreadsCount());
+    }
 
     @RequestMapping(value = "")
     public Object invoke(@RequestParam("interface") String interfaceName,
@@ -59,16 +64,16 @@ public class HelloAsyncController {
 
     public DeferredResult<ResponseEntity> consumer(String interfaceName,String method,String parameterTypesString,String parameter) throws Exception {
 
-        if (null == endpoints){
+        if (null == loadBalance.getEndpoints()){
             synchronized (lock){
-                if (null == endpoints){
-                    endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
+                if (null == loadBalance.getEndpoints()){
+                    loadBalance.setEndpoints(registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService"));
                 }
             }
         }
 
         // 简单的负载均衡，随机取一个
-        Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
+        Endpoint endpoint = loadBalance.select(null);
 
         String url =  "http://" + endpoint.getHost() + ":" + endpoint.getPort();
 
@@ -78,8 +83,6 @@ public class HelloAsyncController {
                 .addFormParam("parameterTypesString", parameterTypesString)
                 .addFormParam("parameter", parameter)
                 .build();
-
-
         ListenableFuture<org.asynchttpclient.Response> responseFuture = asyncHttpClient.executeRequest(request);
         DeferredResult<ResponseEntity> result = new DeferredResult<>();
         Runnable callback = () -> {
