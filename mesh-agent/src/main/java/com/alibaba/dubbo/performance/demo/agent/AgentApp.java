@@ -30,9 +30,9 @@ public class AgentApp {
         SpringApplication.run(AgentApp.class,args);
 
         String type = System.getProperty("type");   // 获取type参数
-//        if ("provider".equals(type)){
-//            new AgentServerConnecManager().initBootstrap();
-//        }
+        if ("provider".equals(type)){
+            new AgentServerConnecManager().initBootstrap();
+        }
         if ("consumer".equals(type)){
             OkHttpClient httpClient = new OkHttpClient();
             String url = "";

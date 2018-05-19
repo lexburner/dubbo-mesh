@@ -14,7 +14,7 @@ public class AgentServerConnecManager {
 
     Logger logger = LoggerFactory.getLogger(AgentServerConnecManager.class);
 
-    EventLoopGroup bossGroup = new NioEventLoopGroup(4);
+    EventLoopGroup bossGroup = new NioEventLoopGroup(1);
     EventLoopGroup workerGroup = new NioEventLoopGroup(4);
 
     private ServerBootstrap bootstrap;

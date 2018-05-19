@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 import static org.asynchttpclient.Dsl.*;
 
-@RestController
+//@RestController
 public class HelloAsyncController {
 
     private Logger logger = LoggerFactory.getLogger(HelloAsyncController.class);
@@ -33,7 +33,7 @@ public class HelloAsyncController {
 
     HelloAsyncController(){
         DefaultAsyncHttpClientConfig.Builder builder = new DefaultAsyncHttpClientConfig.Builder();
-        builder.setKeepAlive(true);
+        builder.setKeepAlive(true).setMaxConnectionsPerHost(10);
         asyncHttpClient = asyncHttpClient(builder);
         System.out.println(asyncHttpClient.getConfig().getMaxConnectionsPerHost());
         System.out.println(asyncHttpClient.getConfig().getMaxConnections());
