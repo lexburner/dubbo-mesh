@@ -4,11 +4,15 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.AgentRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.AgentResponse;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.DefaultEventLoop;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -24,25 +28,25 @@ public class AgentServerHandler extends SimpleChannelInboundHandler<AgentRequest
     public AgentServerHandler(RpcClient rpcClient) {
         this.rpcClient = rpcClient;
     }
-
-    ExecutorService executorService = Executors.newFixedThreadPool(20);
+EventExecutorGroup eventLoopGroup = new DefaultEventExecutorGroup(100);
 
     Logger logger = LoggerFactory.getLogger(AgentServerHandler.class);
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, final AgentRequest agentRequest) throws Exception {
-        executorService.execute(new Runnable() {
+        Future<Object> future = eventLoopGroup.submit(new Callable<Object>() {
             @Override
-            public void run() {
+            public Object call() throws Exception {
                 Object result = null;
-                try{
-                    result =  rpcClient.invoke(agentRequest.getInterfaceName(), agentRequest.getMethod(), agentRequest.getParameterTypesString(), agentRequest.getParameter());
-                }catch (Exception e){
-                    logger.error("provider 调用失败", e);
-                    result = "OK".getBytes();
-                }
+                result =  rpcClient.invoke(agentRequest.getInterfaceName(), agentRequest.getMethod(), agentRequest.getParameterTypesString(), agentRequest.getParameter());
+                return result;
+            }
+        });
+        future.addListener(new GenericFutureListener<Future<? super Object>>() {
+            @Override
+            public void operationComplete(Future<? super Object> future) throws Exception {
                 AgentResponse agentResponse = new AgentResponse();
-                agentResponse.setValue(new String((byte[]) result, Charset.forName("utf-8")));
+                agentResponse.setValue(new String((byte[]) future.get(), Charset.forName("utf-8")));
                 agentResponse.setId(agentRequest.getId());
                 ctx.writeAndFlush(agentResponse);
             }
