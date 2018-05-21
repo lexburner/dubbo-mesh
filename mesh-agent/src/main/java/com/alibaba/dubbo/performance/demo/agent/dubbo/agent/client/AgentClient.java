@@ -27,6 +27,7 @@ public class AgentClient {
         agentRequest.setParameterTypesString(parameterTypesString);
         agentRequest.setParameter(parameter);
         AgentFuture future = new AgentFuture();
+
         AgentRequestHolder.put(agentRequest.getId(), future);
         channel.writeAndFlush(agentRequest);
         Object result = null;

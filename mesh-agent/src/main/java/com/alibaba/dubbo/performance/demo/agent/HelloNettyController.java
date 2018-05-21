@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.client.AgentAsyncClient;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.client.AgentClient;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
@@ -23,7 +24,7 @@ public class HelloNettyController {
     private Random random = new Random();
     private List<Endpoint> endpoints = null;
     private Object lock = new Object();
-    private AgentClient agentClient = new AgentClient();
+    private AgentAsyncClient agentClient = new AgentAsyncClient();
 
     @RequestMapping(value = "")
     public Object invoke(@RequestParam("interface") String interfaceName,
@@ -37,7 +38,7 @@ public class HelloNettyController {
         return "no response";
     }
 
-    public Integer consumer(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
+    public Object consumer(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
 
         if (null == endpoints) {
             synchronized (lock) {
@@ -48,7 +49,6 @@ public class HelloNettyController {
         }
         // 简单的负载均衡，随机取一个
         Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
-        String s = (String) agentClient.invoke(interfaceName, method, parameterTypesString, parameter, endpoint);
-        return Integer.valueOf(s);
+        return agentClient.invoke(interfaceName, method, parameterTypesString, parameter, endpoint);
     }
 }

@@ -4,8 +4,6 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.AgentRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.AgentResponse;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.DefaultEventLoop;
-import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.concurrent.*;
 import org.slf4j.Logger;
@@ -13,8 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -28,19 +24,17 @@ public class AgentServerHandler extends SimpleChannelInboundHandler<AgentRequest
     public AgentServerHandler(RpcClient rpcClient) {
         this.rpcClient = rpcClient;
     }
-EventExecutorGroup eventLoopGroup = new DefaultEventExecutorGroup(100);
+
+    EventExecutorGroup worker = new DefaultEventExecutorGroup(100);
 
     Logger logger = LoggerFactory.getLogger(AgentServerHandler.class);
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, final AgentRequest agentRequest) throws Exception {
-        Future<Object> future = eventLoopGroup.submit(new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                Object result = null;
-                result =  rpcClient.invoke(agentRequest.getInterfaceName(), agentRequest.getMethod(), agentRequest.getParameterTypesString(), agentRequest.getParameter());
-                return result;
-            }
+        Future<Object> future = worker.submit(() -> {
+            Object result = null;
+            result =  rpcClient.invoke(agentRequest.getInterfaceName(), agentRequest.getMethod(), agentRequest.getParameterTypesString(), agentRequest.getParameter());
+            return result;
         });
         future.addListener(new GenericFutureListener<Future<? super Object>>() {
             @Override
