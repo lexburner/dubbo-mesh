@@ -9,16 +9,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
-public class RpcClient {
-    private Logger logger = LoggerFactory.getLogger(RpcClient.class);
+public class RpcAsyncClient {
+    private Logger logger = LoggerFactory.getLogger(RpcAsyncClient.class);
 
     private ConnecManager connectManager;
 
-    public RpcClient(){
+    public RpcAsyncClient(){
         this.connectManager = new ConnecManager();
     }
 
-    public Object invoke(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
+    public RpcCallbackFuture invoke(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
 
         Channel channel = connectManager.getChannel();
 
@@ -39,17 +39,10 @@ public class RpcClient {
 
         logger.info("requestId=" + request.getId());
 
-        RpcFuture future = new RpcFuture();
-        RpcRequestHolder.put(String.valueOf(request.getId()),future);
+        RpcCallbackFuture future = new RpcCallbackFuture();
+        RpcCallbackRequestHolder.put(String.valueOf(request.getId()),future);
 
         channel.writeAndFlush(request);
-
-        Object result = null;
-        try {
-            result = future.get();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return result;
+        return future;
     }
 }
