@@ -1,6 +1,7 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.client.AgentAsyncClient;
+import com.alibaba.dubbo.performance.demo.agent.loadbalance.RoundRobinLoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
@@ -21,7 +22,7 @@ public class HelloNettyController {
     private IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
 
     private Random random = new Random();
-    private List<Endpoint> endpoints = null;
+    RoundRobinLoadBalance loadBalance = new RoundRobinLoadBalance();
     private Object lock = new Object();
     private AgentAsyncClient agentClient = new AgentAsyncClient();
 
@@ -39,15 +40,16 @@ public class HelloNettyController {
 
     public Object consumer(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
 
-        if (null == endpoints) {
-            synchronized (lock) {
-                if (null == endpoints) {
-                    endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
+        if (null == loadBalance.getEndpoints()){
+            synchronized (lock){
+                if (null == loadBalance.getEndpoints()){
+                    loadBalance.setEndpoints(registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService"));
                 }
             }
         }
         // 简单的负载均衡，随机取一个
-        Endpoint endpoint = endpoints.get(random.nextInt(endpoints.size()));
+        Endpoint endpoint = loadBalance.select(null);
+        // 简单的负载均衡，随机取一个
         return agentClient.invoke(interfaceName, method, parameterTypesString, parameter, endpoint);
     }
 }
