@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AgentClientConnecManager {
+
     Logger logger = LoggerFactory.getLogger(AgentClientConnecManager.class);
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
 

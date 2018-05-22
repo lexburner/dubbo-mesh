@@ -22,6 +22,7 @@ public class ConnecManager {
     private Object lock = new Object();
 
     public ConnecManager() {
+        System.out.println("ConnecManager构造...");
     }
 
     public Channel getChannel() throws Exception {

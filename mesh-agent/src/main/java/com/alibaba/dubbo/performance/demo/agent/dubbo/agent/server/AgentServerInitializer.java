@@ -12,13 +12,14 @@ import io.netty.channel.socket.SocketChannel;
  */
 public class AgentServerInitializer extends ChannelInitializer<SocketChannel> {
 
-    private RpcAsyncClient rpcAsyncClient = new RpcAsyncClient();
+    //TODO 测试连接复用
+//    private RpcAsyncClient rpcAsyncClient = new RpcAsyncClient();
 
     @Override
     protected void initChannel(SocketChannel socketChannel) {
         ChannelPipeline pipeline = socketChannel.pipeline();
         pipeline.addLast(new AgentServerDecoder());
         pipeline.addLast(new AgentServerEncoder());
-        pipeline.addLast(new AgentServerHandler(rpcAsyncClient));
+        pipeline.addLast(new AgentServerHandler(new RpcAsyncClient()));
     }
 }
