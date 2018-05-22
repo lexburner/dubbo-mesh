@@ -1,7 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.context.request.async.DeferredResult;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcCallbackFuture;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,13 +12,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * 存放 consumer-agent 请求之后响应的future
  */
 public class ConsumerAgentResponseFutureHolder {
-    private static ConcurrentHashMap<Long, DeferredResult<ResponseEntity>> processingRpc = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<Long, RpcCallbackFuture<AgentResponse>> processingRpc = new ConcurrentHashMap<>();
 
-    public static void put(long requestId, DeferredResult<ResponseEntity> deferredResult) {
-        processingRpc.put(requestId, deferredResult);
+    public static void put(long requestId, RpcCallbackFuture<AgentResponse> rpcCallbackFuture) {
+        processingRpc.put(requestId, rpcCallbackFuture);
     }
 
-    public static DeferredResult<ResponseEntity> get(long requestId) {
+    public static RpcCallbackFuture<AgentResponse> get(long requestId) {
         return processingRpc.get(requestId);
     }
 

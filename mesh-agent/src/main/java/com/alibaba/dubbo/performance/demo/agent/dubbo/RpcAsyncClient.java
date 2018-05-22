@@ -16,6 +16,7 @@ public class RpcAsyncClient {
 
     public RpcAsyncClient() {
         this.connectManager = new ConnecManager();
+        logger.info("构造RpcAsyncClient...");
     }
 
     public RpcCallbackFuture<ProviderAgentRpcResponse> invoke(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {

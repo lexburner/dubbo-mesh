@@ -7,8 +7,13 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConnecManager {
+
+    Logger logger = LoggerFactory.getLogger(ConnecManager.class);
+
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
 
     private Bootstrap bootstrap;
@@ -35,8 +40,13 @@ public class ConnecManager {
         if (null == channel) {
             synchronized (lock) {
                 if (null == channel) {
-                    int port = Integer.valueOf(System.getProperty("dubbo.protocol.port"));
-                    channel = bootstrap.connect("127.0.0.1", port).sync().channel();
+                    try {
+                        int port = Integer.valueOf(System.getProperty("dubbo.protocol.port"));
+                        channel = bootstrap.connect("127.0.0.1", port).sync().channel();
+                        logger.info("provider-agent 与 provider({}:{})新建立了连接,连接地址", "127.0.0.1", port);
+                    } catch (Exception e) {
+                        logger.error("连接失败", e);
+                    }
                 }
             }
         }

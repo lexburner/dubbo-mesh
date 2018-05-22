@@ -49,12 +49,12 @@ public final class ConsumerAgentHttpServer {
             bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.INFO))
+//                    .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new ConsumerAgentHttpServerInitializer());
 
-            Channel ch = bootstrap.bind(PORT-1).sync().channel();
+            Channel ch = bootstrap.bind(PORT).sync().channel();
             logger.info("consumer-agent server is ready to receive request from consumer\n" +
-                    "export at http://127.0.0.1:{}", PORT-1);
+                    "export at http://127.0.0.1:{}", PORT);
             ch.closeFuture().sync();
         } catch (Exception e) {
             logger.error("provider-agent启动失败", e);

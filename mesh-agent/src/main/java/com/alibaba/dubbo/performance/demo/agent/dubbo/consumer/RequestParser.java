@@ -30,11 +30,11 @@ public class RequestParser {
 
         Map<String, String> parmMap = new HashMap<>();
 
-        if (HttpMethod.GET == method) {
+        if (HttpMethod.GET.equals(method) ) {
             // 是GET请求
             QueryStringDecoder decoder = new QueryStringDecoder(req.uri());
             decoder.parameters().forEach((key, value) -> parmMap.put(key, value.get(0)));
-        } else if (HttpMethod.POST == method) {
+        } else if (HttpMethod.POST.equals(method)) {
             // 是POST请求
             HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(req);
             decoder.offer(req);
@@ -46,7 +46,6 @@ public class RequestParser {
                 Attribute data = (Attribute) parm;
                 parmMap.put(data.getName(), data.getValue());
             }
-
         }
 
         return parmMap;

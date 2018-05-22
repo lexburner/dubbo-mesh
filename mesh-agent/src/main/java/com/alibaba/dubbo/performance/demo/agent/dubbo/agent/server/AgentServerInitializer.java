@@ -12,7 +12,7 @@ import io.netty.channel.socket.SocketChannel;
  */
 public class AgentServerInitializer extends ChannelInitializer<SocketChannel> {
 
-    RpcAsyncClient rpcAsyncClient = new RpcAsyncClient();
+    private RpcAsyncClient rpcAsyncClient = new RpcAsyncClient();
 
     @Override
     protected void initChannel(SocketChannel socketChannel) {

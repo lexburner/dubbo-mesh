@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AgentClientConnecManager {
     Logger logger = LoggerFactory.getLogger(AgentClientConnecManager.class);
-    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
+    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
 
     private ConcurrentHashMap<Endpoint, Channel> channelPool = new ConcurrentHashMap<>();
 
@@ -45,6 +45,7 @@ public class AgentClientConnecManager {
                 if (null == channel) {
                     try {
                         channel = bootstrap.connect(agentEndpoint.getHost(), agentEndpoint.getPort()).sync().channel();
+                        logger.info("与{}:{}新建立了连接", agentEndpoint.getHost(), agentEndpoint.getPort());
                         channelPool.put(agentEndpoint, channel);
                     } catch (Exception e) {
                         logger.error("连接失败", e);

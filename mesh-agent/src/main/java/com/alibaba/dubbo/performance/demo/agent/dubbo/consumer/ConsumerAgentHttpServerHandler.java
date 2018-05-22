@@ -15,6 +15,9 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.AgentResponse;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.FutureListener;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcCallbackFuture;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,9 +29,14 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
 import io.netty.handler.codec.http.multipart.HttpDataFactory;
 import io.netty.util.AsciiString;
+import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.Future;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -41,11 +49,12 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  */
 public class ConsumerAgentHttpServerHandler extends ChannelInboundHandlerAdapter {
 
+    Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
+
     private static final AsciiString CONTENT_TYPE = AsciiString.cached("Content-Type");
     private static final AsciiString CONTENT_LENGTH = AsciiString.cached("Content-Length");
     private static final AsciiString CONNECTION = AsciiString.cached("Connection");
     private static final AsciiString KEEP_ALIVE = AsciiString.cached("keep-alive");
-    private static final HttpDataFactory factory = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
@@ -74,22 +83,33 @@ public class ConsumerAgentHttpServerHandler extends ChannelInboundHandlerAdapter
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+//            requestParams = new HashMap<>();
+//            requestParams.put("interface", "com.alibaba.dubbo.performance.demo.provider.IHelloService");
+//            requestParams.put("method", "hash");
+//            requestParams.put("parameterTypesString", "Ljava/lang/String;");
+//            requestParams.put("parameter", "123");
 
             boolean keepAlive = HttpUtil.isKeepAlive(req);
 
+            String interfaceName = requestParams.get("interface");
+            String method = requestParams.get("method");
+            String parameterTypesString = requestParams.get("parameterTypesString");
             String parameter = requestParams.get("parameter");
 
-            Future<Integer> future = consumerClient.invoke(parameter);
-            future.addListener((rpcFuture) -> {
-                FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(String.valueOf(rpcFuture.get()).getBytes()));
-                response.headers().set(CONTENT_TYPE, "text/plain");
-                response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
+            RpcCallbackFuture<AgentResponse> rpcCallbackFuture = consumerClient.invoke(interfaceName, method, parameterTypesString, parameter);
+            rpcCallbackFuture.addListener(new FutureListener<AgentResponse>() {
+                @Override
+                public void operationComplete(RpcCallbackFuture<AgentResponse> rpcFuture) {
+                        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(rpcFuture.getResponse().getValue().getBytes()));
+                        response.headers().set(CONTENT_TYPE, "text/plain");
+                        response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
 
-                if (!keepAlive) {
-                    ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-                } else {
-                    response.headers().set(CONNECTION, KEEP_ALIVE);
-                    ctx.writeAndFlush(response);
+                        if (!keepAlive) {
+                            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+                        } else {
+                            response.headers().set(CONNECTION, KEEP_ALIVE);
+                            ctx.writeAndFlush(response);
+                        }
                 }
             });
         }
@@ -97,7 +117,7 @@ public class ConsumerAgentHttpServerHandler extends ChannelInboundHandlerAdapter
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
-        ctx.close();
+        logger.error("http服务器响应出错", cause);
+        if(ctx.channel().isActive()) ctx.close();
     }
 }
