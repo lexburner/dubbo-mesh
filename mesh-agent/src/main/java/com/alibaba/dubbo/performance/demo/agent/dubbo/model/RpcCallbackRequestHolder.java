@@ -10,17 +10,17 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RpcCallbackRequestHolder {
 
     // key: requestId     value: RpcCallbackFuture
-    private static ConcurrentHashMap<String,RpcCallbackFuture> processingRpc = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, RpcCallbackFuture> processingRpc = new ConcurrentHashMap<>();
 
-    public static void put(String requestId,RpcCallbackFuture rpcFuture){
-        processingRpc.put(requestId,rpcFuture);
+    public static void put(String requestId, RpcCallbackFuture rpcFuture) {
+        processingRpc.put(requestId, rpcFuture);
     }
 
-    public static RpcCallbackFuture get(String requestId){
+    public static RpcCallbackFuture get(String requestId) {
         return processingRpc.get(requestId);
     }
 
-    public static void remove(String requestId){
+    public static void remove(String requestId) {
         processingRpc.remove(requestId);
     }
 

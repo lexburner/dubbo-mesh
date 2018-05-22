@@ -14,7 +14,7 @@ public class RpcAsyncClient {
 
     private ConnecManager connectManager;
 
-    public RpcAsyncClient(){
+    public RpcAsyncClient() {
         this.connectManager = new ConnecManager();
     }
 
@@ -40,7 +40,7 @@ public class RpcAsyncClient {
         logger.info("requestId=" + request.getId());
 
         RpcCallbackFuture future = new RpcCallbackFuture();
-        RpcCallbackRequestHolder.put(String.valueOf(request.getId()),future);
+        RpcCallbackRequestHolder.put(String.valueOf(request.getId()), future);
 
         channel.writeAndFlush(request);
         return future;

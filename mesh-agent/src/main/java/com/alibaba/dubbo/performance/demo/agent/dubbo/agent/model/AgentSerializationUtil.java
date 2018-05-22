@@ -11,7 +11,7 @@ public class AgentSerializationUtil {
 
     static Charset defaultCharset = Charset.forName("utf-8");
 
-    static public byte[] serializeRequest(AgentRequest agentRequest){
+    static public byte[] serializeRequest(AgentRequest agentRequest) {
         String sb = String.valueOf(agentRequest.getId()) + "," +
                 agentRequest.getInterfaceName() + "," +
                 agentRequest.getMethod() + "," +
@@ -20,15 +20,15 @@ public class AgentSerializationUtil {
         return sb.getBytes(defaultCharset);
     }
 
-    static public byte[] serializeResponse(AgentResponse agentResponse){
+    static public byte[] serializeResponse(AgentResponse agentResponse) {
         String sb = agentResponse.getId() + "," +
                 agentResponse.getValue();
         return sb.getBytes(defaultCharset);
     }
 
 
-    static public AgentRequest deserializeRequest(byte[] bytes){
-        String body = new String(bytes,defaultCharset);
+    static public AgentRequest deserializeRequest(byte[] bytes) {
+        String body = new String(bytes, defaultCharset);
         String[] bodyArray = body.split(",");
         AgentRequest agentRequest = new AgentRequest();
         agentRequest.setId(Long.parseLong(bodyArray[0]));
@@ -39,8 +39,8 @@ public class AgentSerializationUtil {
         return agentRequest;
     }
 
-    static public AgentResponse deserializeResponse(byte[] bytes){
-        String body = new String(bytes,defaultCharset);
+    static public AgentResponse deserializeResponse(byte[] bytes) {
+        String body = new String(bytes, defaultCharset);
         String[] bodyArray = body.split(",");
         AgentResponse agentResponse = new AgentResponse();
         agentResponse.setId(Long.parseLong(bodyArray[0]));

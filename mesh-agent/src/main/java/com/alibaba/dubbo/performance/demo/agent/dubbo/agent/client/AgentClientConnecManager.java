@@ -17,7 +17,7 @@ public class AgentClientConnecManager {
     Logger logger = LoggerFactory.getLogger(AgentClientConnecManager.class);
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
 
-    private ConcurrentHashMap<Endpoint,Channel> channelPool = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Endpoint, Channel> channelPool = new ConcurrentHashMap<>();
 
     private Bootstrap bootstrap;
 
@@ -41,13 +41,13 @@ public class AgentClientConnecManager {
         }
 
         if (null == channel) {
-            synchronized (lock){
-                if (null == channel){
-                    try{
+            synchronized (lock) {
+                if (null == channel) {
+                    try {
                         channel = bootstrap.connect(agentEndpoint.getHost(), agentEndpoint.getPort()).sync().channel();
                         channelPool.put(agentEndpoint, channel);
-                    }catch (Exception e){
-                        logger.error("连接失败",e );
+                    } catch (Exception e) {
+                        logger.error("连接失败", e);
                     }
 
                 }

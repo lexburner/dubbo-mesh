@@ -17,7 +17,7 @@ public class Request {
 
     private Object mData;
 
-    public Request(){
+    public Request() {
         id = atomicLong.getAndIncrement();
     }
 

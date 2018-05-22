@@ -14,7 +14,7 @@ public class RpcClient {
 
     private ConnecManager connectManager;
 
-    public RpcClient(){
+    public RpcClient() {
         this.connectManager = new ConnecManager();
     }
 
@@ -40,14 +40,14 @@ public class RpcClient {
         logger.info("requestId=" + request.getId());
 
         RpcFuture future = new RpcFuture();
-        RpcRequestHolder.put(String.valueOf(request.getId()),future);
+        RpcRequestHolder.put(String.valueOf(request.getId()), future);
 
         channel.writeAndFlush(request);
 
         Object result = null;
         try {
             result = future.get();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return result;

@@ -1,21 +1,15 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.server.AgentServerConnecManager;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.server.ProviderAgentServer;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.consumer.ConsumerAgentHttpServer;
 import com.alibaba.dubbo.performance.demo.agent.registry.IpHelper;
 import okhttp3.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.context.request.async.DeferredResult;
 
 import java.io.IOException;
 import java.util.Random;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @SpringBootApplication
 public class AgentApp {
@@ -27,42 +21,55 @@ public class AgentApp {
     // 添加日志保存目录: -Dlogs.dir=/path/to/your/logs/dir。请安装自己的环境来设置日志目录。
 
     public static void main(String[] args) {
-        SpringApplication.run(AgentApp.class,args);
+        SpringApplication.run(AgentApp.class, args);
 
         String type = System.getProperty("type");   // 获取type参数
-        if ("provider".equals(type)){
-            new AgentServerConnecManager().initBootstrap();
+        if ("provider".equals(type)) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    new ProviderAgentServer().startServer();
+                }
+            }).start();
         }
-        if ("consumer".equals(type)){
+        if ("consumer".equals(type)) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    new ConsumerAgentHttpServer().startServer();
+                }
+            }).start();
+        }
+        if ("consumer".equals(type)) {
             OkHttpClient httpClient = new OkHttpClient();
-            String url = "";
-            try{
-                url =  "http://" + IpHelper.getHostIp() + ":" + System.getProperty("server.port");
+            try {
+                int port = Integer.parseInt(System.getProperty("server.port"))-1;
+                final String url = "http://" + IpHelper.getHostIp() + ":" + port;
                 Random r = new Random(1);
-                RequestBody requestBody = new FormBody.Builder()
-                        .add("interface","com.alibaba.dubbo.performance.demo.provider.IHelloService")
-                        .add("method","hash")
-                        .add("parameterTypesString","Ljava/lang/String;")
-                        .add("parameter", RandomStringUtils.random(r.nextInt(1024), true, true))
-                        .build();
-
-                Request request = new Request.Builder()
-                        .url(url)
-                        .post(requestBody)
-                        .build();
-                for (int i=0;i<10;i++){
+                for (int i = 0; i < 10; i++) {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
+                            RequestBody requestBody = new FormBody.Builder()
+                                    .add("interface", "com.alibaba.dubbo.performance.demo.provider.IHelloService")
+                                    .add("method", "hash")
+                                    .add("parameterTypesString", "Ljava/lang/String;")
+                                    .add("parameter", RandomStringUtils.random(r.nextInt(1024), true, true))
+                                    .build();
+
+                            Request request = new Request.Builder()
+                                    .url(url)
+                                    .post(requestBody)
+                                    .build();
                             try (Response response = httpClient.newCall(request).execute()) {
-                                if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                                System.out.println(new String(response.body().bytes()));
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
                         }
                     }).start();
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 

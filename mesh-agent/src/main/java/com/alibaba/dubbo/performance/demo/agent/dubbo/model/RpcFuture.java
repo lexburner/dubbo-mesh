@@ -1,6 +1,8 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
-import java.util.concurrent.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class RpcFuture implements Future<Object> {
     private CountDownLatch latch = new CountDownLatch(1);
@@ -24,11 +26,11 @@ public class RpcFuture implements Future<Object> {
 
     @Override
     public Object get() throws InterruptedException {
-         //boolean b = latch.await(100, TimeUnit.MICROSECONDS);
+        //boolean b = latch.await(100, TimeUnit.MICROSECONDS);
         latch.await();
         try {
             return response.getBytes();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return "Error";
@@ -36,11 +38,11 @@ public class RpcFuture implements Future<Object> {
 
     @Override
     public Object get(long timeout, TimeUnit unit) throws InterruptedException {
-        boolean b = latch.await(timeout,unit);
+        boolean b = latch.await(timeout, unit);
         return response.getBytes();
     }
 
-    public void done(RpcResponse response){
+    public void done(RpcResponse response) {
         this.response = response;
         latch.countDown();
     }

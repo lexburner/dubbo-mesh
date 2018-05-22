@@ -6,11 +6,17 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
  * Date 2018-05-21
  */
 public enum FutureState {
-    /** the task is doing **/
+    /**
+     * the task is doing
+     **/
     DOING(0),
-    /** the task is done **/
+    /**
+     * the task is done
+     **/
     DONE(1),
-    /** ths task is cancelled **/
+    /**
+     * ths task is cancelled
+     **/
     CANCELLED(2);
 
     public final int value;

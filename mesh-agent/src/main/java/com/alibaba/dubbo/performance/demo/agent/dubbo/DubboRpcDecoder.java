@@ -2,8 +2,6 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcResponse;
-import com.alibaba.fastjson.JSON;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -58,7 +56,7 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
      * @param byteBuf
      * @return
      */
-    private Object decode2(ByteBuf byteBuf){
+    private Object decode2(ByteBuf byteBuf) {
 
         int savedReaderIndex = byteBuf.readerIndex();
         int readable = byteBuf.readableBytes();
@@ -69,7 +67,7 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
 
         byte[] header = new byte[HEADER_LENGTH];
         byteBuf.readBytes(header);
-        byte[] dataLen = Arrays.copyOfRange(header,12,16);
+        byte[] dataLen = Arrays.copyOfRange(header, 12, 16);
         int len = Bytes.bytes2int(dataLen);
         int tt = len + HEADER_LENGTH;
         if (readable < tt) {
@@ -81,18 +79,17 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
         byteBuf.readBytes(data);
 
 
-
         //byte[] data = new byte[byteBuf.readableBytes()];
         //byteBuf.readBytes(data);
 
         // HEADER_LENGTH + 1，忽略header & Response value type的读取，直接读取实际Return value
         // dubbo返回的body中，前后各有一个换行，去掉
-        byte[] subArray = Arrays.copyOfRange(data,HEADER_LENGTH + 2, data.length -1 );
+        byte[] subArray = Arrays.copyOfRange(data, HEADER_LENGTH + 2, data.length - 1);
 
         String s = new String(subArray);
 
-        byte[] requestIdBytes = Arrays.copyOfRange(data,4,12);
-        long requestId = Bytes.bytes2long(requestIdBytes,0);
+        byte[] requestIdBytes = Arrays.copyOfRange(data, 4, 12);
+        long requestId = Bytes.bytes2long(requestIdBytes, 0);
 
         RpcResponse response = new RpcResponse();
         response.setRequestId(String.valueOf(requestId));

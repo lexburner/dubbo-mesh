@@ -10,7 +10,8 @@ public class AgentRequest implements Serializable {
     private String parameterTypesString;
     private String parameter;
     private long id;
-    public AgentRequest(){
+
+    public AgentRequest() {
         id = atomicLong.getAndIncrement();
     }
 

@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class AgentResponse implements Serializable {
     private String value;
     private long id;
+
     public String getValue() {
         return value;
     }

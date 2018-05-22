@@ -10,7 +10,7 @@ public class AgentServerEncoder extends MessageToByteEncoder {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Object in, ByteBuf out) throws Exception {
-        if(in instanceof AgentResponse){
+        if (in instanceof AgentResponse) {
             byte[] serialize = AgentSerializationUtil.serializeResponse((AgentResponse) in);
             out.writeInt(serialize.length);
             out.writeBytes(serialize);

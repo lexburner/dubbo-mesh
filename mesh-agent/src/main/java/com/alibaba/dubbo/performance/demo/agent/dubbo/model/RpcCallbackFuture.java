@@ -53,7 +53,7 @@ public class RpcCallbackFuture {
         listener.operationComplete(this);
     }
 
-    public void done(RpcResponse response){
+    public void done(RpcResponse response) {
         this.response = response;
         this.done();
     }
