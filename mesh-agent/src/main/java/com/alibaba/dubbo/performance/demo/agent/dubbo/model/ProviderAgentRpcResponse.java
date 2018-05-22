@@ -1,6 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
-public class RpcResponse {
+public class ProviderAgentRpcResponse {
 
     private String requestId;
     private byte[] bytes;

@@ -8,15 +8,15 @@ import java.util.List;
  * company qianmi.com
  * Date 2018-05-21
  */
-public class RpcCallbackFuture {
+public class RpcCallbackFuture<T> {
 
-    private RpcResponse response;
+    private T response;
 
-    public RpcResponse getResponse() {
+    public T getResponse() {
         return response;
     }
 
-    private List<FutureListener> listeners;
+    private List<FutureListener<T>> listeners;
     private Object lock = new Object();
     protected volatile FutureState state = FutureState.DOING;
 
@@ -24,7 +24,7 @@ public class RpcCallbackFuture {
         return state.isDoingState();
     }
 
-    public void addListener(FutureListener listener) {
+    public void addListener(FutureListener<T> listener) {
         boolean notifyNow = false;
         synchronized (lock) {
             if (!isDoing()) {
@@ -43,17 +43,17 @@ public class RpcCallbackFuture {
 
     private void notifyListeners() {
         if (listeners != null) {
-            for (FutureListener listener : listeners) {
+            for (FutureListener<T> listener : listeners) {
                 notifyListener(listener);
             }
         }
     }
 
-    private void notifyListener(FutureListener listener) {
+    private void notifyListener(FutureListener<T> listener) {
         listener.operationComplete(this);
     }
 
-    public void done(RpcResponse response) {
+    public void done(T response) {
         this.response = response;
         this.done();
     }

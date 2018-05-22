@@ -32,17 +32,17 @@ public class RpcClient {
         JsonUtils.writeObject(parameter, writer);
         invocation.setArguments(out.toByteArray());
 
-        Request request = new Request();
-        request.setVersion("2.0.0");
-        request.setTwoWay(true);
-        request.setData(invocation);
+        ProviderAgentRpcRequest providerAgentRpcRequest = new ProviderAgentRpcRequest();
+        providerAgentRpcRequest.setVersion("2.0.0");
+        providerAgentRpcRequest.setTwoWay(true);
+        providerAgentRpcRequest.setData(invocation);
 
-        logger.info("requestId=" + request.getId());
+        logger.info("requestId=" + providerAgentRpcRequest.getId());
 
         RpcFuture future = new RpcFuture();
-        RpcRequestHolder.put(String.valueOf(request.getId()), future);
+        RpcRequestHolder.put(String.valueOf(providerAgentRpcRequest.getId()), future);
 
-        channel.writeAndFlush(request);
+        channel.writeAndFlush(providerAgentRpcRequest);
 
         Object result = null;
         try {

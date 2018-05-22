@@ -33,7 +33,6 @@ public class ConsumerAgentClient {
 
         DeferredResult<ResponseEntity> deferredResult = new DeferredResult<>();
         ConsumerAgentResponseFutureHolder.put(agentRequest.getId(), deferredResult);
-
         return deferredResult;
     }
 }

@@ -72,7 +72,7 @@
 //                .add("parameter", parameter)
 //                .build();
 //
-//        Request request = new Request.Builder()
+//        ProviderAgentRpcRequest request = new ProviderAgentRpcRequest.Builder()
 //                .url(url)
 //                .post(requestBody)
 //                .build();

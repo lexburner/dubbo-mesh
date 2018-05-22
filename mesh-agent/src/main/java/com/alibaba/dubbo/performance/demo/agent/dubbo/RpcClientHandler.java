@@ -1,21 +1,20 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcCallbackFuture;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcCallbackRequestHolder;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcRequestHolder;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcResponse;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.ProviderAgentRpcResponseFutureHolder;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.ProviderAgentRpcResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
+public class RpcClientHandler extends SimpleChannelInboundHandler<ProviderAgentRpcResponse> {
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcResponse response) {
-        String requestId = response.getRequestId();
-        RpcCallbackFuture rpcCallbackFuture = RpcCallbackRequestHolder.get(requestId);
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, ProviderAgentRpcResponse providerAgentRpcResponse) {
+        String requestId = providerAgentRpcResponse.getRequestId();
+        RpcCallbackFuture<ProviderAgentRpcResponse> rpcCallbackFuture = ProviderAgentRpcResponseFutureHolder.get(requestId);
         if (null != rpcCallbackFuture) {
-            RpcRequestHolder.remove(requestId);
-            rpcCallbackFuture.done(response);
+            ProviderAgentRpcResponseFutureHolder.remove(requestId);
+            rpcCallbackFuture.done(providerAgentRpcResponse);
         }
     }
 }

@@ -77,7 +77,7 @@
 //
 //        String url = "http://" + endpoint.getHost() + ":" + endpoint.getPort();
 //
-//        org.asynchttpclient.Request request = org.asynchttpclient.Dsl.post(url)
+//        org.asynchttpclient.ProviderAgentRpcRequest request = org.asynchttpclient.Dsl.post(url)
 //                .addFormParam("interface", interfaceName)
 //                .addFormParam("method", method)
 //                .addFormParam("parameterTypesString", parameterTypesString)

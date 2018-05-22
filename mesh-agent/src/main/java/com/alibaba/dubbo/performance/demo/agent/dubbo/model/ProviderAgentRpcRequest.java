@@ -3,7 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Request {
+public class ProviderAgentRpcRequest {
     private static AtomicLong atomicLong = new AtomicLong();
     private long id;
     private String interfaceName = "com.alibaba.dubbo.performance.demo.provider.IHelloService";
@@ -17,7 +17,7 @@ public class Request {
 
     private Object mData;
 
-    public Request() {
+    public ProviderAgentRpcRequest() {
         id = atomicLong.getAndIncrement();
     }
 

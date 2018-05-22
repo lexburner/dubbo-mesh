@@ -5,8 +5,8 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
  * company qianmi.com
  * Date 2018-05-21
  */
-public interface FutureListener {
+public interface FutureListener<T> {
 
-    void operationComplete(RpcCallbackFuture future);
+    void operationComplete(RpcCallbackFuture<T> future);
 
 }

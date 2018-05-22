@@ -44,6 +44,7 @@ public class EtcdRegistry implements IRegistry {
             try {
                 int port = Integer.valueOf(System.getProperty("server.port"));
                 register("com.alibaba.dubbo.performance.demo.provider.IHelloService", port + 50);
+                logger.info("provider-agent server register to etcd at port {}",port + 50);
             } catch (Exception e) {
                 e.printStackTrace();
             }

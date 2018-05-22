@@ -4,10 +4,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+@Deprecated
 public class RpcFuture implements Future<Object> {
     private CountDownLatch latch = new CountDownLatch(1);
 
-    private RpcResponse response;
+    private ProviderAgentRpcResponse response;
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
@@ -42,7 +43,7 @@ public class RpcFuture implements Future<Object> {
         return response.getBytes();
     }
 
-    public void done(RpcResponse response) {
+    public void done(ProviderAgentRpcResponse response) {
         this.response = response;
         latch.countDown();
     }

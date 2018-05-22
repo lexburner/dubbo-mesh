@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+@Deprecated
 public class RpcRequestHolder {
 
     // key: requestId     value: RpcFuture

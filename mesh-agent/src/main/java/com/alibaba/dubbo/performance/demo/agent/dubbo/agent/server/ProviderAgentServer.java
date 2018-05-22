@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.server;
 
+import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IpHelper;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -20,6 +21,7 @@ public class ProviderAgentServer {
     private ServerBootstrap bootstrap;
 
     public void startServer() {
+        new EtcdRegistry(System.getProperty("etcd.url"));
         try {
             bootstrap = new ServerBootstrap()
                     .group(bossGroup, workerGroup)

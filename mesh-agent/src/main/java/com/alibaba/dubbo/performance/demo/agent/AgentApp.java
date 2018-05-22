@@ -43,7 +43,7 @@ public class AgentApp {
         if ("consumer".equals(type)) {
             OkHttpClient httpClient = new OkHttpClient();
             try {
-                int port = Integer.parseInt(System.getProperty("server.port"))-1;
+                int port = Integer.parseInt(System.getProperty("server.port"));
                 final String url = "http://" + IpHelper.getHostIp() + ":" + port;
                 Random r = new Random(1);
                 for (int i = 0; i < 10; i++) {
