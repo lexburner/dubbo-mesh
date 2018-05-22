@@ -61,11 +61,10 @@ public class ConsumerAgentHttpServerHandler extends ChannelInboundHandlerAdapter
         ctx.flush();
     }
 
-    ConsumerClient consumerClient;
+    final ConsumerClient consumerClient;
 
     ConsumerAgentHttpServerHandler(ConsumerClient consumerClient) {
         this.consumerClient = consumerClient;
-        System.out.println("ConsumerAgentHttpServerHandler实例化....");
     }
 
     @Override

@@ -44,14 +44,13 @@ public final class ConsumerAgentHttpServer {
     static final int PORT = Integer.parseInt(System.getProperty("server.port"));
 
     public void startServer() {
-        ConsumerClient consumerClient = new ConsumerClient();
         try {
             bootstrap = new ServerBootstrap();
             bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
 //                    .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new ConsumerAgentHttpServerInitializer(consumerClient));
+                    .childHandler(new ConsumerAgentHttpServerInitializer());
 
             Channel ch = bootstrap.bind(PORT).sync().channel();
             logger.info("consumer-agent server is ready to receive request from consumer\n" +

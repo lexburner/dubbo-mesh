@@ -25,6 +25,7 @@ public class AgentClientConnecManager {
     private final Object lock = new Object();
 
     public AgentClientConnecManager() {
+        System.out.println("AgentClientConnecManager构造中...");
     }
 
     public Channel getChannel(Endpoint agentEndpoint) throws Exception {
@@ -41,18 +42,15 @@ public class AgentClientConnecManager {
             }
         }
 
-        if (null == channel) {
-            synchronized (lock) {
-                if (null == channel) {
-                    try {
-                        channel = bootstrap.connect(agentEndpoint.getHost(), agentEndpoint.getPort()).sync().channel();
-                        logger.info("与{}:{}新建立了连接", agentEndpoint.getHost(), agentEndpoint.getPort());
-                        channelPool.put(agentEndpoint, channel);
-                    } catch (Exception e) {
-                        logger.error("连接失败", e);
-                    }
-
-                }
+        synchronized (lock) {
+            channel = channelPool.get(agentEndpoint);
+            if(channel!=null) return channel;
+            try {
+                channel = bootstrap.connect(agentEndpoint.getHost(), agentEndpoint.getPort()).sync().channel();
+                logger.info("与{}:{}新建立了连接", agentEndpoint.getHost(), agentEndpoint.getPort());
+                channelPool.put(agentEndpoint, channel);
+            } catch (Exception e) {
+                logger.error("连接失败", e);
             }
         }
 

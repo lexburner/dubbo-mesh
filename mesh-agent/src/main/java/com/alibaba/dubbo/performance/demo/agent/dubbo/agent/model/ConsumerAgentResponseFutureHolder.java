@@ -1,6 +1,8 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcCallbackFuture;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -12,13 +14,27 @@ import java.util.concurrent.ConcurrentHashMap;
  * 存放 consumer-agent 请求之后响应的future
  */
 public class ConsumerAgentResponseFutureHolder {
-    private static ConcurrentHashMap<Long, RpcCallbackFuture<AgentResponse>> processingRpc = new ConcurrentHashMap<>();
+//    private static ConcurrentHashMap<Long, RpcCallbackFuture<AgentResponse>> processingRpc = new ConcurrentHashMap<>();
+//
+//    public static void put(long requestId, RpcCallbackFuture<AgentResponse> rpcCallbackFuture) {
+//        processingRpc.put(requestId, rpcCallbackFuture);
+//    }
+//
+//    public static RpcCallbackFuture<AgentResponse> get(long requestId) {
+//        return processingRpc.get(requestId);
+//    }
+//
+//    public static void remove(long requestId) {
+//        processingRpc.remove(requestId);
+//    }
 
-    public static void put(long requestId, RpcCallbackFuture<AgentResponse> rpcCallbackFuture) {
+    private static ConcurrentHashMap<Long, DeferredResult<ResponseEntity>> processingRpc = new ConcurrentHashMap<>();
+
+    public static void put(long requestId, DeferredResult<ResponseEntity> rpcCallbackFuture) {
         processingRpc.put(requestId, rpcCallbackFuture);
     }
 
-    public static RpcCallbackFuture<AgentResponse> get(long requestId) {
+    public static DeferredResult<ResponseEntity> get(long requestId) {
         return processingRpc.get(requestId);
     }
 

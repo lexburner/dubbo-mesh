@@ -29,18 +29,12 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
  */
 public class ConsumerAgentHttpServerInitializer extends ChannelInitializer<SocketChannel> {
 
-    private ConsumerClient consumerClient;
-
-    public ConsumerAgentHttpServerInitializer(ConsumerClient consumerClient) {
-        this.consumerClient = consumerClient;
-    }
-
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline p = ch.pipeline();
         p.addLast("encoder", new HttpResponseEncoder());
         p.addLast("decoder", new HttpRequestDecoder());
         p.addLast("aggregator", new HttpObjectAggregator(10 * 1024 * 1024));
-        p.addLast(new ConsumerAgentHttpServerHandler(consumerClient));
+        p.addLast(new ConsumerAgentHttpServerHandler(new ConsumerClient()));
     }
 }

@@ -50,7 +50,8 @@ public class ConsumerAgentNettyClient {
         agentRequest.setParameter(parameter);
         channel.writeAndFlush(agentRequest);
         RpcCallbackFuture<AgentResponse> future = new RpcCallbackFuture<>();
-        ConsumerAgentResponseFutureHolder.put(agentRequest.getId(), future);
+        //TODO
+//        ConsumerAgentResponseFutureHolder.put(agentRequest.getId(), future);
         return future;
     }
 
