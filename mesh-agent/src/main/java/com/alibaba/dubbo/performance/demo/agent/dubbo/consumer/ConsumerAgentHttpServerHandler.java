@@ -83,12 +83,6 @@ public class ConsumerAgentHttpServerHandler extends ChannelInboundHandlerAdapter
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-//            requestParams = new HashMap<>();
-//            requestParams.put("interface", "com.alibaba.dubbo.performance.demo.provider.IHelloService");
-//            requestParams.put("method", "hash");
-//            requestParams.put("parameterTypesString", "Ljava/lang/String;");
-//            requestParams.put("parameter", "123");
-
             boolean keepAlive = HttpUtil.isKeepAlive(req);
 
             String interfaceName = requestParams.get("interface");
@@ -114,6 +108,12 @@ public class ConsumerAgentHttpServerHandler extends ChannelInboundHandlerAdapter
             });
         }
     }
+
+    //            requestParams = new HashMap<>();
+//            requestParams.put("interface", "com.alibaba.dubbo.performance.demo.provider.IHelloService");
+//            requestParams.put("method", "hash");
+//            requestParams.put("parameterTypesString", "Ljava/lang/String;");
+//            requestParams.put("parameter", "123");
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {

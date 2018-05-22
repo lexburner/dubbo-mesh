@@ -29,7 +29,11 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
  */
 public class ConsumerAgentHttpServerInitializer extends ChannelInitializer<SocketChannel> {
 
-    ConsumerClient consumerClient = new ConsumerClient();
+    private ConsumerClient consumerClient;
+
+    public ConsumerAgentHttpServerInitializer(ConsumerClient consumerClient) {
+        this.consumerClient = consumerClient;
+    }
 
     @Override
     public void initChannel(SocketChannel ch) {

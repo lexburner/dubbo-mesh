@@ -14,7 +14,7 @@ public class ConnecManager {
 
     Logger logger = LoggerFactory.getLogger(ConnecManager.class);
 
-    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
+    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
 
     private Bootstrap bootstrap;
 

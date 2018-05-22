@@ -15,8 +15,8 @@ public class ProviderAgentServer {
 
     Logger logger = LoggerFactory.getLogger(ProviderAgentServer.class);
 
-    EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-    EventLoopGroup workerGroup = new NioEventLoopGroup(4);
+    EventLoopGroup bossGroup = new NioEventLoopGroup();
+    EventLoopGroup workerGroup = new NioEventLoopGroup();
 
     private ServerBootstrap bootstrap;
 
