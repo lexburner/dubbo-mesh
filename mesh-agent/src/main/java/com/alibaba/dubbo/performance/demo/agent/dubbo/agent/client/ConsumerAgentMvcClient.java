@@ -21,23 +21,15 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ConsumerAgentMvcClient {
 
-//    private AgentClientConnecManager connectManager;
-//
-//    public ConsumerAgentMvcClient() {
-//        this.connectManager = new AgentClientConnecManager();
-//    }
+    private AgentClientConnecManager connectManager;
 
-    List<AgentClientConnecManager> connectManagers;
-    AtomicInteger atomicInteger = new AtomicInteger(0);
     public ConsumerAgentMvcClient() {
-        connectManagers = new ArrayList<>();
-        for(int i=0;i<3;i++){
-            connectManagers.add(new AgentClientConnecManager());
-        }
+        this.connectManager = new AgentClientConnecManager();
     }
 
+
     public DeferredResult<ResponseEntity> invoke(String interfaceName, String method, String parameterTypesString, String parameter, Endpoint endpoint) throws Exception {
-        Channel channel = connectManagers.get(atomicInteger.getAndAdd(1)%connectManagers.size()).getChannel(endpoint);
+        Channel channel = connectManager.getChannel(endpoint);
         AgentRequest agentRequest = new AgentRequest();
         agentRequest.setInterfaceName(interfaceName);
         agentRequest.setMethod(method);
