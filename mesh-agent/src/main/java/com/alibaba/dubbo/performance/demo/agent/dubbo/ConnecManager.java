@@ -25,7 +25,7 @@ public class ConnecManager {
         System.out.println("ConnecManager构造...");
     }
 
-    public Channel getChannel() throws Exception {
+    public Channel getChannel() {
         if (null != channel) {
             return channel;
         }

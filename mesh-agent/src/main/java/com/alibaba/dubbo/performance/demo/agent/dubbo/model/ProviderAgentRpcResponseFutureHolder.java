@@ -1,5 +1,7 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -10,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ProviderAgentRpcResponseFutureHolder {
 
     // key: requestId     value: RpcCallbackFuture
-    private static ConcurrentHashMap<String, RpcCallbackFuture<ProviderAgentRpcResponse>> processingRpc = new ConcurrentHashMap<>();
+    private static Map<String, RpcCallbackFuture<ProviderAgentRpcResponse>> processingRpc = new ConcurrentHashMap<>();
 
     public static void put(String requestId, RpcCallbackFuture<ProviderAgentRpcResponse> rpcFuture) {
         processingRpc.put(requestId, rpcFuture);
@@ -23,5 +25,6 @@ public class ProviderAgentRpcResponseFutureHolder {
     public static void remove(String requestId) {
         processingRpc.remove(requestId);
     }
+
 
 }

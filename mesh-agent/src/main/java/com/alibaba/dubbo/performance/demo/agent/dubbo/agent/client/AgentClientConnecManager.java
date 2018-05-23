@@ -11,6 +11,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AgentClientConnecManager {
@@ -18,7 +20,8 @@ public class AgentClientConnecManager {
     Logger logger = LoggerFactory.getLogger(AgentClientConnecManager.class);
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
 
-    private ConcurrentHashMap<Endpoint, Channel> channelPool = new ConcurrentHashMap<>();
+    //TODO 不用concurrentHashMap
+    private Map<Endpoint, Channel> channelPool = new HashMap<>();
 
     private Bootstrap bootstrap;
 
