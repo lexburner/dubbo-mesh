@@ -31,7 +31,7 @@ public class ConsumerAgentMvcClient {
     AtomicInteger atomicInteger = new AtomicInteger(0);
     public ConsumerAgentMvcClient() {
         connectManagers = new ArrayList<>();
-        for(int i=0;i<8;i++){
+        for(int i=0;i<3;i++){
             connectManagers.add(new AgentClientConnecManager());
         }
     }
