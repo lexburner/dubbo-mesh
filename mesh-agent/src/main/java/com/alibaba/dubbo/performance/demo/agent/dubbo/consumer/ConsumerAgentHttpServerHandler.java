@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -62,50 +63,57 @@ public class ConsumerAgentHttpServerHandler extends ChannelInboundHandlerAdapter
     }
 
     final ConsumerClient consumerClient;
+    final ExecutorService executorService;
 
-    ConsumerAgentHttpServerHandler(ConsumerClient consumerClient) {
+    ConsumerAgentHttpServerHandler(ConsumerClient consumerClient,ExecutorService executorService) {
         this.consumerClient = consumerClient;
+        this.executorService = executorService;
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        if (msg instanceof FullHttpRequest) {
-            FullHttpRequest req = (FullHttpRequest) msg;
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (msg instanceof FullHttpRequest) {
+                    FullHttpRequest req = (FullHttpRequest) msg;
 
-            if (req.uri().equals("/favicon.ico")) {
-                return;
-            }
+                    if (req.uri().equals("/favicon.ico")) {
+                        return;
+                    }
 
-            Map<String, String> requestParams = null;
-            try {
-                requestParams = RequestParser.parse(req);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            boolean keepAlive = HttpUtil.isKeepAlive(req);
+                    Map<String, String> requestParams = null;
+                    try {
+                        requestParams = RequestParser.parse(req);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    boolean keepAlive = HttpUtil.isKeepAlive(req);
 
-            String interfaceName = requestParams.get("interface");
-            String method = requestParams.get("method");
-            String parameterTypesString = requestParams.get("parameterTypesString");
-            String parameter = requestParams.get("parameter");
+                    String interfaceName = requestParams.get("interface");
+                    String method = requestParams.get("method");
+                    String parameterTypesString = requestParams.get("parameterTypesString");
+                    String parameter = requestParams.get("parameter");
 
-            RpcCallbackFuture<AgentResponse> rpcCallbackFuture = consumerClient.invoke(interfaceName, method, parameterTypesString, parameter);
-            rpcCallbackFuture.addListener(new FutureListener<AgentResponse>() {
-                @Override
-                public void operationComplete(RpcCallbackFuture<AgentResponse> rpcFuture) {
-                        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(rpcFuture.getResponse().getValue().getBytes()));
-                        response.headers().set(CONTENT_TYPE, "text/plain");
-                        response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
+                    RpcCallbackFuture<AgentResponse> rpcCallbackFuture = consumerClient.invoke(interfaceName, method, parameterTypesString, parameter);
+                    rpcCallbackFuture.addListener(new FutureListener<AgentResponse>() {
+                        @Override
+                        public void operationComplete(RpcCallbackFuture<AgentResponse> rpcFuture) {
+                            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(rpcFuture.getResponse().getValue().getBytes()));
+                            response.headers().set(CONTENT_TYPE, "text/plain");
+                            response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
 
-                        if (!keepAlive) {
-                            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-                        } else {
-                            response.headers().set(CONNECTION, KEEP_ALIVE);
-                            ctx.writeAndFlush(response);
+                            if (!keepAlive) {
+                                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+                            } else {
+                                response.headers().set(CONNECTION, KEEP_ALIVE);
+                                ctx.writeAndFlush(response);
+                            }
                         }
+                    });
                 }
-            });
-        }
+            }
+        });
     }
 
     //            requestParams = new HashMap<>();

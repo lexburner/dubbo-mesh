@@ -22,6 +22,9 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * @author 徐靖峰[OF2938]
  * company qianmi.com
@@ -29,12 +32,15 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
  */
 public class ConsumerAgentHttpServerInitializer extends ChannelInitializer<SocketChannel> {
 
+    ConsumerClient consumerClient = new ConsumerClient();
+    ExecutorService executorService = Executors.newFixedThreadPool(128);
+
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline p = ch.pipeline();
         p.addLast("encoder", new HttpResponseEncoder());
         p.addLast("decoder", new HttpRequestDecoder());
         p.addLast("aggregator", new HttpObjectAggregator(10 * 1024 * 1024));
-        p.addLast(new ConsumerAgentHttpServerHandler(new ConsumerClient()));
+        p.addLast(new ConsumerAgentHttpServerHandler(consumerClient,executorService));
     }
 }
