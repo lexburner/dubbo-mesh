@@ -8,6 +8,8 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcCallbackFuture;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.ProviderAgentRpcResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -18,12 +20,16 @@ public class AgentServerHandler extends SimpleChannelInboundHandler<AgentRequest
 
     private final RpcAsyncClient rpcClient;
 
+    Logger logger = LoggerFactory.getLogger(AgentServerHandler.class);
+
     public AgentServerHandler(RpcAsyncClient rpcClient) {
         this.rpcClient = rpcClient;
+        logger.info("AgentServerHandler构造...");
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, final AgentRequest agentRequest) throws Exception {
+        printThreadName();
         RpcCallbackFuture<ProviderAgentRpcResponse> rpcCallbackFuture = rpcClient.invoke(agentRequest.getInterfaceName(), agentRequest.getMethod(), agentRequest.getParameterTypesString(), agentRequest.getParameter());
         rpcCallbackFuture.addListener(new FutureListener<ProviderAgentRpcResponse>() {
             @Override
@@ -36,6 +42,12 @@ public class AgentServerHandler extends SimpleChannelInboundHandler<AgentRequest
             }
         });
 
+    }
+
+    public void printThreadName() {
+        Thread t = Thread.currentThread();
+        String name = t.getName();
+        System.out.println("name=" + name);
     }
 
 }

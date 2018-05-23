@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class ConsumerAgentHttpServer {
 
-    Logger logger = LoggerFactory.getLogger(ProviderAgentServer.class);
+    Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServer.class);
 
     EventLoopGroup bossGroup = new NioEventLoopGroup();
     EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -57,7 +57,7 @@ public final class ConsumerAgentHttpServer {
                     "export at http://127.0.0.1:{}", PORT);
             ch.closeFuture().sync();
         } catch (Exception e) {
-            logger.error("provider-agent启动失败", e);
+            logger.error("consumer-agent启动失败", e);
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
