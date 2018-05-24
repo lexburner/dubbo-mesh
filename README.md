@@ -44,3 +44,8 @@ RpcAsyncClient 实现了 dubbo 协议，是调用的入口
 3. 长连接复用存疑，netty 的线程模型中，一个客户端的长连接对应一个 nioEventLoop 线程，consumer-agent 和一个 provider-agent 实例目前维护了 1 个长连接，导致
 provider-agent 只会实例化一个 handler 使用一个 eventLoop 处理 io 事件，这是不是导致 qps 达不到 4000 的根源？维护多个连接我也试过了，效果不理想，但还是记录下这个疑问
 4. 在 consumer-agent 这儿实现 dubbo 协议，provider-agent 作为一个流量转发服务器，这样少了一个自定义协议编解码的过程，可能会提高 qps
+
+### 分支介绍
+provider-proxy 测试 consumer-agent 使用 dubbo 协议，provider-agent 作为流量转发服务器
+highest-qps 目前最高qps的分支
+master 提交测试的分支
