@@ -1,13 +1,8 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.server;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.AgentRequest;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.AgentResponse;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.FutureListener;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcCallbackFuture;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.ProviderAgentRpcResponse;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.provider.RpcAsyncClient;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.provider.RpcClientHandler;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,34 +11,72 @@ import org.slf4j.LoggerFactory;
  * company qianmi.com
  * Date 2018-05-17
  */
-public class AgentServerHandler extends SimpleChannelInboundHandler<AgentRequest> {
-
-    private final RpcAsyncClient rpcClient;
+public class AgentServerHandler extends ChannelInboundHandlerAdapter {
 
     Logger logger = LoggerFactory.getLogger(AgentServerHandler.class);
 
-    public AgentServerHandler(RpcAsyncClient rpcClient) {
-        this.rpcClient = rpcClient;
-        logger.info("AgentServerHandler构造...");
+    private final String remoteHost;
+    private final int remotePort;
+
+    // As we use inboundChannel.eventLoop() when building the Bootstrap this does not need to be volatile as
+    // the outboundChannel will use the same EventLoop (and therefore Thread) as the inboundChannel.
+    private Channel outboundChannel;
+
+    public AgentServerHandler(String remoteHost, int remotePort) {
+        this.remoteHost = remoteHost;
+        this.remotePort = remotePort;
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, final AgentRequest agentRequest)  {
-        try{
-            RpcCallbackFuture<ProviderAgentRpcResponse> rpcCallbackFuture = rpcClient.invoke(agentRequest.getInterfaceName(), agentRequest.getMethod(), agentRequest.getParameterTypesString(), agentRequest.getParameter());
-            rpcCallbackFuture.addListener(new FutureListener<ProviderAgentRpcResponse>() {
+    public void channelActive(ChannelHandlerContext ctx) {
+        logger.info("agent-consumer与agent-provider新建立了连接...");
+        final Channel inboundChannel = ctx.channel();
+
+        // Start the connection attempt.
+        Bootstrap b = new Bootstrap();
+        b.group(inboundChannel.eventLoop())
+                .channel(ctx.channel().getClass())
+                .handler(new RpcClientHandler(inboundChannel))
+                .option(ChannelOption.AUTO_READ, false);
+        ChannelFuture f = b.connect(remoteHost, remotePort);
+        outboundChannel = f.channel();
+        f.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) {
+                if (future.isSuccess()) {
+                    // connection complete start to read first data
+                    inboundChannel.read();
+                } else {
+                    // Close the connection if the connection attempt has failed.
+                    inboundChannel.close();
+                }
+            }
+        });
+    }
+
+
+    @Override
+    public void channelRead(final ChannelHandlerContext ctx, Object msg) {
+        if (outboundChannel.isActive()) {
+            outboundChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
                 @Override
-                public void operationComplete(RpcCallbackFuture<ProviderAgentRpcResponse> future) {
-                    ProviderAgentRpcResponse providerAgentRpcResponse = future.getResponse();
-                    AgentResponse agentResponse = new AgentResponse();
-                    agentResponse.setId(agentRequest.getId());
-                    agentResponse.setValue(new String(providerAgentRpcResponse.getBytes()));
-                    ctx.writeAndFlush(agentResponse);
+                public void operationComplete(ChannelFuture future) {
+                    if (future.isSuccess()) {
+                        // was able to flush out data, start to read the next chunk
+                        ctx.channel().read();
+                    } else {
+                        future.channel().close();
+                    }
                 }
             });
-        }catch (Exception e){
-            logger.error("AgentServerHandler中rpcClient.invoke失败",e);
         }
+    }
+
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        logger.error("AgentServerHandler转发异常",cause);
+        ctx.channel().close();
     }
 
 }

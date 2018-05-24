@@ -1,6 +1,5 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.server;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.provider.RpcAsyncClient;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -12,14 +11,17 @@ import io.netty.channel.socket.SocketChannel;
  */
 public class AgentServerInitializer extends ChannelInitializer<SocketChannel> {
 
-    //TODO 测试连接复用
-//    private RpcAsyncClient rpcAsyncClient = new RpcAsyncClient();
+    private final String remoteHost;
+    private final int remotePort;
+
+    public AgentServerInitializer(String remoteHost, int remotePort) {
+        this.remoteHost = remoteHost;
+        this.remotePort = remotePort;
+    }
 
     @Override
     protected void initChannel(SocketChannel socketChannel) {
         ChannelPipeline pipeline = socketChannel.pipeline();
-        pipeline.addLast(new AgentServerDecoder());
-        pipeline.addLast(new AgentServerEncoder());
-        pipeline.addLast(new AgentServerHandler(new RpcAsyncClient()));
+        pipeline.addLast(new AgentServerHandler(remoteHost, remotePort));
     }
 }

@@ -16,8 +16,11 @@ public class ProviderAgentServer {
 
     Logger logger = LoggerFactory.getLogger(ProviderAgentServer.class);
 
-    EventLoopGroup bossGroup = new NioEventLoopGroup();
+    EventLoopGroup bossGroup = new NioEventLoopGroup(1);
     EventLoopGroup workerGroup = new NioEventLoopGroup();
+
+    static final String REMOTE_HOST = "127.0.0.1";
+    static final int REMOTE_PORT = Integer.valueOf(System.getProperty("dubbo.protocol.port"));
 
     private ServerBootstrap bootstrap;
 
@@ -27,11 +30,10 @@ public class ProviderAgentServer {
             bootstrap = new ServerBootstrap()
                     .group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new AgentServerInitializer())
+                    .childHandler(new AgentServerInitializer(REMOTE_HOST,REMOTE_PORT))
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true)
-                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            ;
+                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
             int port = Integer.valueOf(System.getProperty("server.port"));
             Channel channel = bootstrap.bind(IpHelper.getHostIp(), port + 50).sync().channel();

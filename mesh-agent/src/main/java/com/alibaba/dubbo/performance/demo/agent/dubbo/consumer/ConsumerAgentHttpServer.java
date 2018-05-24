@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.server.ProviderAgentServer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;

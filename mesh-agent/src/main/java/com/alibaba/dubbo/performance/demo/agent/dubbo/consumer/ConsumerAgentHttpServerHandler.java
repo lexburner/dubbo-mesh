@@ -15,8 +15,8 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.AgentResponse;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.FutureListener;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.ProviderAgentRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcCallbackFuture;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -26,17 +26,11 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
-import io.netty.handler.codec.http.multipart.HttpDataFactory;
 import io.netty.util.AsciiString;
-import io.netty.util.ReferenceCountUtil;
-import io.netty.util.concurrent.Future;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -95,11 +89,11 @@ public class ConsumerAgentHttpServerHandler extends ChannelInboundHandlerAdapter
                     String parameterTypesString = requestParams.get("parameterTypesString");
                     String parameter = requestParams.get("parameter");
 
-                    RpcCallbackFuture<AgentResponse> rpcCallbackFuture = consumerClient.invoke(interfaceName, method, parameterTypesString, parameter);
-                    rpcCallbackFuture.addListener(new FutureListener<AgentResponse>() {
+                    RpcCallbackFuture<ProviderAgentRpcResponse> rpcCallbackFuture = consumerClient.invoke(interfaceName, method, parameterTypesString, parameter);
+                    rpcCallbackFuture.addListener(new FutureListener<ProviderAgentRpcResponse>() {
                         @Override
-                        public void operationComplete(RpcCallbackFuture<AgentResponse> rpcFuture) {
-                            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(rpcFuture.getResponse().getValue().getBytes()));
+                        public void operationComplete(RpcCallbackFuture<ProviderAgentRpcResponse> rpcFuture) {
+                            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(rpcFuture.getResponse().getBytes()));
                             response.headers().set(CONTENT_TYPE, "text/plain");
                             response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
 
