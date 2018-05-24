@@ -57,64 +57,51 @@ public class ConsumerAgentHttpServerHandler extends ChannelInboundHandlerAdapter
     }
 
     final ConsumerClient consumerClient;
-//    final ExecutorService executorService;
 
     ConsumerAgentHttpServerHandler(ConsumerClient consumerClient) {
         this.consumerClient = consumerClient;
-//        this.executorService = executorService;
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-//        executorService.execute(new Runnable() {
-//            @Override
-//            public void run() {
-                if (msg instanceof FullHttpRequest) {
-                    FullHttpRequest req = (FullHttpRequest) msg;
+        if (msg instanceof FullHttpRequest) {
+            FullHttpRequest req = (FullHttpRequest) msg;
 
-                    if (req.uri().equals("/favicon.ico")) {
-                        return;
+            if (req.uri().equals("/favicon.ico")) {
+                return;
+            }
+
+            Map<String, String> requestParams = null;
+            requestParams = RequestParser.parse(req);
+            boolean keepAlive = HttpUtil.isKeepAlive(req);
+
+            String interfaceName = requestParams.get("interface");
+            String method = requestParams.get("method");
+            String parameterTypesString = requestParams.get("parameterTypesString");
+            String parameter = requestParams.get("parameter");
+
+            RpcCallbackFuture<ProviderAgentRpcResponse> rpcCallbackFuture = consumerClient.invoke(interfaceName, method, parameterTypesString, parameter);
+            rpcCallbackFuture.addListener(new FutureListener<ProviderAgentRpcResponse>() {
+                @Override
+                public void operationComplete(RpcCallbackFuture<ProviderAgentRpcResponse> rpcFuture) {
+                    FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(rpcFuture.getResponse().getBytes()));
+                    response.headers().set(CONTENT_TYPE, "text/plain");
+                    response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
+
+                    if (!keepAlive) {
+                        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+                    } else {
+                        response.headers().set(CONNECTION, KEEP_ALIVE);
+                        ctx.writeAndFlush(response);
                     }
-
-                    Map<String, String> requestParams = null;
-                    requestParams = RequestParser.parse(req);
-                    boolean keepAlive = HttpUtil.isKeepAlive(req);
-
-                    String interfaceName = requestParams.get("interface");
-                    String method = requestParams.get("method");
-                    String parameterTypesString = requestParams.get("parameterTypesString");
-                    String parameter = requestParams.get("parameter");
-
-                    RpcCallbackFuture<ProviderAgentRpcResponse> rpcCallbackFuture = consumerClient.invoke(interfaceName, method, parameterTypesString, parameter);
-                    rpcCallbackFuture.addListener(new FutureListener<ProviderAgentRpcResponse>() {
-                        @Override
-                        public void operationComplete(RpcCallbackFuture<ProviderAgentRpcResponse> rpcFuture) {
-                            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(rpcFuture.getResponse().getBytes()));
-                            response.headers().set(CONTENT_TYPE, "text/plain");
-                            response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
-
-                            if (!keepAlive) {
-                                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-                            } else {
-                                response.headers().set(CONNECTION, KEEP_ALIVE);
-                                ctx.writeAndFlush(response);
-                            }
-                        }
-                    });
                 }
-//            }
-//        });
+            });
+        }
     }
-
-    //            requestParams = new HashMap<>();
-//            requestParams.put("interface", "com.alibaba.dubbo.performance.demo.provider.IHelloService");
-//            requestParams.put("method", "hash");
-//            requestParams.put("parameterTypesString", "Ljava/lang/String;");
-//            requestParams.put("parameter", "123");
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         logger.error("http服务器响应出错", cause);
-        if(ctx.channel().isActive()) ctx.close();
+        if (ctx.channel().isActive()) ctx.close();
     }
 }

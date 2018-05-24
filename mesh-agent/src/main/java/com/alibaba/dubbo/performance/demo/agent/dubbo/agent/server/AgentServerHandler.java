@@ -39,7 +39,7 @@ public class AgentServerHandler extends ChannelInboundHandlerAdapter {
                 .channel(ctx.channel().getClass())
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+//                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .handler(new RpcClientHandler(inboundChannel));
 //                .option(ChannelOption.AUTO_READ, false);
         ChannelFuture f = b.connect(remoteHost, remotePort);

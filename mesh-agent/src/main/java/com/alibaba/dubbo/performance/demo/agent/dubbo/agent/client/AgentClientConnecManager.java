@@ -21,7 +21,6 @@ public class AgentClientConnecManager {
     Logger logger = LoggerFactory.getLogger(AgentClientConnecManager.class);
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
 
-    //TODO 不用concurrentHashMap
     private Map<Endpoint, Channel> channelPool = new HashMap<>();
 
     private Bootstrap bootstrap;
