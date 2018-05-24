@@ -59,9 +59,8 @@ public class ConsumerAgentNettyClient {
         logger.info("requestId=" + providerAgentRpcRequest.getId());
         RpcCallbackFuture<ProviderAgentRpcResponse> rpcResponseRpcCallbackFuture = new RpcCallbackFuture<>();
         Channel channel = connectManager.getChannel(loadBalance.select(null));
-        channel.writeAndFlush(providerAgentRpcRequest);
-        //TODO
         ConsumerAgentResponseFutureHolder.put(providerAgentRpcRequest.getId(), rpcResponseRpcCallbackFuture);
+        channel.writeAndFlush(providerAgentRpcRequest);
         return rpcResponseRpcCallbackFuture;
     }
 

@@ -33,7 +33,7 @@ import java.util.concurrent.Executors;
 public class ConsumerAgentHttpServerInitializer extends ChannelInitializer<SocketChannel> {
 
     ConsumerClient consumerClient = new ConsumerClient();
-    ExecutorService executorService = Executors.newFixedThreadPool(128);
+//    ExecutorService executorService = Executors.newFixedThreadPool(128);
 
     @Override
     public void initChannel(SocketChannel ch) {
@@ -41,6 +41,6 @@ public class ConsumerAgentHttpServerInitializer extends ChannelInitializer<Socke
         p.addLast("encoder", new HttpResponseEncoder());
         p.addLast("decoder", new HttpRequestDecoder());
         p.addLast("aggregator", new HttpObjectAggregator(10 * 1024 * 1024));
-        p.addLast(new ConsumerAgentHttpServerHandler(consumerClient,executorService));
+        p.addLast(new ConsumerAgentHttpServerHandler(consumerClient));
     }
 }

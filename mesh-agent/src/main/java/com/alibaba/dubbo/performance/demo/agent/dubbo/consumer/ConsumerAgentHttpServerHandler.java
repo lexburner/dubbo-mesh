@@ -57,18 +57,18 @@ public class ConsumerAgentHttpServerHandler extends ChannelInboundHandlerAdapter
     }
 
     final ConsumerClient consumerClient;
-    final ExecutorService executorService;
+//    final ExecutorService executorService;
 
-    ConsumerAgentHttpServerHandler(ConsumerClient consumerClient,ExecutorService executorService) {
+    ConsumerAgentHttpServerHandler(ConsumerClient consumerClient) {
         this.consumerClient = consumerClient;
-        this.executorService = executorService;
+//        this.executorService = executorService;
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
+//        executorService.execute(new Runnable() {
+//            @Override
+//            public void run() {
                 if (msg instanceof FullHttpRequest) {
                     FullHttpRequest req = (FullHttpRequest) msg;
 
@@ -102,8 +102,8 @@ public class ConsumerAgentHttpServerHandler extends ChannelInboundHandlerAdapter
                         }
                     });
                 }
-            }
-        });
+//            }
+//        });
     }
 
     //            requestParams = new HashMap<>();
