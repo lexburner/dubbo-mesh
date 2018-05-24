@@ -1,6 +1,6 @@
 //package com.alibaba.dubbo.performance.demo.agent;
 //
-//import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcClient;
+//import com.alibaba.dubbo.performance.demo.agent.dubbo.provider.RpcClient;
 //import com.alibaba.dubbo.performance.demo.agent.loadbalance.RoundRobinLoadBalance;
 //import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 //import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;

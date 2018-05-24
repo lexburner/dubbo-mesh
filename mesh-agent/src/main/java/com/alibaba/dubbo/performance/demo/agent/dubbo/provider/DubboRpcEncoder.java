@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.provider;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.ProviderAgentRpcRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.Bytes;

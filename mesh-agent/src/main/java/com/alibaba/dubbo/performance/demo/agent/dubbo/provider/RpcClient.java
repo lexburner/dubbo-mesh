@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.provider;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.*;
 import io.netty.channel.Channel;
@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
+@Deprecated
 public class RpcClient {
     private Logger logger = LoggerFactory.getLogger(RpcClient.class);
 
