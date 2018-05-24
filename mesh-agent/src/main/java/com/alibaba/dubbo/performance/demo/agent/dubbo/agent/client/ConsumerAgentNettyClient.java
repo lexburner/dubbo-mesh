@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.client;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.ConsumerAgentResponseFutureHolder;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.*;
 import com.alibaba.dubbo.performance.demo.agent.loadbalance.RoundRobinLoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
@@ -40,7 +41,6 @@ public class ConsumerAgentNettyClient {
                 }
             }
         }
-        ;
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName(method);
         invocation.setAttachment("path", interfaceName);
@@ -61,7 +61,7 @@ public class ConsumerAgentNettyClient {
         Channel channel = connectManager.getChannel(loadBalance.select(null));
         channel.writeAndFlush(providerAgentRpcRequest);
         //TODO
-//        ConsumerAgentResponseFutureHolder.put(agentRequest.getId(), future);
+        ConsumerAgentResponseFutureHolder.put(providerAgentRpcRequest.getId(), rpcResponseRpcCallbackFuture);
         return rpcResponseRpcCallbackFuture;
     }
 

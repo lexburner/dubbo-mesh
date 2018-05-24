@@ -41,14 +41,14 @@ public class AgentApp {
                 }
             }).start();
         }
-//        if ("consumer".equals(type)) {
-//            new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    new ConsumerAgentHttpServer().startServer();
-//                }
-//            }).start();
-//        }
+        if ("consumer".equals(type)) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    new ConsumerAgentHttpServer().startServer();
+                }
+            }).start();
+        }
 //        try {
 //            Thread.sleep(1000);
 //        } catch (InterruptedException e) {
@@ -65,10 +65,10 @@ public class AgentApp {
 //                final String url = "http://" + IpHelper.getHostIp() + ":" + port;
 //                Random r = new Random(1);
 //                final AtomicInteger count = new AtomicInteger(0);
-//                CountDownLatch countDownLatch = new CountDownLatch(1000);
+//                CountDownLatch countDownLatch = new CountDownLatch(10000);
 //                ExecutorService executorService = Executors.newFixedThreadPool(128);
 //                long start = System.currentTimeMillis();
-//                for (int i = 0; i < 1000; i++) {
+//                for (int i = 0; i < 10000; i++) {
 //                    executorService.execute(new Runnable() {
 //                        @Override
 //                        public void run() {

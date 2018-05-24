@@ -16,6 +16,7 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -35,7 +36,7 @@ public final class ConsumerAgentHttpServer {
 
     Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServer.class);
 
-    EventLoopGroup bossGroup = new NioEventLoopGroup();
+    EventLoopGroup bossGroup = new NioEventLoopGroup(1);
     EventLoopGroup workerGroup = new NioEventLoopGroup();
 
     private ServerBootstrap bootstrap;
@@ -49,7 +50,10 @@ public final class ConsumerAgentHttpServer {
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
 //                    .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new ConsumerAgentHttpServerInitializer());
+                    .childHandler(new ConsumerAgentHttpServerInitializer())
+                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+                    .childOption(ChannelOption.TCP_NODELAY, true)
+                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
             Channel ch = bootstrap.bind(PORT).sync().channel();
             logger.info("consumer-agent server is ready to receive request from consumer\n" +

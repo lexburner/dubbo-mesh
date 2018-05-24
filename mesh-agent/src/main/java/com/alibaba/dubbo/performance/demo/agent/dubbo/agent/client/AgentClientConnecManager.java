@@ -48,7 +48,7 @@ public class AgentClientConnecManager {
 
         synchronized (lock) {
             channel = channelPool.get(agentEndpoint);
-            if(channel!=null) return channel;
+            if(channel!= null) return channel;
             try {
                 channel = bootstrap.connect(agentEndpoint.getHost(), agentEndpoint.getPort()).sync().channel();
                 logger.info("agent-consumer与agent-provider{}:{}新建立了连接", agentEndpoint.getHost(), agentEndpoint.getPort());
