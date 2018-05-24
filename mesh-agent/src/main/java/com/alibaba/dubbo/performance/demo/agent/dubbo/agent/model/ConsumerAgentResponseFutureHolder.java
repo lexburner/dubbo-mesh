@@ -3,6 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.ProviderAgentRpcRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.ProviderAgentRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcCallbackFuture;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcFuture;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.async.DeferredResult;
 
@@ -44,4 +45,18 @@ public class ConsumerAgentResponseFutureHolder {
     public static void remove(long requestId) {
         processingRpc.remove(requestId);
     }
+
+//    private static Map<Long, RpcFuture> processingRpc = new ConcurrentHashMap<>();
+//
+//    public static void put(long requestId, RpcFuture rpcCallbackFuture) {
+//        processingRpc.put(requestId, rpcCallbackFuture);
+//    }
+//
+//    public static RpcFuture get(long requestId) {
+//        return processingRpc.get(requestId);
+//    }
+//
+//    public static void remove(long requestId) {
+//        processingRpc.remove(requestId);
+//    }
 }

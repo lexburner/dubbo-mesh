@@ -12,8 +12,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.Future;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -26,15 +25,14 @@ public class ConsumerAgentMvcClient {
 
     Logger logger = LoggerFactory.getLogger(ConsumerAgentMvcClient.class);
 
-    private AgentClientConnecManager connectManager1;
+    private AgentClientConnecManager connectManager;
 
     public ConsumerAgentMvcClient() {
-        this.connectManager1 = new AgentClientConnecManager();
+        this.connectManager = new AgentClientConnecManager();
     }
 
-    public DeferredResult<ResponseEntity> invoke(String interfaceName, String method, String parameterTypesString, String parameter, Endpoint endpoint) throws Exception {
-        Channel channel ;
-            channel = connectManager1.getChannel(endpoint);
+    public Object invoke(String interfaceName, String method, String parameterTypesString, String parameter, Endpoint endpoint) throws Exception {
+        Channel channel = connectManager.getChannel(endpoint);
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName(method);
@@ -53,9 +51,22 @@ public class ConsumerAgentMvcClient {
 
         logger.info("requestId=" + providerAgentRpcRequest.getId());
 
-        DeferredResult<ResponseEntity> deferredResult = new DeferredResult<>();
-        ConsumerAgentResponseFutureHolder.put(providerAgentRpcRequest.getId(), deferredResult);
+        DeferredResult<ResponseEntity> rpcFuture = new DeferredResult<>();
+        ConsumerAgentResponseFutureHolder.put(providerAgentRpcRequest.getId(), rpcFuture);
         channel.writeAndFlush(providerAgentRpcRequest);
-        return deferredResult;
+        return rpcFuture;
+
+//        RpcFuture rpcFuture = new RpcFuture();
+//        ConsumerAgentResponseFutureHolder.put(providerAgentRpcRequest.getId(), rpcFuture);
+//
+//        channel.writeAndFlush(providerAgentRpcRequest);
+//
+//        Object result = null;
+//        try{
+//            result = rpcFuture.get();
+//        }catch (Exception e){
+//            logger.error("异步返回结果异常",e );
+//        }
+//        return result;
     }
 }
