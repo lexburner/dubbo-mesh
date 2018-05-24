@@ -13,8 +13,11 @@ public class AgentClientHandler extends SimpleChannelInboundHandler<ProviderAgen
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, ProviderAgentRpcResponse response) {
         Long requestId = Long.parseLong(response.getRequestId());
         RpcCallbackFuture<ProviderAgentRpcResponse> rpcResponseRpcCallbackFuture = ConsumerAgentResponseFutureHolder.get(requestId);
-        rpcResponseRpcCallbackFuture.done(response);
-        ConsumerAgentResponseFutureHolder.remove(requestId);
+        if (rpcResponseRpcCallbackFuture != null) {
+            rpcResponseRpcCallbackFuture.done(response);
+            ConsumerAgentResponseFutureHolder.remove(requestId);
+        }
+
 //        Long requestId = Long.parseLong(response.getRequestId());
 //        DeferredResult<ResponseEntity> deferredResult = ConsumerAgentResponseFutureHolder.get(requestId);
 //        if (deferredResult != null) {

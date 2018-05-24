@@ -67,7 +67,7 @@ public class AgentClientConnecManager {
                 .group(eventLoopGroup)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+//                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .channel(NioSocketChannel.class)
                 .handler(new AgentClientInitializer());
     }

@@ -53,7 +53,8 @@ public final class ConsumerAgentHttpServer {
                     .childHandler(new ConsumerAgentHttpServerInitializer())
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true)
-                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+//                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+            ;
 
             Channel ch = bootstrap.bind(PORT).sync().channel();
             logger.info("consumer-agent server is ready to receive request from consumer\n" +

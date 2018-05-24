@@ -77,11 +77,7 @@ public class ConsumerAgentHttpServerHandler extends ChannelInboundHandlerAdapter
                     }
 
                     Map<String, String> requestParams = null;
-                    try {
-                        requestParams = RequestParser.parse(req);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                    requestParams = RequestParser.parse(req);
                     boolean keepAlive = HttpUtil.isKeepAlive(req);
 
                     String interfaceName = requestParams.get("interface");

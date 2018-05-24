@@ -33,7 +33,8 @@ public class ProviderAgentServer {
                     .childHandler(new AgentServerInitializer(REMOTE_HOST,REMOTE_PORT))
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true)
-                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+//                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+            ;
 
             int port = Integer.valueOf(System.getProperty("server.port"));
             Channel channel = bootstrap.bind(IpHelper.getHostIp(), port + 50).sync().channel();
