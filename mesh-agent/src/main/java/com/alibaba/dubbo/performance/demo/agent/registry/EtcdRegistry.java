@@ -9,6 +9,7 @@ import com.coreos.jetcd.options.GetOption;
 import com.coreos.jetcd.options.PutOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -56,9 +57,17 @@ public class EtcdRegistry implements IRegistry {
         // 服务注册的key为:    /dubbomesh/com.some.package.IHelloService/192.168.100.100:2000
         String strKey = MessageFormat.format("/{0}/{1}/{2}:{3}", rootPath, serviceName, IpHelper.getHostIp(), String.valueOf(port));
         ByteSequence key = ByteSequence.fromString(strKey);
-        ByteSequence val = ByteSequence.fromString("");     // 目前只需要创建这个key,对应的value暂不使用,先留空
+        String weight = System.getProperty("lb.weight");
+        ByteSequence val;
+        if(StringUtils.isEmpty(weight)){
+            weight = "1";
+            val = ByteSequence.fromString(weight);
+            logger.warn("未设置provider权重，默认设置为1");
+        }else{
+            val = ByteSequence.fromString(weight);
+        }
         kv.put(key, val, PutOption.newBuilder().withLeaseId(leaseId).build()).get();
-        logger.info("Register a new service at:" + strKey);
+        logger.info("Register a new service at:{},weight:{}", strKey,weight);
     }
 
     // 发送心跳到ETCD,表明该host是活着的
@@ -91,9 +100,13 @@ public class EtcdRegistry implements IRegistry {
 
             String host = endpointStr.split(":")[0];
             int port = Integer.valueOf(endpointStr.split(":")[1]);
-
-            endpoints.add(new Endpoint(host, port));
+            int weight = Integer.parseInt(kv.getValue().toStringUtf8());
+            for(int i=0;i<weight;i++){
+                endpoints.add(new Endpoint(host, port));
+            }
         }
+        logger.info("endpoints size:{}",endpoints.size());
+        logger.info("endpoints contents:{}",endpoints.toString());
         return endpoints;
     }
 }

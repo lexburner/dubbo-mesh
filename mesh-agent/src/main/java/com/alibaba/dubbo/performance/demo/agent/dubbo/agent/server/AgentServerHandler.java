@@ -1,11 +1,11 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.server;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcAsyncClient;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.AgentRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.AgentResponse;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.FutureListener;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcCallbackFuture;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.ProviderAgentRpcResponse;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.provider.RpcAsyncClient;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;

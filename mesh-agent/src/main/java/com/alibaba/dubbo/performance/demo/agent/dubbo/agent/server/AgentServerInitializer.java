@@ -1,6 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.server;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.RpcAsyncClient;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.provider.RpcAsyncClient;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
