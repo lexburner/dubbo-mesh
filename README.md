@@ -49,3 +49,58 @@ provider-agent 只会实例化一个 handler 使用一个 eventLoop 处理 io �
 provider-proxy 测试 consumer-agent 使用 dubbo 协议，provider-agent 作为流量转发服务器
 highest-qps 目前最高qps的分支
 master 提交测试的分支
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+qps: 670, avg time: 60
+qps: 726, avg time: 56
+qps: 727, avg time: 56
+qps: 725, avg time: 57
+qps: 725, avg time: 56
+qps: 722, avg time: 56
+qps: 723, avg time: 56
+qps: 722, avg time: 56
+qps: 724, avg time: 56
+qps: 721, avg time: 56
+qps: 725, avg time: 56
+qps: 724, avg time: 56
+qps: 724, avg time: 56
+qps: 723, avg time: 56
+qps: 727, avg time: 56
+qps: 726, avg time: 56
+qps: 728, avg time: 55
+qps: 730, avg time: 55
+qps: 728, avg time: 55
+qps: 726, avg time: 55
+qps: 727, avg time: 55
+qps: 727, avg time: 55
+qps: 734, avg time: 55
+qps: 734, avg time: 55
+qps: 733, avg time: 55
+qps: 734, avg time: 55
+qps: 733, avg time: 55
+qps: 730, avg time: 55
+qps: 730, avg time: 55
+qps: 730, avg time: 55
+qps: 729, avg time: 55
+qps: 733, avg time: 57
+qps: 738, avg time: 55
+qps: 735, avg time: 55
+qps: 738, avg time: 55
+qps: 738, avg time: 55
+qps: 740, avg time: 55
+
+
+

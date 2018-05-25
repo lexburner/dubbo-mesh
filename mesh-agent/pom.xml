@@ -73,6 +73,11 @@
             <artifactId>jetcd-core</artifactId>
             <version>0.0.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpasyncclient</artifactId>
+            <version>4.1.2</version>
+        </dependency>
     </dependencies>
 
     <!-- Package as an executable jar -->

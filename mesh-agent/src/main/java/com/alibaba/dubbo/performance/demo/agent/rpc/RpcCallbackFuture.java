@@ -1,8 +1,5 @@
 package com.alibaba.dubbo.performance.demo.agent.rpc;
 
-import com.alibaba.dubbo.performance.demo.agent.rpc.FutureListener;
-import com.alibaba.dubbo.performance.demo.agent.rpc.FutureState;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +8,7 @@ import java.util.List;
  * company qianmi.com
  * Date 2018-05-21
  */
-public class RpcCallbackFuture<T>  {
+public class RpcCallbackFuture<T> {
 
     private T response;
 

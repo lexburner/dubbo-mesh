@@ -31,7 +31,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.Cleaner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,7 +84,7 @@ public final class ConsumerAgentHttpServer {
         }
     }
 
-    private Cluster<DubboRpcResponse> buildCluster(IRegistry registry) throws Exception{
+    private Cluster<DubboRpcResponse> buildCluster(IRegistry registry) throws Exception {
         List<Endpoint> endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
         List<Client> clients = new ArrayList<>();
         for (Endpoint endpoint : endpoints) {

@@ -20,7 +20,7 @@ public class ProviderAgentServer {
     private Logger logger = LoggerFactory.getLogger(ProviderAgentServer.class);
 
     private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-    private EventLoopGroup workerGroup = new NioEventLoopGroup();
+    private EventLoopGroup workerGroup = new NioEventLoopGroup(1);
 
     static final String REMOTE_HOST = "127.0.0.1";
     static final int REMOTE_PORT = Integer.valueOf(System.getProperty("dubbo.protocol.port"));
@@ -36,7 +36,7 @@ public class ProviderAgentServer {
             bootstrap = new ServerBootstrap()
                     .group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ProviderAgentInitializer(REMOTE_HOST,REMOTE_PORT))
+                    .childHandler(new ProviderAgentInitializer(REMOTE_HOST, REMOTE_PORT))
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true)
 //                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
@@ -44,11 +44,11 @@ public class ProviderAgentServer {
             int port = Integer.valueOf(System.getProperty("server.port"));
             Channel channel = bootstrap.bind(IpHelper.getHostIp(), port + 50).sync().channel();
             logger.info("provider-agent provider is ready to receive request from consumer-agent\n" +
-                    "export at 127.0.0.1:{}",port + 50);
+                    "export at 127.0.0.1:{}", port + 50);
             channel.closeFuture().sync();
         } catch (Exception e) {
-            logger.error("provider-agent启动失败",e );
-        }finally {
+            logger.error("provider-agent启动失败", e);
+        } finally {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
             logger.info("provider-agent provider was closed");

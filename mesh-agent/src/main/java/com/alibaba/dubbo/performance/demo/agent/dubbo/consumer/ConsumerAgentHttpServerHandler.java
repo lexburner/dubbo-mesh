@@ -29,6 +29,8 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.AsciiString;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,14 +60,11 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
-        if (req.uri().equals("/favicon.ico")) {
-            return;
-        }
-        processRequest(ctx,req);
+    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) {
+        processRequest(ctx, req);
     }
 
-    private void processRequest(ChannelHandlerContext ctx,FullHttpRequest req) {
+    private void processRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
         boolean keepAlive = HttpUtil.isKeepAlive(req);
         Map<String, String> requestParams;
         requestParams = RequestParser.parse(req);
@@ -76,9 +75,25 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         defaultRequest.setParameterTypesString(requestParams.get("parameterTypesString"));
         defaultRequest.setParameter(requestParams.get("parameter"));
 
+//        int i = defaultRequest.getParameter().hashCode();
+//        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer((i + "")
+//                .getBytes()));
+//        response.headers().set(CONTENT_TYPE, "text/plain");
+//        response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
+//        ctx.executor().schedule(() -> {
+//            if (!keepAlive) {
+//                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+//
+//
+//            } else {
+//                response.headers().set(CONNECTION, KEEP_ALIVE);
+//                ctx.writeAndFlush(response);
+//            }
+//        }, 50, TimeUnit.MILLISECONDS);
         RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = cluster.asyncCall(defaultRequest);
         rpcCallbackFuture.addListener(rpcFuture -> {
-            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(rpcFuture.getResponse().getBytes()));
+            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(rpcFuture
+                    .getResponse().getBytes()));
             response.headers().set(CONTENT_TYPE, "text/plain");
             response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
 
@@ -88,7 +103,11 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } else {
                 response.headers().set(CONNECTION, KEEP_ALIVE);
-                ctx.writeAndFlush(response);
+                ctx.writeAndFlush(response).addListener(new GenericFutureListener<Future<? super Void>>() {
+                    @Override
+                    public void operationComplete(Future<? super Void> future) throws Exception {
+                    }
+                });
             }
         });
 
