@@ -1,9 +1,10 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.client;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.ConsumerAgentResponseFutureHolder;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.ConsumerAgentResponseHolder;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.common.JsonUtils;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RpcCallbackFuture;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.*;
 import com.alibaba.dubbo.performance.demo.agent.loadbalance.RoundRobinLoadBalance;
-import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
 import io.netty.channel.Channel;
@@ -15,25 +16,34 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
 /**
- * @author 徐靖峰[OF2938]
- * company qianmi.com
+ * @author 徐靖峰
  * Date 2018-05-22
  */
-public class ConsumerAgentNettyClient {
+public class ConsumerAgentClient {
 
-    Logger logger = LoggerFactory.getLogger(ConsumerAgentNettyClient.class);
+    private Logger logger = LoggerFactory.getLogger(ConsumerAgentClient.class);
 
-    private AgentClientConnecManager connectManager;
-    RoundRobinLoadBalance loadBalance = new RoundRobinLoadBalance();
+    private ConsumerAgentConnectionManager connectManager;
+    private RoundRobinLoadBalance loadBalance = new RoundRobinLoadBalance();
     private IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
     private Object lock = new Object();
 
-    public ConsumerAgentNettyClient() {
-        this.connectManager = new AgentClientConnecManager();
+    public ConsumerAgentClient() {
+        this.connectManager = new ConsumerAgentConnectionManager();
         logger.info("ConsumerAgentNettyClient构造中...");
     }
 
-    public RpcCallbackFuture<ProviderAgentRpcResponse> invoke(String interfaceName, String method, String parameterTypesString, String parameter) throws Exception {
+    /**
+     * consumerAgent发起请求的入口
+     * @param interfaceName
+     * @param method
+     * @param parameterTypesString
+     * @param parameter
+     * @return
+     * @throws Exception
+     */
+    public RpcCallbackFuture<DubboRpcResponse> invoke(String interfaceName, String method, String parameterTypesString, String parameter)
+            throws Exception {
         if (null == loadBalance.getEndpoints()) {
             synchronized (lock) {
                 if (null == loadBalance.getEndpoints()) {
@@ -51,16 +61,15 @@ public class ConsumerAgentNettyClient {
         JsonUtils.writeObject(parameter, writer);
         invocation.setArguments(out.toByteArray());
 
-        ProviderAgentRpcRequest providerAgentRpcRequest = new ProviderAgentRpcRequest();
-        providerAgentRpcRequest.setVersion("2.0.0");
-        providerAgentRpcRequest.setTwoWay(true);
-        providerAgentRpcRequest.setData(invocation);
-
-        logger.info("requestId=" + providerAgentRpcRequest.getId());
-        RpcCallbackFuture<ProviderAgentRpcResponse> rpcResponseRpcCallbackFuture = new RpcCallbackFuture<>();
+        DubboRpcRequest dubboRpcRequest = new DubboRpcRequest();
+        dubboRpcRequest.setVersion("2.0.0");
+        dubboRpcRequest.setTwoWay(true);
+        dubboRpcRequest.setData(invocation);
+//        logger.info("requestId=" + dubboRpcRequest.getId());
+        RpcCallbackFuture<DubboRpcResponse> rpcResponseRpcCallbackFuture = new RpcCallbackFuture<>();
         Channel channel = connectManager.getChannel(loadBalance.select(null));
-        ConsumerAgentResponseFutureHolder.put(providerAgentRpcRequest.getId(), rpcResponseRpcCallbackFuture);
-        channel.writeAndFlush(providerAgentRpcRequest);
+        ConsumerAgentResponseHolder.put(dubboRpcRequest.getId(), rpcResponseRpcCallbackFuture);
+        channel.writeAndFlush(dubboRpcRequest);
         return rpcResponseRpcCallbackFuture;
     }
 

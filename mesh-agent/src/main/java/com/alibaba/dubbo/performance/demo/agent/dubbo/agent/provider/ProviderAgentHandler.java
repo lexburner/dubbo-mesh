@@ -1,20 +1,18 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.server;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.provider.RpcClientHandler;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author 徐靖峰[OF2938]
- * company qianmi.com
+ * @author 徐靖峰
  * Date 2018-05-17
  */
-public class AgentServerHandler extends ChannelInboundHandlerAdapter {
+public class ProviderAgentHandler extends ChannelInboundHandlerAdapter {
 
-    Logger logger = LoggerFactory.getLogger(AgentServerHandler.class);
+    private Logger logger = LoggerFactory.getLogger(ProviderAgentHandler.class);
 
     private final String remoteHost;
     private final int remotePort;
@@ -23,7 +21,7 @@ public class AgentServerHandler extends ChannelInboundHandlerAdapter {
     // the outboundChannel will use the same EventLoop (and therefore Thread) as the inboundChannel.
     private Channel outboundChannel;
 
-    public AgentServerHandler(String remoteHost, int remotePort) {
+    public ProviderAgentHandler(String remoteHost, int remotePort) {
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
     }

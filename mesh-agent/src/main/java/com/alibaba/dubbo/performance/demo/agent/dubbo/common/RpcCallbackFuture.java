@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.common;
 
 import java.util.ArrayList;
 import java.util.List;

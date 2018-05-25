@@ -16,14 +16,11 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,15 +31,18 @@ import org.slf4j.LoggerFactory;
  */
 public final class ConsumerAgentHttpServer {
 
-    Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServer.class);
+    private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServer.class);
 
-    EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-    EventLoopGroup workerGroup = new NioEventLoopGroup();
+    private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+    private EventLoopGroup workerGroup = new NioEventLoopGroup();
 
     private ServerBootstrap bootstrap;
 
     static final int PORT = Integer.parseInt(System.getProperty("server.port"));
 
+    /**
+     * 启动服务器接收来自 consumer 的 http 请求
+     */
     public void startServer() {
         try {
             bootstrap = new ServerBootstrap();
@@ -57,7 +57,7 @@ public final class ConsumerAgentHttpServer {
             ;
 
             Channel ch = bootstrap.bind(PORT).sync().channel();
-            logger.info("consumer-agent server is ready to receive request from consumer\n" +
+            logger.info("consumer-agent provider is ready to receive request from consumer\n" +
                     "export at http://127.0.0.1:{}", PORT);
             ch.closeFuture().sync();
         } catch (Exception e) {
@@ -65,7 +65,7 @@ public final class ConsumerAgentHttpServer {
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
-            logger.info("consumer-agent server was closed");
+            logger.info("consumer-agent provider was closed");
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.common;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -19,9 +19,9 @@ public enum FutureState {
      **/
     CANCELLED(2);
 
-    public final int value;
+    private final int value;
 
-    private FutureState(int value) {
+    FutureState(int value) {
         this.value = value;
     }
 

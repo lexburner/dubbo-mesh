@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.common;
 
 
 /**
  * CodecUtils.
  */
-
-public class Bytes {
+public final class Bytes {
 
     private Bytes() {
     }
@@ -97,6 +96,13 @@ public class Bytes {
                 (((long) b[off + 0]) << 56);
     }
 
+    /**
+     * to int
+     *
+     * @param b
+     * @param off
+     * @return
+     */
     public static int bytes2int(byte[] b, int off) {
         return ((b[off + 3] & 0xFF) << 0) +
                 ((b[off + 2] & 0xFF) << 8) +
@@ -104,6 +110,12 @@ public class Bytes {
                 ((b[off + 0]) << 24);
     }
 
+    /**
+     * to int
+     *
+     * @param b
+     * @return
+     */
     public static int bytes2int(byte[] b) {
         return bytes2int(b, 0);
     }

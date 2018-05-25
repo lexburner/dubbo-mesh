@@ -15,15 +15,13 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ConsumerAgentClient;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -32,8 +30,7 @@ import java.util.concurrent.Executors;
  */
 public class ConsumerAgentHttpServerInitializer extends ChannelInitializer<SocketChannel> {
 
-    ConsumerClient consumerClient = new ConsumerClient();
-//    ExecutorService executorService = Executors.newFixedThreadPool(128);
+    private ConsumerAgentClient consumerAgentClient = new ConsumerAgentClient();
 
     @Override
     public void initChannel(SocketChannel ch) {
@@ -41,6 +38,6 @@ public class ConsumerAgentHttpServerInitializer extends ChannelInitializer<Socke
         p.addLast("encoder", new HttpResponseEncoder());
         p.addLast("decoder", new HttpRequestDecoder());
         p.addLast("aggregator", new HttpObjectAggregator(10 * 1024 * 1024));
-        p.addLast(new ConsumerAgentHttpServerHandler(consumerClient));
+        p.addLast(new ConsumerAgentHttpServerHandler(consumerAgentClient));
     }
 }

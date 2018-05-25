@@ -24,12 +24,12 @@ com.alibaba.dubbo.performance.demo.agent.dubbo.consumer 实现了 consumer-agent
 
 com.alibaba.dubbo.performance.demo.agent.dubbo.agent 包下存放的是 consumer-agent 和 provider-agent 的主要实现
 
-com.alibaba.dubbo.performance.demo.agent.dubbo.agent.client 实现了 consumer-agent，使用 netty 封装了 ConsumerAgentMvcClient 和 ConsumerAgentNettyClient 客户端
+com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer 实现了 consumer-agent，使用 netty 封装了 ConsumerAgentMvcClient 和 ConsumerAgentNettyClient 客户端
 当使用 springmvc 作为 comsumer-agent 的 http 服务器接收来自 consumer 的请求时，使用 ConsumerAgentMvcClient 作为客户端
 当使用 netty 作为 comsumer-agent 的 http 服务器接收来自 consumer 的请求时，使用 ConsumerAgentMvcClient 作为客户端
 由于未知 bug，理论上性能更好的 netty http 服务器目前实际测试结果 qps 低于 springmvc http 服务器，所以保留了这两个实现
 
-com.alibaba.dubbo.performance.demo.agent.dubbo.agent.server 实现了 provider-agent
+com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider 实现了 provider-agent
 使用 netty 作为服务器，接收来自 consumer-agent 的请求
 
 com.alibaba.dubbo.performance.demo.agent.dubbo.provider 实现了 provider-agent 向 provider 发送请求的客户端

@@ -15,13 +15,14 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.FutureListener;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.ProviderAgentRpcResponse;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcCallbackFuture;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ConsumerAgentClient;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.common.FutureListener;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RequestParser;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RpcCallbackFuture;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -31,9 +32,7 @@ import io.netty.util.AsciiString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -45,17 +44,17 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  */
 public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
+    private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
 
     private static final AsciiString CONTENT_TYPE = AsciiString.cached("Content-Type");
     private static final AsciiString CONTENT_LENGTH = AsciiString.cached("Content-Length");
     private static final AsciiString CONNECTION = AsciiString.cached("Connection");
     private static final AsciiString KEEP_ALIVE = AsciiString.cached("keep-alive");
 
-    final ConsumerClient consumerClient;
+    private final ConsumerAgentClient consumerAgentClient;
 
-    ConsumerAgentHttpServerHandler(ConsumerClient consumerClient) {
-        this.consumerClient = consumerClient;
+    ConsumerAgentHttpServerHandler(ConsumerAgentClient consumerAgentClient) {
+        this.consumerAgentClient = consumerAgentClient;
     }
 
     @Override
@@ -73,10 +72,10 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         String parameterTypesString = requestParams.get("parameterTypesString");
         String parameter = requestParams.get("parameter");
 
-        RpcCallbackFuture<ProviderAgentRpcResponse> rpcCallbackFuture = consumerClient.invoke(interfaceName, method, parameterTypesString, parameter);
-        rpcCallbackFuture.addListener(new FutureListener<ProviderAgentRpcResponse>() {
+        RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = consumerAgentClient.invoke(interfaceName, method, parameterTypesString, parameter);
+        rpcCallbackFuture.addListener(new FutureListener<DubboRpcResponse>() {
             @Override
-            public void operationComplete(RpcCallbackFuture<ProviderAgentRpcResponse> rpcFuture) {
+            public void operationComplete(RpcCallbackFuture<DubboRpcResponse> rpcFuture) {
                 FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(rpcFuture.getResponse().getBytes()));
                 response.headers().set(CONTENT_TYPE, "text/plain");
                 response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
@@ -96,6 +95,8 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         logger.error("http服务器响应出错", cause);
-        if (ctx.channel().isActive()) ctx.close();
+        if (ctx.channel().isActive()) {
+            ctx.close();
+        }
     }
 }

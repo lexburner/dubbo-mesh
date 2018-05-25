@@ -1,20 +1,19 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.server;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 
 /**
- * @author 徐靖峰[OF2938]
- * company qianmi.com
+ * @author 徐靖峰
  * Date 2018-05-17
  */
-public class AgentServerInitializer extends ChannelInitializer<SocketChannel> {
+public class ProviderAgentInitializer extends ChannelInitializer<SocketChannel> {
 
     private final String remoteHost;
     private final int remotePort;
 
-    public AgentServerInitializer(String remoteHost, int remotePort) {
+    public ProviderAgentInitializer(String remoteHost, int remotePort) {
         this.remoteHost = remoteHost;
         this.remotePort = remotePort;
     }
@@ -22,6 +21,6 @@ public class AgentServerInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     protected void initChannel(SocketChannel socketChannel) {
         ChannelPipeline pipeline = socketChannel.pipeline();
-        pipeline.addLast(new AgentServerHandler(remoteHost, remotePort));
+        pipeline.addLast(new ProviderAgentHandler(remoteHost, remotePort));
     }
 }

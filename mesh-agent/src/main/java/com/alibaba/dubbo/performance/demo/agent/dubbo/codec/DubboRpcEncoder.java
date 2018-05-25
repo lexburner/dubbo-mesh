@@ -1,8 +1,8 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.provider;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.codec;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.ProviderAgentRpcRequest;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.Bytes;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.JsonUtils;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.common.Bytes;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.common.JsonUtils;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -25,7 +25,7 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf buffer) throws Exception {
-        ProviderAgentRpcRequest req = (ProviderAgentRpcRequest) msg;
+        DubboRpcRequest req = (DubboRpcRequest) msg;
 
         // header.
         byte[] header = new byte[HEADER_LENGTH];

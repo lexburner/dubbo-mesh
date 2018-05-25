@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.common;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -7,6 +7,10 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
  */
 public interface FutureListener<T> {
 
+    /**
+     * 回调时触发
+     * @param future
+     */
     void operationComplete(RpcCallbackFuture<T> future);
 
 }

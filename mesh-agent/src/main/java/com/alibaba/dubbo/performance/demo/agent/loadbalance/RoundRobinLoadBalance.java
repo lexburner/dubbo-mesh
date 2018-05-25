@@ -5,7 +5,7 @@ import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -16,11 +16,14 @@ public class RoundRobinLoadBalance implements LoadBalance {
 
     private List<Endpoint> endpoints;
 
-    AtomicInteger atomicLong = new AtomicInteger(0);
+    /**
+     * 为考虑比赛性能不考虑溢出
+     */
+    private AtomicInteger atomicInteger = new AtomicInteger(0);
 
     @Override
     public Endpoint select(RpcInvocation invocation) {
-        Endpoint endpoint = endpoints.get(atomicLong.incrementAndGet() % endpoints.size());
+        Endpoint endpoint = endpoints.get(atomicInteger.incrementAndGet() % endpoints.size());
         return endpoint;
     }
 

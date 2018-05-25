@@ -1,6 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.server.ProviderAgentServer;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.ProviderAgentServer;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.consumer.ConsumerAgentHttpServer;
 import com.alibaba.dubbo.performance.demo.agent.registry.IpHelper;
 import okhttp3.*;
@@ -49,12 +49,12 @@ public class AgentApp {
                 }
             }).start();
         }
-//        try {
-//            Thread.sleep(1000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
 //        if ("consumer".equals(type)) {
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
 //            OkHttpClient httpClient = new OkHttpClient.Builder()
 ////                    .readTimeout(100, TimeUnit.SECONDS)//设置读取超时时间
 ////                    .writeTimeout(100,TimeUnit.SECONDS)//设置写的超时时间
@@ -84,11 +84,11 @@ public class AgentApp {
 //                                    .post(requestBody)
 //                                    .build();
 //                            try (Response response = httpClient.newCall(request).execute()) {
-//                                System.out.println(new String(response.body().bytes()));
+////                                System.out.println(new String(response.body().bytes()));
 //                            } catch (IOException e) {
 //                                logger.error("压测请求返回结果异常", e);
 //                                count.addAndGet(1);
-//                            }finally {
+//                            } finally {
 //                                countDownLatch.countDown();
 //                            }
 //                        }
@@ -97,7 +97,7 @@ public class AgentApp {
 //                countDownLatch.await();
 //                executorService.shutdown();
 //                System.out.println(count.get());
-//                System.out.println("total cost "+(System.currentTimeMillis()-start)+" ms");
+//                System.out.println("total cost " + (System.currentTimeMillis() - start) + " ms");
 //            } catch (Exception e) {
 //                e.printStackTrace();
 //            }
