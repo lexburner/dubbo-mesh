@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.registry;
 
+import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.coreos.jetcd.Client;
 import com.coreos.jetcd.KV;
 import com.coreos.jetcd.Lease;
@@ -101,9 +102,9 @@ public class EtcdRegistry implements IRegistry {
             String host = endpointStr.split(":")[0];
             int port = Integer.valueOf(endpointStr.split(":")[1]);
             int weight = Integer.parseInt(kv.getValue().toStringUtf8());
-            for(int i=0;i<weight;i++){
-                endpoints.add(new Endpoint(host, port));
-            }
+            Endpoint endpoint = new Endpoint(host,port);
+            endpoint.setWeight(weight);
+            endpoints.add(endpoint);
         }
         logger.info("endpoints size:{}",endpoints.size());
         logger.info("endpoints contents:{}",endpoints.toString());

@@ -2,7 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.ConsumerAgentResponseHolder;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RpcCallbackFuture;
+import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 

@@ -15,6 +15,14 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
+import com.alibaba.dubbo.performance.demo.agent.cluster.Cluster;
+import com.alibaba.dubbo.performance.demo.agent.cluster.DefaultCluster;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ConsumerAgentClient;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
+import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
+import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
+import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
+import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
@@ -23,6 +31,10 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.misc.Cleaner;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -45,12 +57,16 @@ public final class ConsumerAgentHttpServer {
      */
     public void startServer() {
         try {
+
+            IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
+            Cluster<DubboRpcResponse> cluster = buildCluster(registry);
+
             bootstrap = new ServerBootstrap();
             bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
 //                    .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new ConsumerAgentHttpServerInitializer())
+                    .childHandler(new ConsumerAgentHttpServerInitializer(cluster))
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true)
 //                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
@@ -67,5 +83,15 @@ public final class ConsumerAgentHttpServer {
             workerGroup.shutdownGracefully();
             logger.info("consumer-agent provider was closed");
         }
+    }
+
+    private Cluster<DubboRpcResponse> buildCluster(IRegistry registry) throws Exception{
+        List<Endpoint> endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
+        List<Client> clients = new ArrayList<>();
+        for (Endpoint endpoint : endpoints) {
+            clients.add(new ConsumerAgentClient(endpoint));
+        }
+        Cluster<DubboRpcResponse> cluster = new DefaultCluster<>(clients);
+        return cluster;
     }
 }

@@ -1,6 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.registry.Endpoint;
+import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
@@ -10,8 +10,11 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author 徐靖峰
@@ -22,45 +25,41 @@ public class ConsumerAgentConnectionManager {
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentConnectionManager.class);
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
 
-    private Map<Endpoint, Channel> channelPool = new HashMap<>();
-
+    private List<Channel> channelPool = new ArrayList<>();
+    AtomicInteger channelCursor = new AtomicInteger(0);
     private Bootstrap bootstrap;
 
-    private final Object lock = new Object();
+    private static final int connectionSize = 2;
+
+    private Endpoint endpoint;
+
+    public Endpoint getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(Endpoint endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    ConsumerAgentConnectionManager(Endpoint endpoint) {
+        this.initBootstrap();
+        this.endpoint = endpoint;
+        try {
+            for (int i = 0; i < connectionSize; i++) {
+                channelPool.add(bootstrap.connect(endpoint.getHost(), endpoint.getPort()).sync().channel());
+                logger.info("agent-consumer与agent-provider{}:{}新建立了连接", endpoint.getHost(), endpoint.getPort());
+            }
+        } catch (Exception e) {
+            logger.error("agent-consumer fail to connect agent-provider{}:{}", endpoint.getHost(), endpoint.getPort(), e);
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * 获取连接
-     * @param endpoint
      */
-    public Channel getChannel(Endpoint endpoint) {
-        Channel channel = channelPool.get(endpoint);
-        if (null != channel) {
-            return channel;
-        }
-
-        if (null == bootstrap) {
-            synchronized (lock) {
-                if (null == bootstrap) {
-                    initBootstrap();
-                }
-            }
-        }
-
-        synchronized (lock) {
-            channel = channelPool.get(endpoint);
-            if(channel!= null) {
-                return channel;
-            }
-            try {
-                channel = bootstrap.connect(endpoint.getHost(), endpoint.getPort()).sync().channel();
-                logger.info("agent-consumer与agent-provider{}:{}新建立了连接", endpoint.getHost(), endpoint.getPort());
-                channelPool.put(endpoint, channel);
-            } catch (Exception e) {
-                logger.error("agent-consumer fail to connect agent-provider{}:{}", endpoint.getHost(), endpoint.getPort(), e);
-                throw new RuntimeException(e);
-            }
-        }
-
+    public Channel getChannel() {
+        Channel channel = channelPool.get(Math.abs(channelCursor.addAndGet(1)) % connectionSize);
         return channel;
     }
 

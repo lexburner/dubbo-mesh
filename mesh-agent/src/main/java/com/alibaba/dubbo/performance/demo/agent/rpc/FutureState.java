@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.common;
+package com.alibaba.dubbo.performance.demo.agent.rpc;
 
 /**
  * @author 徐靖峰[OF2938]

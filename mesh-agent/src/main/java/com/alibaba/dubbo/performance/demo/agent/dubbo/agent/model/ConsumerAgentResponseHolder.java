@@ -1,11 +1,10 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RpcCallbackFuture;
+import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

@@ -15,11 +15,11 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ConsumerAgentClient;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.common.FutureListener;
+import com.alibaba.dubbo.performance.demo.agent.cluster.Cluster;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RequestParser;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RpcCallbackFuture;
+import com.alibaba.dubbo.performance.demo.agent.rpc.DefaultRequest;
+import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -51,10 +51,10 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     private static final AsciiString CONNECTION = AsciiString.cached("Connection");
     private static final AsciiString KEEP_ALIVE = AsciiString.cached("keep-alive");
 
-    private final ConsumerAgentClient consumerAgentClient;
+    private final Cluster<DubboRpcResponse> cluster;
 
-    ConsumerAgentHttpServerHandler(ConsumerAgentClient consumerAgentClient) {
-        this.consumerAgentClient = consumerAgentClient;
+    ConsumerAgentHttpServerHandler(Cluster<DubboRpcResponse> cluster) {
+        this.cluster = cluster;
     }
 
     @Override
@@ -62,34 +62,36 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         if (req.uri().equals("/favicon.ico")) {
             return;
         }
+        processRequest(ctx,req);
+    }
 
-        Map<String, String> requestParams = null;
-        requestParams = RequestParser.parse(req);
+    private void processRequest(ChannelHandlerContext ctx,FullHttpRequest req) {
         boolean keepAlive = HttpUtil.isKeepAlive(req);
+        Map<String, String> requestParams;
+        requestParams = RequestParser.parse(req);
 
-        String interfaceName = requestParams.get("interface");
-        String method = requestParams.get("method");
-        String parameterTypesString = requestParams.get("parameterTypesString");
-        String parameter = requestParams.get("parameter");
+        DefaultRequest defaultRequest = new DefaultRequest();
+        defaultRequest.setInterfaceName(requestParams.get("interface"));
+        defaultRequest.setMethod(requestParams.get("method"));
+        defaultRequest.setParameterTypesString(requestParams.get("parameterTypesString"));
+        defaultRequest.setParameter(requestParams.get("parameter"));
 
-        RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = consumerAgentClient.invoke(interfaceName, method, parameterTypesString, parameter);
-        rpcCallbackFuture.addListener(new FutureListener<DubboRpcResponse>() {
-            @Override
-            public void operationComplete(RpcCallbackFuture<DubboRpcResponse> rpcFuture) {
-                FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(rpcFuture.getResponse().getBytes()));
-                response.headers().set(CONTENT_TYPE, "text/plain");
-                response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
+        RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = cluster.asyncCall(defaultRequest);
+        rpcCallbackFuture.addListener(rpcFuture -> {
+            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(rpcFuture.getResponse().getBytes()));
+            response.headers().set(CONTENT_TYPE, "text/plain");
+            response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
 
 //                if(ctx.channel().isWritable())
 //                    ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-                if (!keepAlive) {
-                        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-                } else {
-                        response.headers().set(CONNECTION, KEEP_ALIVE);
-                        ctx.writeAndFlush(response);
-                }
+            if (!keepAlive) {
+                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+            } else {
+                response.headers().set(CONNECTION, KEEP_ALIVE);
+                ctx.writeAndFlush(response);
             }
         });
+
     }
 
     @Override

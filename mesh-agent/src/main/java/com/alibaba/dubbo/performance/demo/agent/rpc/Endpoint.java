@@ -1,12 +1,14 @@
-package com.alibaba.dubbo.performance.demo.agent.registry;
+package com.alibaba.dubbo.performance.demo.agent.rpc;
 
 public class Endpoint {
     private final String host;
     private final int port;
+    private Integer weight;
 
     public Endpoint(String host, int port) {
         this.host = host;
         this.port = port;
+        this.weight = 1;
     }
 
     public String getHost() {
@@ -31,5 +33,13 @@ public class Endpoint {
 
     public int hashCode() {
         return host.hashCode() + port;
+    }
+
+    public Integer getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Integer weight) {
+        this.weight = weight;
     }
 }
