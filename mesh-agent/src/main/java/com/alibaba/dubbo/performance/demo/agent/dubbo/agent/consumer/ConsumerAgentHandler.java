@@ -5,6 +5,8 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author 徐靖峰
@@ -13,6 +15,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 public class ConsumerAgentHandler extends SimpleChannelInboundHandler<DubboRpcResponse> {
 
 //    ExecutorService executorService = Executors.newFixedThreadPool(1);
+
+    private Logger logger = LoggerFactory.getLogger(ConsumerAgentHandler.class);
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, DubboRpcResponse response) {
@@ -34,5 +38,11 @@ public class ConsumerAgentHandler extends SimpleChannelInboundHandler<DubboRpcRe
 //            }
 //        });
 
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        logger.error("ConsumerAgentHandler异常", cause);
+        ctx.channel().close();
     }
 }

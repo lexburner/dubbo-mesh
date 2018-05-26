@@ -29,7 +29,7 @@ public class ConsumerAgentConnectionManager {
     AtomicInteger channelCursor = new AtomicInteger(0);
     private Bootstrap bootstrap;
 
-    private static final int connectionSize = 2;
+    private static final int connectionSize = 1;
 
     private Endpoint endpoint;
 

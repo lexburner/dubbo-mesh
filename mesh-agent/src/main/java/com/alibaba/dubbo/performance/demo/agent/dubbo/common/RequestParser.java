@@ -34,6 +34,7 @@ public final class RequestParser {
                 params.put(attribute.getName(), attribute.getValue());
             }
         }
+        // resolve memory leak
         decoder.destroy();
         return params;
     }
