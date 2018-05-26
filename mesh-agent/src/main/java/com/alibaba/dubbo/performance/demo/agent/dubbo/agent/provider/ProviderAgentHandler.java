@@ -1,6 +1,7 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.provider.RpcClientHandler;
+import com.alibaba.dubbo.performance.demo.agent.util.QpsTrack;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import org.slf4j.Logger;
@@ -13,6 +14,9 @@ import org.slf4j.LoggerFactory;
 public class ProviderAgentHandler extends ChannelInboundHandlerAdapter {
 
     private Logger logger = LoggerFactory.getLogger(ProviderAgentHandler.class);
+
+    private static QpsTrack channelRead = new QpsTrack("ProviderAgentHandler.channelRead()");
+    private static QpsTrack channelReadComplete = new QpsTrack("ProviderAgentHandler.channelReadComplete()");
 
     private final String remoteHost;
     private final int remotePort;
@@ -59,6 +63,7 @@ public class ProviderAgentHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, Object msg) {
+        channelRead.track();
         if (outboundChannel.isActive()) {
             outboundChannel.unsafe().write(msg, ctx.voidPromise());
 //                    .addListener(new ChannelFutureListener() {
@@ -79,6 +84,7 @@ public class ProviderAgentHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
         outboundChannel.unsafe().flush();
+        channelReadComplete.track();
     }
 
     @Override

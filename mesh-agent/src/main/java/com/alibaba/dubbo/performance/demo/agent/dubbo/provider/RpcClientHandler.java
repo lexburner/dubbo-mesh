@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.provider;
 
+import com.alibaba.dubbo.performance.demo.agent.util.QpsTrack;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -9,6 +10,8 @@ import org.slf4j.LoggerFactory;
 public class RpcClientHandler extends ChannelInboundHandlerAdapter {
 
     Logger logger = LoggerFactory.getLogger(RpcClientHandler.class);
+
+    private static QpsTrack channelRead = new QpsTrack("RpcClientHandler.channelRead()");
 
     private final Channel.Unsafe unsafe;
 
@@ -33,6 +36,7 @@ public class RpcClientHandler extends ChannelInboundHandlerAdapter {
 //                }
 //            }
 //        });
+        channelRead.track();
         unsafe.write(msg, ctx.voidPromise());
     }
 

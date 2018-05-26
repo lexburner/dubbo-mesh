@@ -9,6 +9,9 @@ import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Request;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
+import com.alibaba.dubbo.performance.demo.agent.util.QpsTrack;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +27,10 @@ import java.io.PrintWriter;
 public class ConsumerAgentClient implements Client<DubboRpcResponse> {
 
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentClient.class);
+
+    private static QpsTrack asyncCallBegin = new QpsTrack("ConsumerAgentClient.asyncCall-begin()");
+    private static QpsTrack asyncCallEnd = new QpsTrack("ConsumerAgentClient.asyncCall-end()");
+    private static QpsTrack asyncCallFlushed = new QpsTrack("ConsumerAgentClient.asyncCall-flushed()");
 
     private ConsumerAgentConnectionManager connectManager;
 
@@ -46,6 +53,7 @@ public class ConsumerAgentClient implements Client<DubboRpcResponse> {
 
     /**
      * consumerAgent发起请求的入口
+     *
      * @param interfaceName
      * @param method
      * @param parameterTypesString
@@ -55,6 +63,7 @@ public class ConsumerAgentClient implements Client<DubboRpcResponse> {
      */
     @Override
     public RpcCallbackFuture<DubboRpcResponse> asyncCall(Request request) {
+        asyncCallBegin.track();
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName(request.getMethod());
         invocation.setAttachment("path", request.getInterfaceName());
@@ -62,9 +71,9 @@ public class ConsumerAgentClient implements Client<DubboRpcResponse> {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
-        try{
+        try {
             JsonUtils.writeObject(request.getParameter(), writer);
-        }catch (IOException e){
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         invocation.setArguments(out.toByteArray());
@@ -76,7 +85,10 @@ public class ConsumerAgentClient implements Client<DubboRpcResponse> {
         RpcCallbackFuture<DubboRpcResponse> rpcResponseRpcCallbackFuture = new RpcCallbackFuture<>();
         ConsumerAgentResponseHolder.put(dubboRpcRequest.getId(), rpcResponseRpcCallbackFuture);
 
-        connectManager.getChannel().writeAndFlush(dubboRpcRequest);
+        asyncCallEnd.track();
+        connectManager.getChannel().writeAndFlush(dubboRpcRequest).addListener(future -> {
+            asyncCallFlushed.track();
+        });
         return rpcResponseRpcCallbackFuture;
     }
 }

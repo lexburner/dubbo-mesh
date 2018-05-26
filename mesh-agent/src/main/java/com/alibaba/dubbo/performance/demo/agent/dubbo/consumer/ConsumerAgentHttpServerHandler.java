@@ -20,6 +20,7 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RequestParser;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.rpc.DefaultRequest;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
+import com.alibaba.dubbo.performance.demo.agent.util.QpsTrack;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -29,8 +30,6 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.AsciiString;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +52,11 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     private static final AsciiString CONNECTION = AsciiString.cached("Connection");
     private static final AsciiString KEEP_ALIVE = AsciiString.cached("keep-alive");
 
+    private static QpsTrack processRequestBegin = new QpsTrack("ConsumerAgentHttpServerHandler.processRequest-begin()");
+    private static QpsTrack processRequestEnd = new QpsTrack("ConsumerAgentHttpServerHandler.processRequest-end()");
+    private static QpsTrack processRequestFlushed = new QpsTrack("ConsumerAgentHttpServerHandler" +
+            ".processRequest-flushed()");
+
     private final Cluster<DubboRpcResponse> cluster;
 
     ConsumerAgentHttpServerHandler(Cluster<DubboRpcResponse> cluster) {
@@ -65,6 +69,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     }
 
     private void processRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
+        processRequestBegin.track();
         boolean keepAlive = HttpUtil.isKeepAlive(req);
         Map<String, String> requestParams;
         requestParams = RequestParser.parse(req);
@@ -106,12 +111,9 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
             if (!keepAlive) {
                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } else {
+                processRequestEnd.track();
                 response.headers().set(CONNECTION, KEEP_ALIVE);
-                ctx.writeAndFlush(response).addListener(new GenericFutureListener<Future<? super Void>>() {
-                    @Override
-                    public void operationComplete(Future<? super Void> future) throws Exception {
-                    }
-                });
+                ctx.writeAndFlush(response).addListener(future -> processRequestFlushed.track());
             }
         });
 

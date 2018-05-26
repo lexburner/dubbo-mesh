@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
+import com.alibaba.dubbo.performance.demo.agent.util.QpsTrack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class ConsumerAgentResponseHolder {
 
+    private static QpsTrack putTrack = new QpsTrack("ConsumerAgentResponseHolder.put()");
+    private static QpsTrack getTrack = new QpsTrack("ConsumerAgentResponseHolder.get()");
+    private static QpsTrack removeTrack = new QpsTrack("ConsumerAgentResponseHolder.remove()");
+
     private ConsumerAgentResponseHolder() {
     }
 
@@ -30,6 +35,7 @@ public final class ConsumerAgentResponseHolder {
      * @param rpcCallbackFuture
      */
     public static void put(long requestId, RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture) {
+        putTrack.track();
         processingRpc.put(requestId, rpcCallbackFuture);
 //        logger.info("{} put {} into concurrentHashMap",Thread.currentThread().getName(),requestId);
     }
@@ -41,6 +47,7 @@ public final class ConsumerAgentResponseHolder {
      * @return
      */
     public static RpcCallbackFuture<DubboRpcResponse> get(long requestId) {
+        getTrack.track();
 //        logger.info("{} get {} from concurrentHashMap",Thread.currentThread().getName(),requestId);
         return processingRpc.get(requestId);
     }
@@ -51,6 +58,7 @@ public final class ConsumerAgentResponseHolder {
      * @param requestId
      */
     public static void remove(long requestId) {
+        removeTrack.track();
 //        logger.info("{} remove {} from concurrentHashMap",Thread.currentThread().getName(),requestId);
         processingRpc.remove(requestId);
     }
