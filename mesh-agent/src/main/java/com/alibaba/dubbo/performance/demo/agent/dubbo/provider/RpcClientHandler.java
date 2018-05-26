@@ -10,10 +10,10 @@ public class RpcClientHandler extends ChannelInboundHandlerAdapter {
 
     Logger logger = LoggerFactory.getLogger(RpcClientHandler.class);
 
-    private final Channel inboundChannel;
+    private final Channel.Unsafe unsafe;
 
     public RpcClientHandler(Channel inboundChannel) {
-        this.inboundChannel = inboundChannel;
+        unsafe = inboundChannel.unsafe();
     }
 
     @Override
@@ -33,7 +33,12 @@ public class RpcClientHandler extends ChannelInboundHandlerAdapter {
 //                }
 //            }
 //        });
-        inboundChannel.writeAndFlush(msg);
+        unsafe.write(msg, ctx.voidPromise());
+    }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) {
+        unsafe.flush();
     }
 
     @Override

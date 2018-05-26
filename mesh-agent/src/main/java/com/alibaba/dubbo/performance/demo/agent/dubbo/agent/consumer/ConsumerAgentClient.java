@@ -71,6 +71,7 @@ public class ConsumerAgentClient implements Client<DubboRpcResponse> {
 //        logger.info("requestId=" + dubboRpcRequest.getId());
         RpcCallbackFuture<DubboRpcResponse> rpcResponseRpcCallbackFuture = new RpcCallbackFuture<>();
         ConsumerAgentResponseHolder.put(dubboRpcRequest.getId(), rpcResponseRpcCallbackFuture);
+
         connectManager.getChannel().writeAndFlush(dubboRpcRequest);
         return rpcResponseRpcCallbackFuture;
     }

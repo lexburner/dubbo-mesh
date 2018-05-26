@@ -5,6 +5,7 @@ import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.MemoryAttribute;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,7 @@ import java.util.Map;
  */
 public final class RequestParser {
 
-    private RequestParser(){
+    private RequestParser() {
     }
 
     /**
@@ -33,6 +34,7 @@ public final class RequestParser {
                 params.put(attribute.getName(), attribute.getValue());
             }
         }
+        decoder.destroy();
         return params;
     }
 

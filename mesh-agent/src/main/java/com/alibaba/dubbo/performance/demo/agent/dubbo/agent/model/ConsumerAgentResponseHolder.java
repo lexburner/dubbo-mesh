@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class ConsumerAgentResponseHolder {
 
-    private ConsumerAgentResponseHolder(){
+    private ConsumerAgentResponseHolder() {
     }
 
     private static Logger logger = LoggerFactory.getLogger(ConsumerAgentResponseHolder.class);
@@ -25,6 +25,7 @@ public final class ConsumerAgentResponseHolder {
 
     /**
      * put
+     *
      * @param requestId
      * @param rpcCallbackFuture
      */
@@ -35,6 +36,7 @@ public final class ConsumerAgentResponseHolder {
 
     /**
      * get
+     *
      * @param requestId
      * @return
      */
@@ -45,6 +47,7 @@ public final class ConsumerAgentResponseHolder {
 
     /**
      * remove
+     *
      * @param requestId
      */
     public static void remove(long requestId) {

@@ -60,7 +60,7 @@ public class ProviderAgentHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(final ChannelHandlerContext ctx, Object msg) {
         if (outboundChannel.isActive()) {
-            outboundChannel.writeAndFlush(msg)
+            outboundChannel.unsafe().write(msg, ctx.voidPromise());
 //                    .addListener(new ChannelFutureListener() {
 //                @Override
 //                public void operationComplete(ChannelFuture future) {
@@ -76,10 +76,14 @@ public class ProviderAgentHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) {
+        outboundChannel.unsafe().flush();
+    }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        logger.error("AgentServerHandler转发异常",cause);
+        logger.error("AgentServerHandler转发异常", cause);
         ctx.channel().close();
     }
 
