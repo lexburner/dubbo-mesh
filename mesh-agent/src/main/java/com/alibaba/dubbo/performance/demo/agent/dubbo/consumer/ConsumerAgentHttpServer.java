@@ -45,7 +45,7 @@ public final class ConsumerAgentHttpServer {
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServer.class);
 
     private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-    private EventLoopGroup workerGroup = new NioEventLoopGroup();
+    public static EventLoopGroup workerGroup = new NioEventLoopGroup();
 
     private ServerBootstrap bootstrap;
 

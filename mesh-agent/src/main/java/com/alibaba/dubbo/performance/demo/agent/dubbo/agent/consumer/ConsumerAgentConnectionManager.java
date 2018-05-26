@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.consumer.ConsumerAgentHttpServer;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -23,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ConsumerAgentConnectionManager {
 
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentConnectionManager.class);
-    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
+    private EventLoopGroup eventLoopGroup = ConsumerAgentHttpServer.workerGroup;
 
     private List<Channel> channelPool = new ArrayList<>();
     AtomicInteger channelCursor = new AtomicInteger(0);
