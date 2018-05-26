@@ -46,10 +46,6 @@ public class ConsumerAgentClient implements Client<DubboRpcResponse> {
 
     /**
      * consumerAgent发起请求的入口
-     * @param interfaceName
-     * @param method
-     * @param parameterTypesString
-     * @param parameter
      * @return
      * @throws Exception
      */
