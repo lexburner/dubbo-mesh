@@ -3,8 +3,10 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.consumer.ConsumerAgentHttpServer;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.DefaultEventLoopGroup;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -24,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ConsumerAgentConnectionManager {
 
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentConnectionManager.class);
-    private EventLoopGroup eventLoopGroup = ConsumerAgentHttpServer.workerGroup;
+    private EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
 
     private List<Channel> channelPool = new ArrayList<>();
     AtomicInteger channelCursor = new AtomicInteger(0);
@@ -72,7 +74,7 @@ public class ConsumerAgentConnectionManager {
                 .group(eventLoopGroup)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
-//                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .channel(NioSocketChannel.class)
                 .handler(new ConsumerAgentInitializer());
     }
