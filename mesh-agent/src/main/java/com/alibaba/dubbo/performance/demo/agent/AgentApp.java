@@ -55,20 +55,17 @@ public class AgentApp {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            OkHttpClient httpClient = new OkHttpClient.Builder()
-//                    .readTimeout(100, TimeUnit.SECONDS)//设置读取超时时间
-//                    .writeTimeout(100,TimeUnit.SECONDS)//设置写的超时时间
-//                    .connectTimeout(100,TimeUnit.SECONDS)//设置连接超时时间
-                    .build();
+            OkHttpClient httpClient = new OkHttpClient.Builder().build();
             try {
                 int port = Integer.parseInt(System.getProperty("server.port"));
                 final String url = "http://" + IpHelper.getHostIp() + ":" + port;
                 Random r = new Random(1);
                 final AtomicInteger count = new AtomicInteger(0);
-                CountDownLatch countDownLatch = new CountDownLatch(10000);
+                int cnt = 10;
+                CountDownLatch countDownLatch = new CountDownLatch(cnt);
                 ExecutorService executorService = Executors.newFixedThreadPool(128);
                 long start = System.currentTimeMillis();
-                for (int i = 0; i < 10000; i++) {
+                for (int i = 0; i < cnt; i++) {
                     executorService.execute(new Runnable() {
                         @Override
                         public void run() {
@@ -84,7 +81,6 @@ public class AgentApp {
                                     .post(requestBody)
                                     .build();
                             try (Response response = httpClient.newCall(request).execute()) {
-//                                System.out.println(new String(response.body().bytes()));
                             } catch (IOException e) {
                                 logger.error("压测请求返回结果异常", e);
                                 count.addAndGet(1);
