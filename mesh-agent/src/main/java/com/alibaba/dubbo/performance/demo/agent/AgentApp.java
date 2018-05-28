@@ -1,7 +1,7 @@
 package com.alibaba.dubbo.performance.demo.agent;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.ProviderAgentServer;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.consumer.ConsumerAgentHttpServer;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.consumer.ConsumerAgentProxyServer;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.provider.ProviderAgentHttpServer;
 import com.alibaba.dubbo.performance.demo.agent.registry.IpHelper;
 import okhttp3.*;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -37,7 +37,7 @@ public class AgentApp {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    new ProviderAgentServer().startServer();
+                    new ProviderAgentHttpServer().startServer();
                 }
             }).start();
         }
@@ -45,7 +45,7 @@ public class AgentApp {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    new ConsumerAgentHttpServer().startServer();
+                    new ConsumerAgentProxyServer().startServer();
                 }
             }).start();
         }

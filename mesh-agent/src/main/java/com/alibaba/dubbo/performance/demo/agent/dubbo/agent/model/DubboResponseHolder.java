@@ -15,12 +15,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>
  * 存放 consumer-agent 请求之后响应的future
  */
-public final class ConsumerAgentResponseHolder {
+public final class DubboResponseHolder {
 
-    private ConsumerAgentResponseHolder() {
+    private DubboResponseHolder() {
     }
 
-    private static Logger logger = LoggerFactory.getLogger(ConsumerAgentResponseHolder.class);
+    private static Logger logger = LoggerFactory.getLogger(DubboResponseHolder.class);
+
     private static Map<Long, RpcCallbackFuture<DubboRpcResponse>> processingRpc = new ConcurrentHashMap<>();
 
     /**

@@ -13,9 +13,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.provider;
 
-import com.alibaba.dubbo.performance.demo.agent.cluster.Cluster;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.ProviderAgentClient;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RequestParser;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.rpc.DefaultRequest;
@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -45,27 +44,24 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * company qianmi.com
  * Date 2018-05-22
  */
-public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+public class ProviderAgentHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
+    private Logger logger = LoggerFactory.getLogger(ProviderAgentHttpServerHandler.class);
 
     private static final AsciiString CONTENT_TYPE = AsciiString.cached("Content-Type");
     private static final AsciiString CONTENT_LENGTH = AsciiString.cached("Content-Length");
     private static final AsciiString CONNECTION = AsciiString.cached("Connection");
     private static final AsciiString KEEP_ALIVE = AsciiString.cached("keep-alive");
 
-    private final Cluster<DubboRpcResponse> cluster;
-
-    ConsumerAgentHttpServerHandler(Cluster<DubboRpcResponse> cluster) {
-        this.cluster = cluster;
-    }
-
-//    static AtomicInteger channelCount = new AtomicInteger(0);
-
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-//        logger.info("http请求建立了新连接...{}",channelCount.addAndGet(1));
+    }
+
+    private final ProviderAgentClient providerAgentClient;
+
+    ProviderAgentHttpServerHandler(ProviderAgentClient providerAgentClient){
+        this.providerAgentClient = providerAgentClient;
     }
 
     @Override
@@ -78,40 +74,19 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         Map<String, String> requestParams;
         requestParams = RequestParser.parse(req);
 
-//        if (req.refCnt() > 1) {
-//            req.release();
-//        }
-
         DefaultRequest defaultRequest = new DefaultRequest();
         defaultRequest.setInterfaceName(requestParams.get("interface"));
         defaultRequest.setMethod(requestParams.get("method"));
         defaultRequest.setParameterTypesString(requestParams.get("parameterTypesString"));
         defaultRequest.setParameter(requestParams.get("parameter"));
 
-//        int i = defaultRequest.getParameter().hashCode();
-//        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer((i + "")
-//                .getBytes()));
-//        response.headers().set(CONTENT_TYPE, "text/plain");
-//        response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
-//        ctx.executor().schedule(() -> {
-//            if (!keepAlive) {
-//                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-//
-//
-//            } else {
-//                response.headers().set(CONNECTION, KEEP_ALIVE);
-//                ctx.writeAndFlush(response);
-//            }
-//        }, 50, TimeUnit.MILLISECONDS);
-        RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = cluster.asyncCall(defaultRequest);
+        RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = providerAgentClient.asyncCall(defaultRequest);
         rpcCallbackFuture.addListener(rpcFuture -> {
             FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(rpcFuture
                     .getResponse().getBytes()));
             response.headers().set(CONTENT_TYPE, "text/plain");
             response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
 
-//                if(ctx.channel().isWritable())
-//                    ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             if (!keepAlive) {
                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } else {

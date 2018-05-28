@@ -1,7 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance;
 
-import com.alibaba.dubbo.performance.demo.agent.rpc.Request;
-import com.alibaba.dubbo.performance.demo.agent.transport.Client;
+import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 
 import java.util.List;
 
@@ -11,8 +10,8 @@ import java.util.List;
  */
 public interface LoadBalance {
 
-    Client select(Request request);
+    Endpoint select();
 
-    void onRefresh(List<Client> clients);
+    void onRefresh(List<Endpoint> endpoints);
 
 }

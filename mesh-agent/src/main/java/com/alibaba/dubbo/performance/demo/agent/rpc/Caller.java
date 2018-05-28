@@ -8,4 +8,6 @@ public interface Caller<T> {
 
     RpcCallbackFuture<T> asyncCall(Request request);
 
+    void init();
+
 }

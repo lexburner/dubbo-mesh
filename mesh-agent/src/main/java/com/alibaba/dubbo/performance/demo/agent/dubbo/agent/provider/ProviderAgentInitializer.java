@@ -1,5 +1,7 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcDecoder;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcEncoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -10,17 +12,11 @@ import io.netty.channel.socket.SocketChannel;
  */
 public class ProviderAgentInitializer extends ChannelInitializer<SocketChannel> {
 
-    private final String remoteHost;
-    private final int remotePort;
-
-    public ProviderAgentInitializer(String remoteHost, int remotePort) {
-        this.remoteHost = remoteHost;
-        this.remotePort = remotePort;
-    }
-
     @Override
     protected void initChannel(SocketChannel socketChannel) {
         ChannelPipeline pipeline = socketChannel.pipeline();
-        pipeline.addLast(new ProviderAgentHandler(remoteHost, remotePort));
+        pipeline.addLast(new DubboRpcEncoder());
+        pipeline.addLast(new DubboRpcDecoder());
+        pipeline.addLast(new ProviderAgentHandler());
     }
 }

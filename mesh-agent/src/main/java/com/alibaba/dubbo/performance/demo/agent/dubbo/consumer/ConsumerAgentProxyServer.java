@@ -15,14 +15,11 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.cluster.Cluster;
-import com.alibaba.dubbo.performance.demo.agent.cluster.DefaultCluster;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ConsumerAgentClient;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
+import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
+import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.WeightRoundRobinLoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
-import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -33,7 +30,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,9 +37,9 @@ import java.util.List;
  * company qianmi.com
  * Date 2018-05-22
  */
-public final class ConsumerAgentHttpServer {
+public final class ConsumerAgentProxyServer {
 
-    private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServer.class);
+    private Logger logger = LoggerFactory.getLogger(ConsumerAgentProxyServer.class);
 
     private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
     private EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -59,16 +55,13 @@ public final class ConsumerAgentHttpServer {
         try {
 
             IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
-            Cluster<DubboRpcResponse> cluster = buildCluster(registry);
 
             bootstrap = new ServerBootstrap();
             bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ConsumerAgentHttpServerInitializer(cluster))
-                    .childOption(ChannelOption.SO_KEEPALIVE, true)
-                    .childOption(ChannelOption.TCP_NODELAY, true)
-                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+                    .childHandler(new ConsumerAgentProxyInitializer(buildLoadBalance(registry)))
+                    .childOption(ChannelOption.AUTO_READ, false);
 
             Channel ch = bootstrap.bind(PORT).sync().channel();
             logger.info("consumer-agent provider is ready to receive request from consumer\n" +
@@ -83,13 +76,10 @@ public final class ConsumerAgentHttpServer {
         }
     }
 
-    private Cluster<DubboRpcResponse> buildCluster(IRegistry registry) throws Exception {
+    private LoadBalance buildLoadBalance(IRegistry registry) throws Exception {
         List<Endpoint> endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
-        List<Client> clients = new ArrayList<>();
-        for (Endpoint endpoint : endpoints) {
-            clients.add(new ConsumerAgentClient(endpoint));
-        }
-        Cluster<DubboRpcResponse> cluster = new DefaultCluster<>(clients);
-        return cluster;
+        LoadBalance loadBalance = new WeightRoundRobinLoadBalance();
+        loadBalance.onRefresh(endpoints);
+        return loadBalance;
     }
 }
