@@ -16,7 +16,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ConsumerAgentClient;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ConsumerAgentHandler;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcDecoder;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcEncoder;
@@ -24,7 +23,6 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.common.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RequestParser;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.provider.RpcClientHandler;
 import com.alibaba.dubbo.performance.demo.agent.rpc.DefaultRequest;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Request;
