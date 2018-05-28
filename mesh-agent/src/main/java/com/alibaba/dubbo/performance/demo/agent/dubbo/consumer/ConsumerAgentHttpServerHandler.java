@@ -15,30 +15,32 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.cluster.Cluster;
+import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ConsumerAgentClient;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ConsumerAgentHandler;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcDecoder;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcEncoder;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.common.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RequestParser;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcRequest;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.provider.RpcClientHandler;
 import com.alibaba.dubbo.performance.demo.agent.rpc.DefaultRequest;
-import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
+import com.alibaba.dubbo.performance.demo.agent.rpc.Request;
+import com.alibaba.dubbo.performance.demo.agent.transport.Client;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.*;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.util.AsciiString;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -49,38 +51,59 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
 
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
 
-    private static final AsciiString CONTENT_TYPE = AsciiString.cached("Content-Type");
-    private static final AsciiString CONTENT_LENGTH = AsciiString.cached("Content-Length");
-    private static final AsciiString CONNECTION = AsciiString.cached("Connection");
-    private static final AsciiString KEEP_ALIVE = AsciiString.cached("keep-alive");
+    private Channel outboundChannel;
 
-    private final Cluster<DubboRpcResponse> cluster;
+    private LoadBalance loadBalance;
+    private Client client;
 
-    ConsumerAgentHttpServerHandler(Cluster<DubboRpcResponse> cluster) {
-        this.cluster = cluster;
+    ConsumerAgentHttpServerHandler(Client client,LoadBalance loadBalance){
+        this.client = client;
+        this.loadBalance = loadBalance;
     }
 
-//    static AtomicInteger channelCount = new AtomicInteger(0);
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx);
-//        logger.info("http请求建立了新连接...{}",channelCount.addAndGet(1));
+        final Channel inboundChannel = ctx.channel();
+
+        // Start the connection attempt.
+        Bootstrap b = new Bootstrap();
+        b.group(inboundChannel.eventLoop())
+                .channel(ctx.channel().getClass())
+                .handler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel ch) throws Exception {
+                        ch.pipeline()
+                                .addLast(new DubboRpcEncoder())
+                                .addLast(new DubboRpcDecoder())
+                                .addLast(new ConsumerAgentHandler(inboundChannel));
+                    }
+                }).option(ChannelOption.AUTO_READ, false);;
+        Endpoint endpoint = loadBalance.select();
+        ChannelFuture f = b.connect(endpoint.getHost(), endpoint.getPort());
+        outboundChannel = f.channel();
+        f.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) {
+                if (future.isSuccess()) {
+                    // connection complete start to read first data
+                    inboundChannel.read();
+                } else {
+                    // Close the connection if the connection attempt has failed.
+                    inboundChannel.close();
+                }
+            }
+        });
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) {
-        processRequest(ctx, req);
+        processRequest(ctx,req);
     }
 
-    private void processRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
-        boolean keepAlive = HttpUtil.isKeepAlive(req);
+    private void processRequest(ChannelHandlerContext ctx,FullHttpRequest req) {
         Map<String, String> requestParams;
         requestParams = RequestParser.parse(req);
-
-//        if (req.refCnt() > 1) {
-//            req.release();
-//        }
 
         DefaultRequest defaultRequest = new DefaultRequest();
         defaultRequest.setInterfaceName(requestParams.get("interface"));
@@ -88,42 +111,40 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         defaultRequest.setParameterTypesString(requestParams.get("parameterTypesString"));
         defaultRequest.setParameter(requestParams.get("parameter"));
 
-//        int i = defaultRequest.getParameter().hashCode();
-//        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer((i + "")
-//                .getBytes()));
-//        response.headers().set(CONTENT_TYPE, "text/plain");
-//        response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
-//        ctx.executor().schedule(() -> {
-//            if (!keepAlive) {
-//                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-//
-//
-//            } else {
-//                response.headers().set(CONNECTION, KEEP_ALIVE);
-//                ctx.writeAndFlush(response);
-//            }
-//        }, 50, TimeUnit.MILLISECONDS);
-        RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = cluster.asyncCall(defaultRequest);
-        rpcCallbackFuture.addListener(rpcFuture -> {
-            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(rpcFuture
-                    .getResponse().getBytes()));
-            response.headers().set(CONTENT_TYPE, "text/plain");
-            response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
+        this.call(ctx,outboundChannel,defaultRequest);
 
-//                if(ctx.channel().isWritable())
-//                    ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-            if (!keepAlive) {
-                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-            } else {
-                response.headers().set(CONNECTION, KEEP_ALIVE);
-                ctx.writeAndFlush(response).addListener(new GenericFutureListener<Future<? super Void>>() {
-                    @Override
-                    public void operationComplete(Future<? super Void> future) throws Exception {
-                    }
-                });
+    }
+
+    public void call(ChannelHandlerContext ctx,Channel channel,Request request) {
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName(request.getMethod());
+        invocation.setAttachment("path", request.getInterfaceName());
+        invocation.setParameterTypes(request.getParameterTypesString());    // Dubbo内部用"Ljava/lang/String"来表示参数类型是String
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+        try {
+            JsonUtils.writeObject(request.getParameter(), writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        invocation.setArguments(out.toByteArray());
+        DubboRpcRequest dubboRpcRequest = new DubboRpcRequest();
+        dubboRpcRequest.setVersion("2.0.0");
+        dubboRpcRequest.setTwoWay(true);
+        dubboRpcRequest.setData(invocation);
+//        logger.info("requestId=" + dubboRpcRequest.getId());
+        channel.writeAndFlush(dubboRpcRequest).addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) {
+                if (future.isSuccess()) {
+                    // was able to flush out data, start to read the next chunk
+                    ctx.channel().read();
+                } else {
+                    future.channel().close();
+                }
             }
         });
-
     }
 
     @Override

@@ -15,10 +15,9 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.cluster.Cluster;
-import com.alibaba.dubbo.performance.demo.agent.cluster.DefaultCluster;
+import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
+import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.WeightRoundRobinLoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ConsumerAgentClient;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
@@ -33,7 +32,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -59,16 +57,18 @@ public final class ConsumerAgentHttpServer {
         try {
 
             IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
-            Cluster<DubboRpcResponse> cluster = buildCluster(registry);
+            Client client = new ConsumerAgentClient();
 
             bootstrap = new ServerBootstrap();
             bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ConsumerAgentHttpServerInitializer(cluster))
-                    .childOption(ChannelOption.SO_KEEPALIVE, true)
-                    .childOption(ChannelOption.TCP_NODELAY, true)
-                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+                    .childHandler(new ConsumerAgentHttpServerInitializer(client,buildLoadBalance(registry)))
+                    .childOption(ChannelOption.AUTO_READ, false)
+//                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+//                    .childOption(ChannelOption.TCP_NODELAY, true)
+//                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+            ;
 
             Channel ch = bootstrap.bind(PORT).sync().channel();
             logger.info("consumer-agent provider is ready to receive request from consumer\n" +
@@ -83,13 +83,10 @@ public final class ConsumerAgentHttpServer {
         }
     }
 
-    private Cluster<DubboRpcResponse> buildCluster(IRegistry registry) throws Exception {
+    private LoadBalance buildLoadBalance(IRegistry registry) throws Exception {
         List<Endpoint> endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
-        List<Client> clients = new ArrayList<>();
-        for (Endpoint endpoint : endpoints) {
-            clients.add(new ConsumerAgentClient(endpoint));
-        }
-        Cluster<DubboRpcResponse> cluster = new DefaultCluster<>(clients);
-        return cluster;
+        LoadBalance loadBalance = new WeightRoundRobinLoadBalance();
+        loadBalance.onRefresh(endpoints);
+        return loadBalance;
     }
 }

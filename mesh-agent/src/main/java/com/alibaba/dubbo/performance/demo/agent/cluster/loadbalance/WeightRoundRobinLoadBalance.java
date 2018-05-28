@@ -1,12 +1,12 @@
 package com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance;
 
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
-import com.alibaba.dubbo.performance.demo.agent.rpc.Request;
-import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -18,35 +18,28 @@ public class WeightRoundRobinLoadBalance implements LoadBalance {
 
     private Logger logger = LoggerFactory.getLogger(WeightRoundRobinLoadBalance.class);
 
-    private volatile ClientsHolder clientsHolder;
+    private volatile EndpointHolder endpointHolder;
 
     public WeightRoundRobinLoadBalance() {
     }
 
-    /**
-     * 为考虑比赛性能不考虑溢出
-     */
-    class ClientsHolder {
+    class EndpointHolder {
 
         private int randomKeySize;
         private List<Endpoint> randomKeyList = new ArrayList<>();
         AtomicInteger cursor = new AtomicInteger(0);
-        private Map<Endpoint, Client> endpointClientMap = new HashMap<>();
 
-        ClientsHolder(List<Client> clients) {
-            logger.info("WeightRoundRobinLoadBalance build new ClientsHolder. weights:" + clients);
-            for (Client client : clients) {
-                endpointClientMap.put(client.getEndpoint(), client);
-            }
-            List<Integer> weightsArr = clients.stream().map(Client::getEndpoint).map(Endpoint::getWeight).collect(Collectors.toList());
+        EndpointHolder(List<Endpoint> endpoints) {
+            logger.info("WeightRoundRobinLoadBalance build new EndpointHolder. weights:" + endpoints);
+            List<Integer> weightsArr = endpoints.stream().map(Endpoint::getWeight).collect(Collectors.toList());
             // 求出最大公约数，若不为1，对权重做除法
             int weightGcd = findGcd(weightsArr.toArray(new Integer[]{}));
             if (weightGcd != 1) {
-                for (Endpoint endpoint : endpointClientMap.keySet()) {
+                for (Endpoint endpoint : endpoints) {
                     endpoint.setWeight(endpoint.getWeight() / weightGcd);
                 }
             }
-            for (Endpoint endpoint : endpointClientMap.keySet()) {
+            for (Endpoint endpoint : endpoints) {
                 for (int i = 0; i < endpoint.getWeight(); i++) {
                     randomKeyList.add(endpoint);
                 }
@@ -55,9 +48,9 @@ public class WeightRoundRobinLoadBalance implements LoadBalance {
             randomKeySize = randomKeyList.size();
         }
 
-        Client next() {
+        Endpoint next() {
             Endpoint endpoint = randomKeyList.get(Math.abs(cursor.getAndAdd(1)) % randomKeySize);
-            return endpointClientMap.get(endpoint);
+            return endpoint;
         }
 
         // 求最大公约数
@@ -77,13 +70,13 @@ public class WeightRoundRobinLoadBalance implements LoadBalance {
     }
 
     @Override
-    public Client select(Request request) {
-        return clientsHolder.next();
+    public Endpoint select() {
+        return endpointHolder.next();
     }
 
     @Override
-    public void onRefresh(List<Client> clients) {
-        this.clientsHolder = new ClientsHolder(clients);
+    public void onRefresh(List<Endpoint> endpoints) {
+        this.endpointHolder = new EndpointHolder(endpoints);
     }
 
 }

@@ -1,14 +1,13 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.ConsumerAgentResponseHolder;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcRequest;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
-import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Request;
-import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,28 +20,9 @@ import java.io.PrintWriter;
  * @author 徐靖峰
  * Date 2018-05-22
  */
-public class ConsumerAgentClient implements Client<DubboRpcResponse> {
+public class ConsumerAgentClient implements Client {
 
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentClient.class);
-
-    private ConsumerAgentConnectionManager connectManager;
-
-    public ConsumerAgentClient(Endpoint endpoint) {
-        this.endpoint = endpoint;
-        this.connectManager = new ConsumerAgentConnectionManager(endpoint);
-        logger.info("ConsumerAgentNettyClient构造中...");
-    }
-
-    private Endpoint endpoint;
-
-    @Override
-    public Endpoint getEndpoint() {
-        return endpoint;
-    }
-
-    public void setEndpoint(Endpoint endpoint) {
-        this.endpoint = endpoint;
-    }
 
     /**
      * consumerAgent发起请求的入口
@@ -50,7 +30,7 @@ public class ConsumerAgentClient implements Client<DubboRpcResponse> {
      * @throws Exception
      */
     @Override
-    public RpcCallbackFuture<DubboRpcResponse> asyncCall(Request request) {
+    public void call(Channel channel,Request request) {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName(request.getMethod());
         invocation.setAttachment("path", request.getInterfaceName());
@@ -69,10 +49,6 @@ public class ConsumerAgentClient implements Client<DubboRpcResponse> {
         dubboRpcRequest.setTwoWay(true);
         dubboRpcRequest.setData(invocation);
 //        logger.info("requestId=" + dubboRpcRequest.getId());
-        RpcCallbackFuture<DubboRpcResponse> rpcResponseRpcCallbackFuture = new RpcCallbackFuture<>();
-        ConsumerAgentResponseHolder.put(dubboRpcRequest.getId(), rpcResponseRpcCallbackFuture);
-
-        connectManager.getChannel().writeAndFlush(dubboRpcRequest);
-        return rpcResponseRpcCallbackFuture;
+        channel.writeAndFlush(dubboRpcRequest);
     }
 }

@@ -28,7 +28,7 @@ public class ProviderAgentHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        logger.info("agent-consumer与agent-provider新建立了连接...");
+//        logger.info("agent-consumer与agent-provider新建立了连接...");
         final Channel inboundChannel = ctx.channel();
 
         // Start the connection attempt.
