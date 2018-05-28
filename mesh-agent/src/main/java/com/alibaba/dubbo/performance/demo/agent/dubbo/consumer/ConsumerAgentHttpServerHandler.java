@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -57,6 +58,14 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
 
     ConsumerAgentHttpServerHandler(Cluster<DubboRpcResponse> cluster) {
         this.cluster = cluster;
+    }
+
+//    static AtomicInteger channelCount = new AtomicInteger(0);
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+//        logger.info("http请求建立了新连接...{}",channelCount.addAndGet(1));
     }
 
     @Override
