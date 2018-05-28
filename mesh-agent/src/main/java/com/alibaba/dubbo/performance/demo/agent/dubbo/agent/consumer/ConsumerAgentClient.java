@@ -59,7 +59,7 @@ public class ConsumerAgentClient implements Client<DubboRpcResponse> {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
         try{
-            JsonUtils.writeObject(request.getParameter(), writer);
+            JsonUtils.writeString(request.getParameter(), writer);
         }catch (IOException e){
             throw new RuntimeException(e);
         }

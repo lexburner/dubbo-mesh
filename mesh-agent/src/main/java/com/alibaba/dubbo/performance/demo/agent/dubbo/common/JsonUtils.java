@@ -13,11 +13,12 @@ import java.io.PrintWriter;
  */
 public final class JsonUtils {
 
-    private JsonUtils(){
+    private JsonUtils() {
     }
 
     /**
      * 序列化
+     *
      * @param obj
      * @param writer
      * @throws IOException
@@ -34,7 +35,24 @@ public final class JsonUtils {
     }
 
     /**
+     * 字符串专用序列化
+     * @param param
+     * @param writer
+     * @throws IOException
+     */
+    public static void writeString(String param,PrintWriter writer) throws IOException{
+        if(param!=null){
+            writer.println(new StringBuffer().append("\"").append(param).append("\""));
+            writer.flush();
+        }else {
+            writer.println("null");
+            writer.flush();
+        }
+    }
+
+    /**
      * 反序列化
+     *
      * @param b
      * @param writer
      */
