@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.consumer.ConsumerAgentHttpServerHandler;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -55,8 +56,14 @@ public class ConsumerAgentHandler extends SimpleChannelInboundHandler<DubboRpcRe
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        logger.error("ConsumerAgentHandler异常", cause);
-        ctx.channel().close();
+    public void channelInactive(ChannelHandlerContext ctx) {
+        ConsumerAgentHttpServerHandler.closeOnFlush(inboundChannel);
     }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        cause.printStackTrace();
+        ConsumerAgentHttpServerHandler.closeOnFlush(ctx.channel());
+    }
+
 }

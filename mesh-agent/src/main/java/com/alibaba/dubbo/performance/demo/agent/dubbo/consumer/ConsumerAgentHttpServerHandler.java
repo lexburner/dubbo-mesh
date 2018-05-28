@@ -30,6 +30,7 @@ import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Request;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -70,6 +71,9 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         Bootstrap b = new Bootstrap();
         b.group(inboundChannel.eventLoop())
                 .channel(ctx.channel().getClass())
+                .option(ChannelOption.AUTO_READ, false)
+                .option(ChannelOption.SO_KEEPALIVE, true)
+                .option(ChannelOption.TCP_NODELAY, true)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
@@ -78,7 +82,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
                                 .addLast(new DubboRpcDecoder())
                                 .addLast(new ConsumerAgentHandler(inboundChannel));
                     }
-                }).option(ChannelOption.AUTO_READ, false);;
+                }).option(ChannelOption.AUTO_READ, false);
         Endpoint endpoint = loadBalance.select();
         ChannelFuture f = b.connect(endpoint.getHost(), endpoint.getPort());
         outboundChannel = f.channel();
@@ -150,8 +154,23 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         logger.error("http服务器响应出错", cause);
-        if (ctx.channel().isActive()) {
-            ctx.close();
+        closeOnFlush(ctx.channel());
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) {
+        if (outboundChannel != null) {
+            closeOnFlush(outboundChannel);
         }
     }
+
+    /**
+     * Closes the specified channel after all queued write requests are flushed.
+     */
+    public static void closeOnFlush(Channel ch) {
+        if (ch.isActive()) {
+            ch.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        }
+    }
+
 }

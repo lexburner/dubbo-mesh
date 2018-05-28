@@ -65,9 +65,9 @@ public final class ConsumerAgentHttpServer {
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new ConsumerAgentHttpServerInitializer(client,buildLoadBalance(registry)))
                     .childOption(ChannelOption.AUTO_READ, false)
-//                    .childOption(ChannelOption.SO_KEEPALIVE, true)
-//                    .childOption(ChannelOption.TCP_NODELAY, true)
-//                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+                    .childOption(ChannelOption.TCP_NODELAY, true)
+                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
             ;
 
             Channel ch = bootstrap.bind(PORT).sync().channel();
