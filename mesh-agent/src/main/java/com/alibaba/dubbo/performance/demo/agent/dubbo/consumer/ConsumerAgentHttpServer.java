@@ -57,13 +57,12 @@ public final class ConsumerAgentHttpServer {
         try {
 
             IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
-            Client client = new ConsumerAgentClient();
 
             bootstrap = new ServerBootstrap();
             bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ConsumerAgentHttpServerInitializer(client,buildLoadBalance(registry)))
+                    .childHandler(new ConsumerAgentHttpServerInitializer(buildLoadBalance(registry)))
                     .childOption(ChannelOption.AUTO_READ, false)
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true)

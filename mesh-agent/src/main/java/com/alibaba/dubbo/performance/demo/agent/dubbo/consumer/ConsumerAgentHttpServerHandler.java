@@ -18,6 +18,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ConsumerAgentHandler;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcDecoder;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcEncoder;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RequestParser;
@@ -51,10 +52,8 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     private Channel outboundChannel;
 
     private LoadBalance loadBalance;
-    private Client client;
 
-    ConsumerAgentHttpServerHandler(Client client,LoadBalance loadBalance){
-        this.client = client;
+    ConsumerAgentHttpServerHandler(LoadBalance loadBalance){
         this.loadBalance = loadBalance;
     }
 
@@ -74,7 +73,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline()
-//                                .addLast(new DubboRpcEncoder())
+                                .addLast(new DubboRpcEncoder())
                                 .addLast(new DubboRpcDecoder())
                                 .addLast(new ConsumerAgentHandler(inboundChannel));
                     }
@@ -134,13 +133,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         dubboRpcRequest.setTwoWay(true);
         dubboRpcRequest.setData(invocation);
 //        logger.info("requestId=" + dubboRpcRequest.getId());
-        ByteBuf byteBuf;
-        try{
-            byteBuf = encode(dubboRpcRequest);
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
-        channel.writeAndFlush(byteBuf).addListener(new ChannelFutureListener() {
+        channel.writeAndFlush(dubboRpcRequest).addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) {
                 if (future.isSuccess()) {
@@ -151,61 +144,6 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
                 }
             }
         });
-    }
-
-    // header length.
-    protected static final int HEADER_LENGTH = 16;
-    // magic header.
-    protected static final short MAGIC = (short) 0xdabb;
-    // message flag.
-    protected static final byte FLAG_REQUEST = (byte) 0x80;
-    protected static final byte FLAG_TWOWAY = (byte) 0x40;
-    protected static final byte FLAG_EVENT = (byte) 0x20;
-
-    protected ByteBuf encode(DubboRpcRequest msg) throws Exception{
-        DubboRpcRequest req = msg;
-        // header.
-        byte[] header = new byte[HEADER_LENGTH];
-        // set magic number.
-        Bytes.short2bytes(MAGIC, header);
-
-        // set request and serialization flag.
-        header[2] = (byte) (FLAG_REQUEST | 6);
-
-        if (req.isTwoWay()) header[2] |= FLAG_TWOWAY;
-        if (req.isEvent()) header[2] |= FLAG_EVENT;
-
-        // set request id.
-        Bytes.long2bytes(req.getId(), header, 4);
-
-        // encode request data.
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        encodeRequestData(bos, req.getData());
-
-        int len = bos.size();
-
-        Bytes.int2bytes(len, header, 12);
-
-        ByteBuf headerBuf = Unpooled.wrappedBuffer(header);
-        ByteBuf bodyBuf = Unpooled.wrappedBuffer(bos.toByteArray());
-
-        ByteBuf allByteBuf = Unpooled.wrappedBuffer(headerBuf, bodyBuf);
-        return allByteBuf;
-    }
-
-    public void encodeRequestData(OutputStream out, Object data) throws Exception {
-        RpcInvocation inv = (RpcInvocation) data;
-
-        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
-
-        JsonUtils.writeObject(inv.getAttachment("dubbo", "2.0.1"), writer);
-        JsonUtils.writeObject(inv.getAttachment("path"), writer);
-        JsonUtils.writeObject(inv.getAttachment("version"), writer);
-        JsonUtils.writeObject(inv.getMethodName(), writer);
-        JsonUtils.writeObject(inv.getParameterTypes(), writer);
-
-        JsonUtils.writeBytes(inv.getArguments(), writer);
-        JsonUtils.writeObject(inv.getAttachments(), writer);
     }
 
     @Override
