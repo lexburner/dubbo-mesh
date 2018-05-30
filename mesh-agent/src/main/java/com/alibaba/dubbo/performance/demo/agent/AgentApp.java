@@ -49,56 +49,56 @@ public class AgentApp {
                 }
             }).start();
         }
-        if ("consumer".equals(type)) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            OkHttpClient httpClient = new OkHttpClient.Builder().build();
-            try {
-                int port = Integer.parseInt(System.getProperty("server.port"));
-                final String url = "http://" + IpHelper.getHostIp() + ":" + "8087/invoke";
-                Random r = new Random(1);
-                final AtomicInteger count = new AtomicInteger(0);
-                int cnt = 1000;
-                CountDownLatch countDownLatch = new CountDownLatch(cnt);
-                ExecutorService executorService = Executors.newFixedThreadPool(128);
-                long start = System.currentTimeMillis();
-                for (int i = 0; i < cnt; i++) {
-                    executorService.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            RequestBody requestBody = new FormBody.Builder()
-                                    .add("interface", "com.alibaba.dubbo.performance.demo.provider.IHelloService")
-                                    .add("method", "hash")
-                                    .add("parameterTypesString", "Ljava/lang/String;")
-                                    .add("parameter", RandomStringUtils.random(r.nextInt(1024), true, true))
-                                    .build();
-
-                            Request request = new Request.Builder()
-                                    .url(url)
-                                    .post(requestBody)
-                                    .build();
-                            try (Response response = httpClient.newCall(request).execute()) {
-                            } catch (IOException e) {
-                                logger.error("压测请求返回结果异常", e);
-                                count.addAndGet(1);
-                            } finally {
-                                countDownLatch.countDown();
-                            }
-                        }
-                    });
-                }
-                countDownLatch.await();
-                executorService.shutdown();
-                System.out.println(count.get());
-                System.out.println("total cost " + (System.currentTimeMillis() - start) + " ms");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
+//        if ("consumer".equals(type)) {
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            OkHttpClient httpClient = new OkHttpClient.Builder().build();
+//            try {
+//                int port = Integer.parseInt(System.getProperty("server.port"));
+//                final String url = "http://" + IpHelper.getHostIp() + ":" + "8087/invoke";
+//                Random r = new Random(1);
+//                final AtomicInteger count = new AtomicInteger(0);
+//                int cnt = 1000;
+//                CountDownLatch countDownLatch = new CountDownLatch(cnt);
+//                ExecutorService executorService = Executors.newFixedThreadPool(128);
+//                long start = System.currentTimeMillis();
+//                for (int i = 0; i < cnt; i++) {
+//                    executorService.execute(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            RequestBody requestBody = new FormBody.Builder()
+//                                    .add("interface", "com.alibaba.dubbo.performance.demo.provider.IHelloService")
+//                                    .add("method", "hash")
+//                                    .add("parameterTypesString", "Ljava/lang/String;")
+//                                    .add("parameter", RandomStringUtils.random(r.nextInt(1024), true, true))
+//                                    .build();
+//
+//                            Request request = new Request.Builder()
+//                                    .url(url)
+//                                    .post(requestBody)
+//                                    .build();
+//                            try (Response response = httpClient.newCall(request).execute()) {
+//                            } catch (IOException e) {
+//                                logger.error("压测请求返回结果异常", e);
+//                                count.addAndGet(1);
+//                            } finally {
+//                                countDownLatch.countDown();
+//                            }
+//                        }
+//                    });
+//                }
+//                countDownLatch.await();
+//                executorService.shutdown();
+//                System.out.println(count.get());
+//                System.out.println("total cost " + (System.currentTimeMillis() - start) + " ms");
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//        }
 
 
 

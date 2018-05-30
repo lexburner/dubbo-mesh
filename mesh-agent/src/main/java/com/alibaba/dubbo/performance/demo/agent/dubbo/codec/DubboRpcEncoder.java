@@ -42,28 +42,28 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         Bytes.long2bytes(req.getId(), header, 4);
 
 
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        encodeRequestData(bos, req.getData());
-        int len = bos.size();
-        Bytes.int2bytes(len, header, 12);
-        buffer.writeBytes(header);
-        buffer.writeBytes(bos.toByteArray());
+//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//        encodeRequestData(bos, req.getData());
+//        int len = bos.size();
+//        Bytes.int2bytes(len, header, 12);
+//        buffer.writeBytes(header);
+//        buffer.writeBytes(bos.toByteArray());
 
 
         // encode request data.
-//        int savedWriteIndex = buffer.writerIndex();
-//        buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
-//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-//        encodeRequestData(bos, req.getData());
-//
-//        int len = bos.size();
-//        buffer.writeBytes(bos.toByteArray());
-//        Bytes.int2bytes(len, header, 12);
-//
-//        // write
-//        buffer.writerIndex(savedWriteIndex);
-//        buffer.writeBytes(header); // write header.
-//        buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
+        int savedWriteIndex = buffer.writerIndex();
+        buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        encodeRequestData(bos, req.getData());
+
+        int len = bos.size();
+        buffer.writeBytes(bos.toByteArray());
+        Bytes.int2bytes(len, header, 12);
+
+        // write
+        buffer.writerIndex(savedWriteIndex);
+        buffer.writeBytes(header); // write header.
+        buffer.writerIndex(savedWriteIndex + HEADER_LENGTH + len);
     }
 
     public void encodeRequestData(OutputStream out, Object data) throws Exception {
