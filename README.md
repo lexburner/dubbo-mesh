@@ -52,55 +52,5 @@ master 提交测试的分支
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-qps: 670, avg time: 60
-qps: 726, avg time: 56
-qps: 727, avg time: 56
-qps: 725, avg time: 57
-qps: 725, avg time: 56
-qps: 722, avg time: 56
-qps: 723, avg time: 56
-qps: 722, avg time: 56
-qps: 724, avg time: 56
-qps: 721, avg time: 56
-qps: 725, avg time: 56
-qps: 724, avg time: 56
-qps: 724, avg time: 56
-qps: 723, avg time: 56
-qps: 727, avg time: 56
-qps: 726, avg time: 56
-qps: 728, avg time: 55
-qps: 730, avg time: 55
-qps: 728, avg time: 55
-qps: 726, avg time: 55
-qps: 727, avg time: 55
-qps: 727, avg time: 55
-qps: 734, avg time: 55
-qps: 734, avg time: 55
-qps: 733, avg time: 55
-qps: 734, avg time: 55
-qps: 733, avg time: 55
-qps: 730, avg time: 55
-qps: 730, avg time: 55
-qps: 730, avg time: 55
-qps: 729, avg time: 55
-qps: 733, avg time: 57
-qps: 738, avg time: 55
-qps: 735, avg time: 55
-qps: 738, avg time: 55
-qps: 738, avg time: 55
-qps: 740, avg time: 55
-
-
+commitId :  a461ffb3 , qps : 4341.9300
 
