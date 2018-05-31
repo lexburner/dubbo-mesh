@@ -17,9 +17,11 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.WeightRoundRobinLoadBalance;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.NormalClient;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
+import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -53,11 +55,14 @@ public final class ConsumerAgentHttpServer {
      */
     public void startServer() {
         try {
+            Client client = new NormalClient();
+            client.init();
+
             bootstrap = new ServerBootstrap();
             bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ConsumerAgentHttpServerInitializer())
+                    .childHandler(new ConsumerAgentHttpServerInitializer(client))
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true);
             Channel ch = bootstrap.bind(PORT).sync().channel();

@@ -33,6 +33,7 @@ public class ThreadBoundClient implements Client{
         this.sharedEventLoop = sharedEventLoop;
     }
 
+    @Override
     public Channel getChannel(){
         if(available){
             return  channelMap.get(loadBalance.select());

@@ -26,6 +26,7 @@ import com.alibaba.dubbo.performance.demo.agent.rpc.DefaultRequest;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Request;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcResponseHolder;
+import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -49,10 +50,10 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
 
 //    static ThreadLocal<ThreadBoundClient> clientHolder = new ThreadLocal<>();
-    static NormalClient normalClient = new NormalClient();
+    private Client client;
 
-    static {
-        normalClient.init();
+    public ConsumerAgentHttpServerHandler(Client client){
+        this.client = client;
     }
 
     @Override
@@ -107,7 +108,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         rpcCallbackFuture.setChannel(ctx.channel());
         RpcResponseHolder.put(dubboRpcRequest.getId(), rpcCallbackFuture);
 //        clientHolder.get().getChannel().writeAndFlush(dubboRpcRequest);
-        normalClient.getChannel().writeAndFlush(dubboRpcRequest);
+        client.getChannel().writeAndFlush(dubboRpcRequest);
     }
 
     @Override

@@ -29,6 +29,7 @@ public class NormalClient implements Client {
     private Bootstrap b = new Bootstrap();
     private static EventLoopGroup workerGroup = new NioEventLoopGroup();
 
+    @Override
     public Channel getChannel(){
         if(available){
             return  channelMap.get(loadBalance.select());
