@@ -26,8 +26,7 @@ public class NormalClient implements Client {
     private Map<Endpoint,Channel> channelMap = new HashMap<>(3);
     private LoadBalance loadBalance;
     private volatile boolean available = false;
-    private Bootstrap b = new Bootstrap();
-    private static EventLoopGroup workerGroup = new NioEventLoopGroup();
+    private NioEventLoopGroup workerGroup = new NioEventLoopGroup();
 
     @Override
     public Channel getChannel(){
@@ -51,6 +50,7 @@ public class NormalClient implements Client {
     }
 
     private Channel connect(Endpoint endpoint){
+        Bootstrap b = new Bootstrap();
         b.group(workerGroup)
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
