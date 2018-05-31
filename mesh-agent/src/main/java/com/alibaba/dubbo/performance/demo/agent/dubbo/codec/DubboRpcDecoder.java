@@ -91,9 +91,9 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
 
 //        byte[] requestIdBytes = Arrays.copyOfRange(data, 4, 12);
 //        long requestId = Bytes.bytes2long(requestIdBytes, 0);
-//        long requestId = Bytes.bytes2long(data, 4);
+        long requestId = Bytes.bytes2long(data, 4);
         DubboRpcResponse response = new DubboRpcResponse();
-//        response.setRequestId(requestId);
+        response.setRequestId(requestId);
         response.setBytes(subArray);
         return response;
     }

@@ -7,6 +7,8 @@ import io.netty.channel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * @author 徐靖峰
  * Date 2018-05-17
@@ -29,7 +31,7 @@ public class ProviderAgentHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-//        logger.info("agent-consumer与agent-provider新建立了连接...");
+//        logger.info("agent-consumer与agent-provider新建立了连接...{}",a.incrementAndGet());
         final Channel inboundChannel = ctx.channel();
 
         // Start the connection attempt.

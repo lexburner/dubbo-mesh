@@ -12,6 +12,6 @@ public interface LoadBalance {
 
     Endpoint select();
 
-    void onRefresh(List<Endpoint> clients);
+    void onRefresh(List<Endpoint> endpoints);
 
 }

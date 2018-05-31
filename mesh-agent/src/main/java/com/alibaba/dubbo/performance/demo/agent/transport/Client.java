@@ -8,6 +8,8 @@ import com.alibaba.dubbo.performance.demo.agent.rpc.Caller;
  *
  * 点对点的通信
  */
-public interface Client extends Caller{
+public interface Client{
+
+    void init();
 
 }

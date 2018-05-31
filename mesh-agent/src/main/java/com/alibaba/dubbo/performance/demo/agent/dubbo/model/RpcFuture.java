@@ -27,7 +27,6 @@ public class RpcFuture implements Future<Object> {
 
     @Override
     public Object get() throws InterruptedException {
-        //boolean b = latch.await(100, TimeUnit.MICROSECONDS);
         latch.await();
         try {
             return response.getBytes();

@@ -17,11 +17,9 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.WeightRoundRobinLoadBalance;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ConsumerAgentClient;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
-import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -55,20 +53,13 @@ public final class ConsumerAgentHttpServer {
      */
     public void startServer() {
         try {
-
-            IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
-
             bootstrap = new ServerBootstrap();
             bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ConsumerAgentHttpServerInitializer(buildLoadBalance(registry)))
-                    .childOption(ChannelOption.AUTO_READ, false)
+                    .childHandler(new ConsumerAgentHttpServerInitializer())
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
-                    .childOption(ChannelOption.TCP_NODELAY, true)
-                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            ;
-
+                    .childOption(ChannelOption.TCP_NODELAY, true);
             Channel ch = bootstrap.bind(PORT).sync().channel();
             logger.info("consumer-agent provider is ready to receive request from consumer\n" +
                     "export at http://127.0.0.1:{}", PORT);
@@ -82,10 +73,4 @@ public final class ConsumerAgentHttpServer {
         }
     }
 
-    private LoadBalance buildLoadBalance(IRegistry registry) throws Exception {
-        List<Endpoint> endpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
-        LoadBalance loadBalance = new WeightRoundRobinLoadBalance();
-        loadBalance.onRefresh(endpoints);
-        return loadBalance;
-    }
 }
