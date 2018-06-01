@@ -24,7 +24,6 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.rpc.DefaultRequest;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Request;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
-import com.alibaba.dubbo.performance.demo.agent.rpc.RpcResponseHolder;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -36,6 +35,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -48,11 +48,9 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
 
     private static ThreadLocal<Client> clientHolder = new ThreadLocal<>();
-//    static ConcurrentHashMap<EventLoop,String> threadMap = new ConcurrentHashMap<>();
-    private Client client;
+    public static ThreadLocal<HashMap<Long, RpcCallbackFuture>> futureMapHolder = ThreadLocal.withInitial(HashMap::new);
 
-    public ConsumerAgentHttpServerHandler(Client client){
-        this.client = client;
+    public ConsumerAgentHttpServerHandler(){
     }
 
     @Override
@@ -113,7 +111,8 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         dubboRpcRequest.setData(invocation);
         RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = new RpcCallbackFuture<>();
         rpcCallbackFuture.setChannel(ctx.channel());
-        RpcResponseHolder.put(dubboRpcRequest.getId(), rpcCallbackFuture);
+//        RpcResponseHolder.put(dubboRpcRequest.getId(), rpcCallbackFuture);
+        futureMapHolder.get().put(dubboRpcRequest.getId(), rpcCallbackFuture);
 //        logger.info("请求发送成功:{}",dubboRpcRequest.getId());
         clientHolder.get().getChannel().writeAndFlush(dubboRpcRequest);
     }

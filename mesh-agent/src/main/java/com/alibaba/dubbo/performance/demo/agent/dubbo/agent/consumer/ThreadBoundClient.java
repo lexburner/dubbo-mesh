@@ -9,7 +9,6 @@ import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
@@ -26,10 +25,9 @@ public class ThreadBoundClient implements Client{
     private Map<Endpoint,Channel> channelMap = new HashMap<>(3);
     private LoadBalance loadBalance;
     private volatile boolean available = false;
-    private EventLoopGroup sharedEventLoop;
-    private NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(1);
+    private EventLoop sharedEventLoop;
 
-    public ThreadBoundClient(EventLoopGroup sharedEventLoop) {
+    public ThreadBoundClient(EventLoop sharedEventLoop) {
         this.sharedEventLoop = sharedEventLoop;
     }
 
@@ -56,7 +54,6 @@ public class ThreadBoundClient implements Client{
 
     private Channel connect(Endpoint endpoint){
         Bootstrap b = new Bootstrap();
-//        b.group(nioEventLoopGroup)//复用sharedEventLoop就发不出去请求
         b.group(sharedEventLoop)//复用sharedEventLoop就发不出去请求
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
