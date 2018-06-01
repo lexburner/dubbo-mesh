@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.NormalClient;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ThreadBoundClient;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RequestParser;
@@ -27,7 +26,6 @@ import com.alibaba.dubbo.performance.demo.agent.rpc.Request;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcResponseHolder;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -49,7 +47,8 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
 
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
 
-//    static ThreadLocal<ThreadBoundClient> clientHolder = new ThreadLocal<>();
+    private static ThreadLocal<Client> clientHolder = new ThreadLocal<>();
+//    static ConcurrentHashMap<EventLoop,String> threadMap = new ConcurrentHashMap<>();
     private Client client;
 
     public ConsumerAgentHttpServerHandler(Client client){
@@ -58,16 +57,25 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+//        System.out.println(Thread.currentThread().getName()+"<====>"+ctx.channel().eventLoop());
+//        threadMap.put(ctx.channel().eventLoop(),Thread.currentThread().getName());
+//        System.out.println(threadMap.size());
 //        if(clientHolder.get()==null){
 //            final Channel inboundChannel = ctx.channel();
 //            ThreadBoundClient threadBoundClient = new ThreadBoundClient(inboundChannel.eventLoop());
 //            threadBoundClient.init();
 //            clientHolder.set(threadBoundClient);
 //        }
+
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) {
+        if(clientHolder.get()==null){
+            Client client = new ThreadBoundClient(ctx.channel().eventLoop());
+            client.init();
+            clientHolder.set(client);
+        }
         processRequest(ctx,req);
     }
 
@@ -103,12 +111,11 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         dubboRpcRequest.setVersion("2.0.0");
         dubboRpcRequest.setTwoWay(true);
         dubboRpcRequest.setData(invocation);
-//        logger.info("requestId=" + dubboRpcRequest.getId());
         RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = new RpcCallbackFuture<>();
         rpcCallbackFuture.setChannel(ctx.channel());
         RpcResponseHolder.put(dubboRpcRequest.getId(), rpcCallbackFuture);
-//        clientHolder.get().getChannel().writeAndFlush(dubboRpcRequest);
-        client.getChannel().writeAndFlush(dubboRpcRequest);
+//        logger.info("请求发送成功:{}",dubboRpcRequest.getId());
+        clientHolder.get().getChannel().writeAndFlush(dubboRpcRequest);
     }
 
     @Override

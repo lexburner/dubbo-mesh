@@ -1,7 +1,5 @@
 package com.alibaba.dubbo.performance.demo.agent.registry;
 
-import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
-import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.WeightRoundRobinLoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +30,7 @@ public final class EndpointHolder {
                         logger.error("IHelloService接口访问etcd失败",e);
                         throw new RuntimeException(e);
                     }
-                    return remoteEndpoints;
+                    endpoints = remoteEndpoints;
                 }
             }
         }

@@ -2,8 +2,6 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.provider;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.ProviderAgentHandler;
 import io.netty.channel.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RpcClientHandler extends ChannelInboundHandlerAdapter {
 

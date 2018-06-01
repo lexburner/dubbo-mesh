@@ -1,6 +1,5 @@
 package com.alibaba.dubbo.performance.demo.agent.transport;
 
-import com.alibaba.dubbo.performance.demo.agent.rpc.Caller;
 import io.netty.channel.Channel;
 
 /**

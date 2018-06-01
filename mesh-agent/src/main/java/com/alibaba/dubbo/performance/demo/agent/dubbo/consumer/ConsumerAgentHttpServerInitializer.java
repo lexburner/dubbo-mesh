@@ -15,8 +15,6 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.NormalClient;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;

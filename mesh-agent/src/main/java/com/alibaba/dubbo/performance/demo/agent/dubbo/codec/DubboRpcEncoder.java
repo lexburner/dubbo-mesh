@@ -1,6 +1,5 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.codec;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.common.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
