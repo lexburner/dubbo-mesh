@@ -13,6 +13,27 @@ import java.util.List;
 /**
  * @author 徐靖峰
  * Date 2018-06-01
+ *
+ * This class mainly hack the {@link io.netty.handler.codec.ByteToMessageDecoder} to provide batch submission capability.
+ * This can be used the same way as ByteToMessageDecoder except the case your following inbound handler may get a decoded msg,
+ * which actually is an array list, then you can submit the list of msgs to an executor to process. For example
+ * <pre>
+ *   if (msg instanceof List) {
+ *       processorManager.getDefaultExecutor().execute(new Runnable() {
+ *           @Override
+ *           public void run() {
+ *               // batch submit to an executor
+ *               for (Object m : (List<?>) msg) {
+ *                   RpcCommandHandler.this.process(ctx, m);
+ *               }
+ *           }
+ *       });
+ *   } else {
+ *       process(ctx, msg);
+ *   }
+ * </pre>
+ * You can check the method {@link AbstractBatchDecoder#channelRead(ChannelHandlerContext, Object)} ()}
+ *   to know the detail modification.
  */
 public class DubboRpcBatchDecoder extends AbstractBatchDecoder{
     // header length.

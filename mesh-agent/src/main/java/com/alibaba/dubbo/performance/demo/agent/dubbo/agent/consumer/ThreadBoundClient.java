@@ -64,7 +64,7 @@ public class ThreadBoundClient implements Client{
                         ch.pipeline()
                                 .addLast(new DubboRpcEncoder())
                                 .addLast(new DubboRpcBatchDecoder())
-                                .addLast(new ConsumerAgentHandler());
+                                .addLast(new ConsumerAgentBatchHandler());
                     }
                 });
         ChannelFuture f = b.connect(endpoint.getHost(), endpoint.getPort());
