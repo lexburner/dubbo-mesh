@@ -1,21 +1,21 @@
 package com.alibaba.dubbo.performance.demo.agent.rpc;
 
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RpcResponseHolder {
 
-    // key: requestId     value: RpcFuture
-    private static ConcurrentHashMap<Long, RpcCallbackFuture> processingRpc = new ConcurrentHashMap<>();
+    public static ThreadLocal<HashMap<Long, RpcCallbackFuture>> futureMapHolder = ThreadLocal.withInitial(HashMap::new);
 
     public static void put(Long requestId, RpcCallbackFuture rpcFuture) {
-        processingRpc.put(requestId, rpcFuture);
+        futureMapHolder.get().put(requestId, rpcFuture);
     }
 
     public static RpcCallbackFuture get(Long requestId) {
-        return processingRpc.get(requestId);
+        return futureMapHolder.get().get(requestId);
     }
 
     public static void remove(Long requestId) {
-        processingRpc.remove(requestId);
+        futureMapHolder.get().remove(requestId);
     }
 }

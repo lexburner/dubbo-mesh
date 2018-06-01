@@ -24,6 +24,7 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.rpc.DefaultRequest;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Request;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
+import com.alibaba.dubbo.performance.demo.agent.rpc.RpcResponseHolder;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -48,32 +49,21 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
 
     private static ThreadLocal<Client> clientHolder = new ThreadLocal<>();
-    public static ThreadLocal<HashMap<Long, RpcCallbackFuture>> futureMapHolder = ThreadLocal.withInitial(HashMap::new);
 
     public ConsumerAgentHttpServerHandler(){
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-//        System.out.println(Thread.currentThread().getName()+"<====>"+ctx.channel().eventLoop());
-//        threadMap.put(ctx.channel().eventLoop(),Thread.currentThread().getName());
-//        System.out.println(threadMap.size());
-//        if(clientHolder.get()==null){
-//            final Channel inboundChannel = ctx.channel();
-//            ThreadBoundClient threadBoundClient = new ThreadBoundClient(inboundChannel.eventLoop());
-//            threadBoundClient.init();
-//            clientHolder.set(threadBoundClient);
-//        }
-
-    }
-
-    @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) {
         if(clientHolder.get()==null){
             Client client = new ThreadBoundClient(ctx.channel().eventLoop());
             client.init();
             clientHolder.set(client);
         }
+    }
+
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) {
         processRequest(ctx,req);
     }
 
@@ -111,8 +101,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         dubboRpcRequest.setData(invocation);
         RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = new RpcCallbackFuture<>();
         rpcCallbackFuture.setChannel(ctx.channel());
-//        RpcResponseHolder.put(dubboRpcRequest.getId(), rpcCallbackFuture);
-        futureMapHolder.get().put(dubboRpcRequest.getId(), rpcCallbackFuture);
+        RpcResponseHolder.put(dubboRpcRequest.getId(), rpcCallbackFuture);
 //        logger.info("请求发送成功:{}",dubboRpcRequest.getId());
         clientHolder.get().getChannel().writeAndFlush(dubboRpcRequest);
     }

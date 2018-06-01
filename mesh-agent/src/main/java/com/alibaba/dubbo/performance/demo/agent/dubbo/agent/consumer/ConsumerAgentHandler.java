@@ -3,6 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.consumer.ConsumerAgentHttpServerHandler;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
+import com.alibaba.dubbo.performance.demo.agent.rpc.RpcResponseHolder;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -30,14 +31,14 @@ public class ConsumerAgentHandler extends SimpleChannelInboundHandler<DubboRpcRe
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DubboRpcResponse dubboRpcResponse) {
-//        RpcCallbackFuture rpcCallbackFuture = RpcResponseHolder.get(dubboRpcResponse.getRequestId());
-        RpcCallbackFuture rpcCallbackFuture = ConsumerAgentHttpServerHandler.futureMapHolder.get().get(dubboRpcResponse.getRequestId());
+        RpcCallbackFuture rpcCallbackFuture = RpcResponseHolder.get(dubboRpcResponse.getRequestId());
         if(rpcCallbackFuture!=null){
             FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(dubboRpcResponse.getBytes()));
             response.headers().set(CONTENT_TYPE, "text/plain");
             response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
             response.headers().set(CONNECTION, KEEP_ALIVE);
             rpcCallbackFuture.getChannel().writeAndFlush(response);
+            RpcResponseHolder.remove(dubboRpcResponse.getRequestId());
         }
 
     }
