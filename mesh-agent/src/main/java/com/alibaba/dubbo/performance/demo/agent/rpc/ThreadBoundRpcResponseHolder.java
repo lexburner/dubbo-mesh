@@ -3,7 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.rpc;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class RpcResponseHolder {
+public class ThreadBoundRpcResponseHolder {
 
     public static ThreadLocal<HashMap<Long, RpcCallbackFuture>> futureMapHolder = ThreadLocal.withInitial(HashMap::new);
 

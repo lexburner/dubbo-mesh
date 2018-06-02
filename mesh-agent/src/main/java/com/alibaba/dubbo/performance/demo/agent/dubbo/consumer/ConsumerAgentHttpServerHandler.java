@@ -15,7 +15,6 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ThreadBoundClient;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RequestParser;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcRequest;
@@ -24,11 +23,14 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.rpc.DefaultRequest;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Request;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
-import com.alibaba.dubbo.performance.demo.agent.rpc.RpcResponseHolder;
-import com.alibaba.dubbo.performance.demo.agent.transport.Client;
+import com.alibaba.dubbo.performance.demo.agent.rpc.ThreadBoundRpcResponseHolder;
+import com.alibaba.dubbo.performance.demo.agent.transport.ThreadBoundClientHolder;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +38,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -48,18 +49,17 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
 
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
 
-    private static ThreadLocal<Client> clientHolder = new ThreadLocal<>();
-
     public ConsumerAgentHttpServerHandler(){
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        if(clientHolder.get()==null){
-            Client client = new ThreadBoundClient(ctx.channel().eventLoop());
-            client.init();
-            clientHolder.set(client);
-        }
+//        System.out.println("avtive=>"+ctx.channel().eventLoop());
+//        if(clientHolder.get()==null){
+//            Client client = new ThreadBoundClient(ctx.channel().eventLoop());
+//            client.init();
+//            clientHolder.set(client);
+//        }
     }
 
     @Override
@@ -101,9 +101,20 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         dubboRpcRequest.setData(invocation);
         RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = new RpcCallbackFuture<>();
         rpcCallbackFuture.setChannel(ctx.channel());
-        RpcResponseHolder.put(dubboRpcRequest.getId(), rpcCallbackFuture);
+        ThreadBoundRpcResponseHolder.put(dubboRpcRequest.getId(), rpcCallbackFuture);
 //        logger.info("请求发送成功:{}",dubboRpcRequest.getId());
-        clientHolder.get().getChannel().writeAndFlush(dubboRpcRequest);
+        Channel channel = ThreadBoundClientHolder.get(ctx.channel().eventLoop().toString()).getChannel();
+//        logger.info("Channel.isActive:{}",channel.isActive());
+//        logger.info("Channel.isOpen:{}",channel.isOpen());
+//        logger.info("Channel.isWritable:{}",channel.isWritable());
+        channel.writeAndFlush(dubboRpcRequest).addListener(new GenericFutureListener<Future<? super Void>>() {
+            @Override
+            public void operationComplete(Future<? super Void> future) throws Exception {
+                if(!future.isSuccess()){
+                    logger.error("复用eventLoop后writeAndFlush失败", future.cause());
+                }
+            }
+        });
     }
 
     @Override

@@ -15,14 +15,21 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ThreadBoundClient;
+import com.alibaba.dubbo.performance.demo.agent.transport.ThreadBoundClientHolder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.util.concurrent.EventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -45,6 +52,10 @@ public final class ConsumerAgentHttpServer {
      */
     public void startServer() {
         try {
+//            for (EventExecutor eventExecutor : workerGroup) {
+//                System.out.println("create=>"+eventExecutor);
+//            }
+            initThreadBoundClient(workerGroup);
 
             bootstrap = new ServerBootstrap();
             bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
@@ -63,6 +74,17 @@ public final class ConsumerAgentHttpServer {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
             logger.info("consumer-agent provider was closed");
+        }
+    }
+
+    private void initThreadBoundClient(EventLoopGroup eventLoopGroup){
+        for (EventExecutor eventExecutor : eventLoopGroup) {
+            if(eventExecutor instanceof EventLoop){
+                ThreadBoundClient threadBoundClient = new ThreadBoundClient((EventLoop)eventExecutor);
+                threadBoundClient.init();
+                ThreadBoundClientHolder.put(eventExecutor.toString(), threadBoundClient);
+            }
+
         }
     }
 
