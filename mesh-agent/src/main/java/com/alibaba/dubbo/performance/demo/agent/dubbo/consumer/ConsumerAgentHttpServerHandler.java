@@ -70,7 +70,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
 
     private void processRequest(ChannelHandlerContext ctx,FullHttpRequest req) {
         Map<String, String> requestParams;
-        requestParams = RequestParser.parseContent(req);
+        requestParams = RequestParser.parse(req);
 
         DefaultRequest defaultRequest = new DefaultRequest();
         defaultRequest.setInterfaceName(requestParams.get("interface"));
