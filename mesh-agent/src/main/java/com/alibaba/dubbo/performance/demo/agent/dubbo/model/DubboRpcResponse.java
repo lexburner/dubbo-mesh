@@ -2,14 +2,14 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
 public class DubboRpcResponse {
 
-    private String requestId;
+    private long requestId;
     private byte[] bytes;
 
-    public String getRequestId() {
+    public long getRequestId() {
         return requestId;
     }
 
-    public void setRequestId(String requestId) {
+    public void setRequestId(long requestId) {
         this.requestId = requestId;
     }
 

@@ -20,7 +20,7 @@ public class ProviderAgentServer {
     private Logger logger = LoggerFactory.getLogger(ProviderAgentServer.class);
 
     private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-    private EventLoopGroup workerGroup = new NioEventLoopGroup(1);
+    private static EventLoopGroup workerGroup = new NioEventLoopGroup();
 
     static final String REMOTE_HOST = "127.0.0.1";
     static final int REMOTE_PORT = Integer.valueOf(System.getProperty("dubbo.protocol.port"));
@@ -39,8 +39,7 @@ public class ProviderAgentServer {
                     .childHandler(new ProviderAgentInitializer(REMOTE_HOST, REMOTE_PORT))
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true)
-//                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            ;
+                    .childOption(ChannelOption.AUTO_READ, false);
             int port = Integer.valueOf(System.getProperty("server.port"));
             Channel channel = bootstrap.bind(IpHelper.getHostIp(), port + 50).sync().channel();
             logger.info("provider-agent provider is ready to receive request from consumer-agent\n" +

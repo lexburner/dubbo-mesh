@@ -4,20 +4,44 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.common.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class DubboRpcDecoder extends ByteToMessageDecoder {
+/**
+ * @author 徐靖峰
+ * Date 2018-06-01
+ *
+ * This class mainly hack the {@link io.netty.handler.codec.ByteToMessageDecoder} to provide batch submission capability.
+ * This can be used the same way as ByteToMessageDecoder except the case your following inbound handler may get a decoded msg,
+ * which actually is an array list, then you can submit the list of msgs to an executor to process. For example
+ * <pre>
+ *   if (msg instanceof List) {
+ *       processorManager.getDefaultExecutor().execute(new Runnable() {
+ *           @Override
+ *           public void run() {
+ *               // batch submit to an executor
+ *               for (Object m : (List<?>) msg) {
+ *                   RpcCommandHandler.this.process(ctx, m);
+ *               }
+ *           }
+ *       });
+ *   } else {
+ *       process(ctx, msg);
+ *   }
+ * </pre>
+ * You can check the method {@link AbstractBatchDecoder#channelRead(ChannelHandlerContext, Object)} ()}
+ *   to know the detail modification.
+ */
+public class DubboRpcBatchDecoder extends AbstractBatchDecoder{
     // header length.
     protected static final int HEADER_LENGTH = 16;
 
     protected static final byte FLAG_EVENT = (byte) 0x20;
 
-    private static final Logger logger = LoggerFactory.getLogger(DubboRpcDecoder.class);
+    private static final Logger logger = LoggerFactory.getLogger(DubboRpcBatchDecoder.class);
 
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
@@ -31,7 +55,7 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
                 } catch (Exception e) {
                     throw e;
                 }
-                if (msg == DecodeResult.NEED_MORE_INPUT) {
+                if (msg == DubboRpcBatchDecoder.DecodeResult.NEED_MORE_INPUT) {
                     byteBuf.readerIndex(savedReaderIndex);
                     break;
                 }
@@ -66,7 +90,7 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
         int readable = byteBuf.readableBytes();
 
         if (readable < HEADER_LENGTH) {
-            return DecodeResult.NEED_MORE_INPUT;
+            return DubboRpcBatchDecoder.DecodeResult.NEED_MORE_INPUT;
         }
 
         byte[] header = new byte[HEADER_LENGTH];
@@ -74,7 +98,7 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
         int len = Bytes.bytes2int(header,12);
         int tt = len + HEADER_LENGTH;
         if (readable < tt) {
-            return DecodeResult.NEED_MORE_INPUT;
+            return DubboRpcBatchDecoder.DecodeResult.NEED_MORE_INPUT;
         }
 
         byteBuf.readerIndex(savedReaderIndex);

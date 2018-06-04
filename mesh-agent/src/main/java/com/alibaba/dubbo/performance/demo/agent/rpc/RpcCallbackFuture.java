@@ -1,5 +1,7 @@
 package com.alibaba.dubbo.performance.demo.agent.rpc;
 
+import io.netty.channel.Channel;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +11,8 @@ import java.util.List;
  * Date 2018-05-21
  */
 public class RpcCallbackFuture<T> {
+
+    private Channel channel;
 
     private T response;
 
@@ -63,11 +67,17 @@ public class RpcCallbackFuture<T> {
             if (!isDoing()) {
                 return false;
             }
-
             state = FutureState.DONE;
         }
-
         notifyListeners();
         return true;
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
     }
 }

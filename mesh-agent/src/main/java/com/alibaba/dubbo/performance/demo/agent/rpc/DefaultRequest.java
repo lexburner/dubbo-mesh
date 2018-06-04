@@ -1,7 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.rpc;
 
 import java.io.Serializable;
-import java.util.Map;
 
 /**
  * @author 徐靖峰

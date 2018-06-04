@@ -15,11 +15,6 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.cluster.Cluster;
-import com.alibaba.dubbo.performance.demo.agent.cluster.DefaultCluster;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
-import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
-import com.alibaba.dubbo.performance.demo.agent.registry.IRegistry;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -34,18 +29,12 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
  */
 public class ConsumerAgentHttpServerInitializer extends ChannelInitializer<SocketChannel> {
 
-    public ConsumerAgentHttpServerInitializer(Cluster<DubboRpcResponse> cluster){
-        this.cluster = cluster;
-    }
-
-    private Cluster<DubboRpcResponse> cluster;
-
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline p = ch.pipeline();
         p.addLast("encoder", new HttpResponseEncoder());
         p.addLast("decoder", new HttpRequestDecoder());
         p.addLast("aggregator", new HttpObjectAggregator(10 * 1024 * 1024));
-        p.addLast(new ConsumerAgentHttpServerHandler(cluster));
+        p.addLast(new ConsumerAgentHttpServerHandler());
     }
 }
