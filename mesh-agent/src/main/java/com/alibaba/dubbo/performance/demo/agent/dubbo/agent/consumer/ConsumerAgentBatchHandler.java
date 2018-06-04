@@ -44,9 +44,8 @@ public class ConsumerAgentBatchHandler extends SimpleChannelInboundHandler<Objec
                 ThreadBoundRpcResponseHolder.remove(dubboRpcResponse.getRequestId());
             }
         }else if(msg instanceof List){
-            List dubboRpcResponses = (List) msg;
-            for (Object item : dubboRpcResponses) {
-                DubboRpcResponse dubboRpcResponse = (DubboRpcResponse) item;
+            List<DubboRpcResponse> dubboRpcResponses = (List<DubboRpcResponse>) msg;
+            for (DubboRpcResponse dubboRpcResponse : dubboRpcResponses) {
                 RpcCallbackFuture rpcCallbackFuture = ThreadBoundRpcResponseHolder.get(dubboRpcResponse.getRequestId());
                 if(rpcCallbackFuture!=null){
                     FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(dubboRpcResponse.getBytes()));

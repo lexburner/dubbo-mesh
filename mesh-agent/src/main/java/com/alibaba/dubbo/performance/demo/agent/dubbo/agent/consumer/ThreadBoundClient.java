@@ -64,8 +64,10 @@ public class ThreadBoundClient implements Client{
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline()
                                 .addLast(new DubboRpcEncoder())
-                                .addLast(new DubboRpcDecoder())
-                                .addLast(new ConsumerAgentHandler());
+//                                .addLast(new DubboRpcDecoder())
+//                                .addLast(new ConsumerAgentHandler());
+                        .addLast(new DubboRpcBatchDecoder())
+                                .addLast(new ConsumerAgentBatchHandler());
                     }
                 });
         ChannelFuture f = b.connect(endpoint.getHost(), endpoint.getPort());

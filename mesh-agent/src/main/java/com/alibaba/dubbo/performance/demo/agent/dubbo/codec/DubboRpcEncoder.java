@@ -36,7 +36,7 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         DubboRpcRequest req = (DubboRpcRequest) msg;
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        encodeRequestDataString(bos, req.getData());
+        encodeRequestData(bos, req.getData());
         ByteBuf bodyBuf = Unpooled.wrappedBuffer(bos.toByteArray());
 
         ByteBuf headerBuf = ctx.alloc().ioBuffer(HEADER_LENGTH);
