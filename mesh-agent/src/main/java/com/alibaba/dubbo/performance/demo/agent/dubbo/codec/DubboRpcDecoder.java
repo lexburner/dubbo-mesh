@@ -1,6 +1,5 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.codec;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.common.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -8,7 +7,6 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class DubboRpcDecoder extends ByteToMessageDecoder {
@@ -61,37 +59,26 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
      * @return
      */
     private Object decode2(ByteBuf byteBuf) {
-
-        int savedReaderIndex = byteBuf.readerIndex();
         int readable = byteBuf.readableBytes();
 
+        // 确保拿到一个完整的header
         if (readable < HEADER_LENGTH) {
             return DecodeResult.NEED_MORE_INPUT;
         }
 
-        byte[] header = new byte[HEADER_LENGTH];
-        byteBuf.readBytes(header);
-        int len = Bytes.bytes2int(header,12);
-        int tt = len + HEADER_LENGTH;
-        if (readable < tt) {
+        byteBuf.skipBytes(4);
+        long requestId = byteBuf.readLong();
+        int len = byteBuf.readInt();
+
+        if (byteBuf.readableBytes() < len) {
             return DecodeResult.NEED_MORE_INPUT;
         }
 
-        byteBuf.readerIndex(savedReaderIndex);
-        byte[] data = new byte[tt];
-        byteBuf.readBytes(data);
-
-
-
-        // HEADER_LENGTH + 1，忽略header & Response value type的读取，直接读取实际Return value
-        // dubbo返回的body中，前后各有一个换行，去掉
-        byte[] subArray = Arrays.copyOfRange(data, HEADER_LENGTH + 2, data.length - 1);
-
-        long requestId = Bytes.bytes2long(data, 4);
-//        logger.info("consumer-agent发送dubbo请求编号:{}", requestId);
         DubboRpcResponse response = new DubboRpcResponse();
         response.setRequestId(requestId);
-        response.setBytes(subArray);
+        response.setBytes(byteBuf.retainedSlice(byteBuf.readerIndex(), len - 1));
+        byteBuf.skipBytes(1); // 尾部换行
+
         return response;
     }
 }
