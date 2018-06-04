@@ -52,5 +52,6 @@ master 提交测试的分支
 
 
 
-commitId :  a461ffb3 , qps : 4341.9300
-
+commitId :  a461ffb3 , qps : 4341.9300 
+commitId :  848700a  , qps : 4370      有一个channelActive和channelRead的冲突未解决
+commitId :  3c9fc688 , qps : 4395      3*8 ThreadBoundClient + ThreadLocal<Map>

@@ -36,7 +36,7 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         DubboRpcRequest req = (DubboRpcRequest) msg;
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        encodeRequestData(bos, req.getData());
+        encodeRequestDataString(bos, req.getData());
         ByteBuf bodyBuf = Unpooled.wrappedBuffer(bos.toByteArray());
 
         ByteBuf headerBuf = ctx.alloc().ioBuffer(HEADER_LENGTH);
@@ -74,6 +74,21 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         JsonUtils.writeObject(inv.getAttachment("version"), writer);
         JsonUtils.writeObject(inv.getMethodName(), writer);
         JsonUtils.writeObject(inv.getParameterTypes(), writer);
+
+        JsonUtils.writeBytes(inv.getArguments(), writer);
+        JsonUtils.writeObject(inv.getAttachments(), writer);
+    }
+
+    public void encodeRequestDataString(OutputStream out, Object data) throws Exception {
+        RpcInvocation inv = (RpcInvocation) data;
+
+        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+
+        JsonUtils.writeString(inv.getAttachment("dubbo", "2.0.1"), writer);
+        JsonUtils.writeString(inv.getAttachment("path"), writer);
+        JsonUtils.writeString(inv.getAttachment("version"), writer);
+        JsonUtils.writeString(inv.getMethodName(), writer);
+        JsonUtils.writeString(inv.getParameterTypes(), writer);
 
         JsonUtils.writeBytes(inv.getArguments(), writer);
         JsonUtils.writeObject(inv.getAttachments(), writer);
