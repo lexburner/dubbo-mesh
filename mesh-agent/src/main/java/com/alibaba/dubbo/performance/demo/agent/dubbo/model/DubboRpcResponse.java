@@ -23,9 +23,4 @@ public class DubboRpcResponse {
         this.bytes = bytes;
     }
 
-    public void release() {
-        if(bytes.refCnt()>=1) {
-            bytes.release();
-        }
-    }
 }

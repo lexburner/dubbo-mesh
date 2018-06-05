@@ -3,6 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.WeightRoundRobinLoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcBatchDecoder;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcDecoder;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcEncoder;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHolder;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
