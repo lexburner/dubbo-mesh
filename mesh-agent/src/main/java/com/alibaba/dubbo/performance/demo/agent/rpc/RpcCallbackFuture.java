@@ -13,6 +13,7 @@ import java.util.List;
 public class RpcCallbackFuture<T> {
 
     private Channel channel;
+    private Endpoint endpoint;
 
     private T response;
 
@@ -79,5 +80,13 @@ public class RpcCallbackFuture<T> {
 
     public void setChannel(Channel channel) {
         this.channel = channel;
+    }
+
+    public Endpoint getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(Endpoint endpoint) {
+        this.endpoint = endpoint;
     }
 }

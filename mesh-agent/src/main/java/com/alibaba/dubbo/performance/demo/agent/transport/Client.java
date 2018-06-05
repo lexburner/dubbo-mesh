@@ -12,6 +12,6 @@ public interface Client{
 
     void init();
 
-    Channel getChannel();
+    MeshChannel getChannel();
 
 }

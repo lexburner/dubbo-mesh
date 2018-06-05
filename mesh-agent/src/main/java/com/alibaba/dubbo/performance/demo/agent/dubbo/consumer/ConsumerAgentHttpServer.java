@@ -16,6 +16,9 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ThreadBoundClient;
+import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHolder;
+import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
+import com.alibaba.dubbo.performance.demo.agent.transport.RateLimiter;
 import com.alibaba.dubbo.performance.demo.agent.transport.ThreadBoundClientHolder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -29,7 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -52,10 +57,8 @@ public final class ConsumerAgentHttpServer {
      */
     public void startServer() {
         try {
-//            for (EventExecutor eventExecutor : workerGroup) {
-//                System.out.println("create=>"+eventExecutor);
-//            }
             initThreadBoundClient(workerGroup);
+            initRateLimiter();
 
             bootstrap = new ServerBootstrap();
             bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
@@ -75,6 +78,15 @@ public final class ConsumerAgentHttpServer {
             workerGroup.shutdownGracefully();
             logger.info("consumer-agent provider was closed");
         }
+    }
+
+    private void initRateLimiter() {
+
+        List<Endpoint> endpoints = EndpointHolder.getEndpoints();
+        for (Endpoint endpoint : endpoints) {
+            RateLimiter.endpointAtomicIntegerMap.put(endpoint, new AtomicInteger(0));
+        }
+
     }
 
     private void initThreadBoundClient(EventLoopGroup eventLoopGroup){

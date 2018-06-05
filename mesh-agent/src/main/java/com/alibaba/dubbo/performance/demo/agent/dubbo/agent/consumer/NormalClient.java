@@ -7,6 +7,7 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcEncoder;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHolder;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
+import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -32,9 +33,14 @@ public class NormalClient implements Client {
     private NioEventLoopGroup workerGroup = new NioEventLoopGroup();
 
     @Override
-    public Channel getChannel(){
+    public MeshChannel getChannel(){
         if(available){
-            return  channelMap.get(loadBalance.select());
+            Endpoint selectEndpoint = loadBalance.select();
+            MeshChannel meshChannel = new MeshChannel();
+            Channel channel = channelMap.get(selectEndpoint);
+            meshChannel.setEndpoint(selectEndpoint);
+            meshChannel.setChannel(channel);
+            return meshChannel;
         }
         throw new RuntimeException("client不可用");
     }

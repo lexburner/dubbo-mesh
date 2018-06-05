@@ -20,15 +20,19 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RequestParser;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
-import com.alibaba.dubbo.performance.demo.agent.rpc.DefaultRequest;
-import com.alibaba.dubbo.performance.demo.agent.rpc.Request;
-import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
-import com.alibaba.dubbo.performance.demo.agent.rpc.ThreadBoundRpcResponseHolder;
+import com.alibaba.dubbo.performance.demo.agent.rpc.*;
+import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
+import com.alibaba.dubbo.performance.demo.agent.transport.RateLimiter;
 import com.alibaba.dubbo.performance.demo.agent.transport.ThreadBoundClientHolder;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.util.AsciiString;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
@@ -39,6 +43,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -48,6 +56,11 @@ import java.util.Map;
 public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
+
+    private static final AsciiString CONTENT_TYPE = AsciiString.cached("Content-Type");
+    private static final AsciiString CONTENT_LENGTH = AsciiString.cached("Content-Length");
+    private static final AsciiString CONNECTION = AsciiString.cached("Connection");
+    private static final AsciiString KEEP_ALIVE = AsciiString.cached("keep-alive");
 
     public ConsumerAgentHttpServerHandler(){
     }
@@ -99,15 +112,24 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         dubboRpcRequest.setVersion("2.0.0");
         dubboRpcRequest.setTwoWay(true);
         dubboRpcRequest.setData(invocation);
+
+//        logger.info("请求发送成功:{}",dubboRpcRequest.getId());
+        MeshChannel meshChannel = ThreadBoundClientHolder.get(ctx.channel().eventLoop().toString()).getChannel();
+        Endpoint endpoint = meshChannel.getEndpoint();
+        AtomicInteger requestCnt = RateLimiter.endpointAtomicIntegerMap.get(endpoint);
+        if(requestCnt.incrementAndGet()>=200){
+            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.SERVICE_UNAVAILABLE);
+            response.headers().set(CONTENT_TYPE, "text/plain");
+            response.headers().set(CONNECTION, KEEP_ALIVE);
+            ctx.writeAndFlush(response);
+            requestCnt.decrementAndGet();
+        }
+
         RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = new RpcCallbackFuture<>();
         rpcCallbackFuture.setChannel(ctx.channel());
+        rpcCallbackFuture.setEndpoint(endpoint);
         ThreadBoundRpcResponseHolder.put(dubboRpcRequest.getId(), rpcCallbackFuture);
-//        logger.info("请求发送成功:{}",dubboRpcRequest.getId());
-        Channel channel = ThreadBoundClientHolder.get(ctx.channel().eventLoop().toString()).getChannel();
-//        logger.info("Channel.isActive:{}",channel.isActive());
-//        logger.info("Channel.isOpen:{}",channel.isOpen());
-//        logger.info("Channel.isWritable:{}",channel.isWritable());
-        channel.writeAndFlush(dubboRpcRequest).addListener(new GenericFutureListener<Future<? super Void>>() {
+        meshChannel.getChannel().writeAndFlush(dubboRpcRequest).addListener(new GenericFutureListener<Future<? super Void>>() {
             @Override
             public void operationComplete(Future<? super Void> future) throws Exception {
                 if(!future.isSuccess()){
