@@ -1,7 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.rpc;
 
 import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ThreadBoundRpcResponseHolder {
 

@@ -1,24 +1,35 @@
 package com.alibaba.dubbo.performance.demo.agent.util;
 
+import com.alibaba.dubbo.performance.demo.agent.AgentApp;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class QpsTrack {
-    private static AtomicInteger event = new AtomicInteger();
+    private final String methodName;
+    private AtomicInteger count;
+    static final Logger logger = LoggerFactory.getLogger(AgentApp.class);
 
-    static {
+    public QpsTrack(String methodName) {
+        this.methodName = methodName;
+        this.count = new AtomicInteger();
+
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
-
-            if (event.get() != 0) {
-                System.out.println("qps: " + event.get() / 5);
+            if (count.get() != 0) {
+                logger.info("[" + methodName + "] >>>" + " qps: " + count.get() / 5);
             }
-            event.set(0);
+            count.set(0);
 
         }, 0, 5, TimeUnit.SECONDS);
     }
 
-    public static void track() {
-        event.getAndIncrement();
+    static {
+    }
+
+    public void track() {
+        count.getAndIncrement();
     }
 }

@@ -7,7 +7,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.util.AsciiString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +31,8 @@ public class ConsumerAgentHandler extends SimpleChannelInboundHandler<DubboRpcRe
     protected void channelRead0(ChannelHandlerContext ctx, DubboRpcResponse dubboRpcResponse) {
         RpcCallbackFuture rpcCallbackFuture = ThreadBoundRpcResponseHolder.get(dubboRpcResponse.getRequestId());
         if(rpcCallbackFuture!=null){
-            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(dubboRpcResponse.getBytes()));
+            DefaultFullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(dubboRpcResponse.getBytes()));
+
             response.headers().set(CONTENT_TYPE, "text/plain");
             response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
             response.headers().set(CONNECTION, KEEP_ALIVE);

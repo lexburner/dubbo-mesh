@@ -1,7 +1,5 @@
 package com.alibaba.dubbo.performance.demo.agent.transport;
 
-import io.netty.channel.Channel;
-
 /**
  * @author 徐靖峰
  * Date 2018-05-25

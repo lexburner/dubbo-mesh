@@ -1,9 +1,11 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
 
+import io.netty.buffer.ByteBuf;
+
 public class DubboRpcResponse {
 
     private long requestId;
-    private byte[] bytes;
+    private ByteBuf bytes;
 
     public long getRequestId() {
         return requestId;
@@ -13,11 +15,12 @@ public class DubboRpcResponse {
         this.requestId = requestId;
     }
 
-    public byte[] getBytes() {
+    public ByteBuf getBytes() {
         return bytes;
     }
 
-    public void setBytes(byte[] bytes) {
+    public void setBytes(ByteBuf bytes) {
         this.bytes = bytes;
     }
+
 }
