@@ -52,7 +52,9 @@ public class ConsumerAgentBatchHandler extends SimpleChannelInboundHandler<Objec
             response.headers().set(CONTENT_TYPE, "text/plain");
             response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
             response.headers().set(CONNECTION, KEEP_ALIVE);
-            rpcCallbackFuture.getChannel().writeAndFlush(response).addListener(future -> dubboRpcResponse.release());
+            rpcCallbackFuture.getChannel().writeAndFlush(response).addListener(future -> {
+                dubboRpcResponse.release();
+            });
             ThreadBoundRpcResponseHolder.remove(dubboRpcResponse.getRequestId());
         }
     }

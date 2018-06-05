@@ -24,6 +24,8 @@ public class DubboRpcResponse {
     }
 
     public void release() {
-        bytes.release();
+        if(bytes.refCnt()>=1) {
+            bytes.release();
+        }
     }
 }
