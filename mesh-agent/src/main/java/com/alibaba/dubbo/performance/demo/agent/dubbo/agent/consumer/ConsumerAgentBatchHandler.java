@@ -48,7 +48,7 @@ public class ConsumerAgentBatchHandler extends SimpleChannelInboundHandler<Objec
     private void process(DubboRpcResponse dubboRpcResponse) {
         RpcCallbackFuture rpcCallbackFuture = ThreadBoundRpcResponseHolder.get(dubboRpcResponse.getRequestId());
         if(rpcCallbackFuture!=null){
-            RateLimiter.endpointAtomicIntegerMap.get(rpcCallbackFuture.getEndpoint()).decrementAndGet();
+//            RateLimiter.endpointAtomicIntegerMap.get(rpcCallbackFuture.getEndpoint()).decrementAndGet();
             FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(dubboRpcResponse.getBytes()));
             response.headers().set(CONTENT_TYPE, "text/plain");
             response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());

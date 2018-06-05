@@ -100,6 +100,16 @@ public class DubboRpcBatchDecoder extends AbstractBatchDecoder{
         if (readable < tt) {
             return DubboRpcBatchDecoder.DecodeResult.NEED_MORE_INPUT;
         }
+        // handle exception
+        if(header[3] != (byte) 20){
+            byteBuf.readerIndex(savedReaderIndex);
+            byteBuf.skipBytes(tt);
+            long requestId = Bytes.bytes2long(header, 4);
+            DubboRpcResponse response = new DubboRpcResponse();
+            response.setRequestId(requestId);
+            response.setBytes(new byte[]{1});
+            return response;
+        }
 
         byteBuf.readerIndex(savedReaderIndex);
         byte[] data = new byte[tt];

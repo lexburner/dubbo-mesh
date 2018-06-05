@@ -116,14 +116,14 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
 //        logger.info("请求发送成功:{}",dubboRpcRequest.getId());
         MeshChannel meshChannel = ThreadBoundClientHolder.get(ctx.channel().eventLoop().toString()).getChannel();
         Endpoint endpoint = meshChannel.getEndpoint();
-        AtomicInteger requestCnt = RateLimiter.endpointAtomicIntegerMap.get(endpoint);
-        if(requestCnt.incrementAndGet()>=200){
-            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.SERVICE_UNAVAILABLE);
-            response.headers().set(CONTENT_TYPE, "text/plain");
-            response.headers().set(CONNECTION, KEEP_ALIVE);
-            ctx.writeAndFlush(response);
-            requestCnt.decrementAndGet();
-        }
+//        AtomicInteger requestCnt = RateLimiter.endpointAtomicIntegerMap.get(endpoint);
+//        if(requestCnt.incrementAndGet()>=200){
+//            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.SERVICE_UNAVAILABLE);
+//            response.headers().set(CONTENT_TYPE, "text/plain");
+//            response.headers().set(CONNECTION, KEEP_ALIVE);
+//            ctx.writeAndFlush(response);
+//            requestCnt.decrementAndGet();
+//        }
 
         RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = new RpcCallbackFuture<>();
         rpcCallbackFuture.setChannel(ctx.channel());
