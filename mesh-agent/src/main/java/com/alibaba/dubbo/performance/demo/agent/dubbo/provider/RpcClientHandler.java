@@ -8,6 +8,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 
 public class RpcClientHandler extends SimpleChannelInboundHandler<DubboRpcResponse> {
 
@@ -15,7 +17,12 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<DubboRpcRespon
     protected void channelRead0(ChannelHandlerContext ctx, DubboRpcResponse msg) throws Exception {
         Channel inboundChannel = ProviderAgentHandler.inboundChannelMap.get().get(msg.getRequestId());
         if(inboundChannel!=null){
-            inboundChannel.writeAndFlush(messageToMessage(msg));
+            inboundChannel.writeAndFlush(messageToMessage(msg)).addListener(new GenericFutureListener<Future<? super Void>>() {
+                @Override
+                public void operationComplete(Future<? super Void> future) throws Exception {
+                    msg.getBytes().release();
+                }
+            });
             ProviderAgentHandler.inboundChannelMap.get().remove(msg.getRequestId());
         }
     }

@@ -1,15 +1,12 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.DubboMeshProto;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcBatchDecoder;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcEncoder;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcRequest;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.provider.RpcClientHandler;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
-import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,37 +26,14 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
     private Logger logger = LoggerFactory.getLogger(ProviderAgentHandler.class);
 
     public static ThreadLocal<Map<Long,Channel>> inboundChannelMap = ThreadLocal.withInitial(HashMap::new);
-    public static ThreadLocal<Channel> outboundChannelHolder = new ThreadLocal<>();
 
     static final String REMOTE_HOST = "127.0.0.1";
     static final int REMOTE_PORT = Integer.valueOf(System.getProperty("dubbo.protocol.port"));
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        if(outboundChannelHolder.get()==null){
-            final Channel inboundChannel = ctx.channel();
-
-            Bootstrap b = new Bootstrap();
-            b.group(inboundChannel.eventLoop())
-                    .channel(ctx.channel().getClass())
-                    .handler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline()
-                                    .addLast(new DubboRpcBatchDecoder())
-                                    .addLast(new DubboRpcEncoder())
-                                    .addLast(new RpcClientHandler());
-                        }
-                    });
-            ChannelFuture f = b.connect(REMOTE_HOST, REMOTE_PORT);
-            outboundChannelHolder.set(f.channel());
-        }
-    }
-
-    @Override
     protected void channelRead0(ChannelHandlerContext ctx, DubboMeshProto.AgentRequest msg) throws Exception {
         inboundChannelMap.get().put(msg.getRequestId(), ctx.channel());
-        outboundChannelHolder.get().writeAndFlush(messageToMessage(msg));
+        ProviderAgentServer.outboundChannel.writeAndFlush(messageToMessage(msg));
     }
 
     private DubboRpcRequest messageToMessage(DubboMeshProto.AgentRequest agentRequest){

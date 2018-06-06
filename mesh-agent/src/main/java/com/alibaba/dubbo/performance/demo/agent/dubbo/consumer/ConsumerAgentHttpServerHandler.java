@@ -72,7 +72,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     public void call(ChannelHandlerContext ctx,DubboMeshProto.AgentRequest request) {
         MeshChannel meshChannel = ThreadBoundClientHolder.get(ctx.channel().eventLoop().toString()).getChannel();
         Endpoint endpoint = meshChannel.getEndpoint();
-        RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = new RpcCallbackFuture<>();
+        RpcCallbackFuture rpcCallbackFuture = new RpcCallbackFuture<>();
         rpcCallbackFuture.setChannel(ctx.channel());
         rpcCallbackFuture.setEndpoint(endpoint);
         ThreadBoundRpcResponseHolder.put(request.getRequestId(), rpcCallbackFuture);

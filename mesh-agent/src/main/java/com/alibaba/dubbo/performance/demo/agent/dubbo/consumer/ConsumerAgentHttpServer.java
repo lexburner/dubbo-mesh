@@ -56,7 +56,6 @@ public final class ConsumerAgentHttpServer {
     public void startServer() {
         try {
             initThreadBoundClient(workerGroup);
-            initRateLimiter();
 
             bootstrap = new ServerBootstrap();
             bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
@@ -78,14 +77,6 @@ public final class ConsumerAgentHttpServer {
         }
     }
 
-    private void initRateLimiter() {
-
-        List<Endpoint> endpoints = EndpointHolder.getEndpoints();
-        for (Endpoint endpoint : endpoints) {
-            RateLimiter.endpointAtomicIntegerMap.put(endpoint, new AtomicInteger(0));
-        }
-
-    }
 
     private void initThreadBoundClient(EventLoopGroup eventLoopGroup){
         for (EventExecutor eventExecutor : eventLoopGroup) {
