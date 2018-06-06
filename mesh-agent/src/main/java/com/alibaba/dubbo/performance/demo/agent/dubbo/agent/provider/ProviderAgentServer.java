@@ -20,7 +20,7 @@ public class ProviderAgentServer {
     private Logger logger = LoggerFactory.getLogger(ProviderAgentServer.class);
 
     private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-    private static EventLoopGroup workerGroup = new NioEventLoopGroup();
+    private EventLoopGroup workerGroup = new NioEventLoopGroup(1);
 
     static final String REMOTE_HOST = "127.0.0.1";
     static final int REMOTE_PORT = Integer.valueOf(System.getProperty("dubbo.protocol.port"));
