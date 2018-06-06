@@ -22,21 +22,29 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.rpc.*;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
+import com.alibaba.dubbo.performance.demo.agent.transport.RateLimiter;
 import com.alibaba.dubbo.performance.demo.agent.transport.ThreadBoundClientHolder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.AsciiString;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -54,6 +62,8 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
 
     public ConsumerAgentHttpServerHandler(){
     }
+
+
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -107,7 +117,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         MeshChannel meshChannel = ThreadBoundClientHolder.get(ctx.channel().eventLoop().toString()).getChannel();
         Endpoint endpoint = meshChannel.getEndpoint();
 //        AtomicInteger requestCnt = RateLimiter.endpointAtomicIntegerMap.get(endpoint);
-//        if(requestCnt.incrementAndGet()>=200){
+//        if(requestCnt.incrementAndGet()>200){
 //            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.SERVICE_UNAVAILABLE);
 //            response.headers().set(CONTENT_TYPE, "text/plain");
 //            response.headers().set(CONNECTION, KEEP_ALIVE);
@@ -121,6 +131,8 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         ThreadBoundRpcResponseHolder.put(dubboRpcRequest.getId(), rpcCallbackFuture);
         meshChannel.getChannel().writeAndFlush(dubboRpcRequest);
     }
+
+    static AtomicInteger errors = new AtomicInteger(0);
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {

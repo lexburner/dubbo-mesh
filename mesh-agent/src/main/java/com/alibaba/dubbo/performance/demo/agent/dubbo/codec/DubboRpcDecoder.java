@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.codec;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import org.slf4j.Logger;
@@ -27,7 +28,8 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
             return ;
         }
         byteBuf.markReaderIndex();
-        byteBuf.skipBytes(4);
+        byteBuf.skipBytes(3);
+        byte status = byteBuf.readByte();
         long requestId = byteBuf.readLong();
         int len = byteBuf.readInt();
         if (byteBuf.readableBytes() < len) {
@@ -35,9 +37,13 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
             return;
         }
         DubboRpcResponse response = new DubboRpcResponse();
-        response.setRequestId(requestId);
-        response.setBytes(byteBuf.retainedSlice(byteBuf.readerIndex() + 2, len - 3));
+        if(status != 20){
+            response.setBytes(Unpooled.wrappedBuffer(new byte[]{0,0,0,1,0,0,0,1,0,0,0,1}));
+        }else {
+            response.setBytes(byteBuf.retainedSlice(byteBuf.readerIndex() + 2, len - 3));
+        }
         byteBuf.skipBytes(len);
+        response.setRequestId(requestId);
         list.add(response);
     }
 

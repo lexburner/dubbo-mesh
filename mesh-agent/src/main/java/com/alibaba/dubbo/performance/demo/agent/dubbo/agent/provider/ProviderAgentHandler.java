@@ -19,8 +19,6 @@ public class ProviderAgentHandler extends ChannelInboundHandlerAdapter {
     private final String remoteHost;
     private final int remotePort;
 
-    static NioEventLoopGroup singleLoop = new NioEventLoopGroup(1);
-
     // As we use inboundChannel.eventLoop() when building the Bootstrap this does not need to be volatile as
     // the outboundChannel will use the same EventLoop (and therefore Thread) as the inboundChannel.
     private Channel outboundChannel;
@@ -30,15 +28,13 @@ public class ProviderAgentHandler extends ChannelInboundHandlerAdapter {
         this.remotePort = remotePort;
     }
 
-
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         final Channel inboundChannel = ctx.channel();
 
         // Start the connection attempt.
         Bootstrap b = new Bootstrap();
-//        b.group(inboundChannel.eventLoop())
-        b.group(singleLoop)
+        b.group(inboundChannel.eventLoop())
                 .channel(ctx.channel().getClass())
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
