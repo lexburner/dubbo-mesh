@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.JsonUtils;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RequestParser;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcRequest;
@@ -22,20 +23,13 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.rpc.*;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
-import com.alibaba.dubbo.performance.demo.agent.transport.RateLimiter;
 import com.alibaba.dubbo.performance.demo.agent.transport.ThreadBoundClientHolder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.AsciiString;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,8 +37,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -55,25 +48,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
 
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
 
-    private static final AsciiString CONTENT_TYPE = AsciiString.cached("Content-Type");
-    private static final AsciiString CONTENT_LENGTH = AsciiString.cached("Content-Length");
-    private static final AsciiString CONNECTION = AsciiString.cached("Connection");
-    private static final AsciiString KEEP_ALIVE = AsciiString.cached("keep-alive");
-
-    public ConsumerAgentHttpServerHandler(){
-    }
-
-
-
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-//        System.out.println("avtive=>"+ctx.channel().eventLoop());
-//        if(clientHolder.get()==null){
-//            Client client = new ThreadBoundClient(ctx.channel().eventLoop());
-//            client.init();
-//            clientHolder.set(client);
-//        }
-    }
+    public static AtomicLong requestIdGenerator = new AtomicLong(0);
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) {
@@ -84,55 +59,25 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         Map<String, String> requestParams;
         requestParams = RequestParser.parse(req);
 
-        DefaultRequest defaultRequest = new DefaultRequest();
-        defaultRequest.setInterfaceName(requestParams.get("interface"));
-        defaultRequest.setMethod(requestParams.get("method"));
-        defaultRequest.setParameterTypesString(requestParams.get("parameterTypesString"));
-        defaultRequest.setParameter(requestParams.get("parameter"));
+        DubboMeshProto.AgentRequest agentRequest = DubboMeshProto.AgentRequest.newBuilder().setRequestId(requestIdGenerator.incrementAndGet())
+                .setInterfaceName(requestParams.get("interface"))
+                .setMethod(requestParams.get("method"))
+                .setParameterTypesString(requestParams.get("parameterTypesString"))
+                .setParameter(requestParams.get("parameter"))
+                .build();
 
-        this.call(ctx,defaultRequest);
-
+        this.call(ctx,agentRequest);
     }
 
-    public void call(ChannelHandlerContext ctx,Request request) {
-        RpcInvocation invocation = new RpcInvocation();
-        invocation.setMethodName(request.getMethod());
-        invocation.setAttachment("path", request.getInterfaceName());
-        invocation.setParameterTypes(request.getParameterTypesString());    // Dubbo内部用"Ljava/lang/String"来表示参数类型是String
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
-        try {
-            JsonUtils.writeObject(request.getParameter(), writer);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        invocation.setArguments(out.toByteArray());
-        DubboRpcRequest dubboRpcRequest = new DubboRpcRequest();
-        dubboRpcRequest.setVersion("2.0.0");
-        dubboRpcRequest.setTwoWay(true);
-        dubboRpcRequest.setData(invocation);
-
-//        logger.info("请求发送成功:{}",dubboRpcRequest.getId());
+    public void call(ChannelHandlerContext ctx,DubboMeshProto.AgentRequest request) {
         MeshChannel meshChannel = ThreadBoundClientHolder.get(ctx.channel().eventLoop().toString()).getChannel();
         Endpoint endpoint = meshChannel.getEndpoint();
-//        AtomicInteger requestCnt = RateLimiter.endpointAtomicIntegerMap.get(endpoint);
-//        if(requestCnt.incrementAndGet()>200){
-//            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.SERVICE_UNAVAILABLE);
-//            response.headers().set(CONTENT_TYPE, "text/plain");
-//            response.headers().set(CONNECTION, KEEP_ALIVE);
-//            ctx.writeAndFlush(response);
-//            requestCnt.decrementAndGet();
-//        }
-
         RpcCallbackFuture<DubboRpcResponse> rpcCallbackFuture = new RpcCallbackFuture<>();
         rpcCallbackFuture.setChannel(ctx.channel());
         rpcCallbackFuture.setEndpoint(endpoint);
-        ThreadBoundRpcResponseHolder.put(dubboRpcRequest.getId(), rpcCallbackFuture);
-        meshChannel.getChannel().writeAndFlush(dubboRpcRequest);
+        ThreadBoundRpcResponseHolder.put(request.getRequestId(), rpcCallbackFuture);
+        meshChannel.getChannel().writeAndFlush(request);
     }
-
-    static AtomicInteger errors = new AtomicInteger(0);
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {

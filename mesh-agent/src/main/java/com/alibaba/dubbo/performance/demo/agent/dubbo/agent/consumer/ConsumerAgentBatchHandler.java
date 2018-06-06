@@ -1,6 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
 import com.alibaba.dubbo.performance.demo.agent.rpc.ThreadBoundRpcResponseHolder;
 import io.netty.buffer.Unpooled;
@@ -32,29 +32,26 @@ public class ConsumerAgentBatchHandler extends SimpleChannelInboundHandler<Objec
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
-
-
-        if (msg instanceof DubboRpcResponse) {
-            DubboRpcResponse dubboRpcResponse = (DubboRpcResponse) msg;
-            callback(dubboRpcResponse);
+        if (msg instanceof DubboMeshProto.AgentResponse) {
+            DubboMeshProto.AgentResponse agentResponse = (DubboMeshProto.AgentResponse) msg;
+            callback(agentResponse);
         } else if (msg instanceof List) {
-            List<DubboRpcResponse> dubboRpcResponses = (List<DubboRpcResponse>) msg;
-            for (DubboRpcResponse dubboRpcResponse : dubboRpcResponses) {
-                callback(dubboRpcResponse);
+            List<DubboMeshProto.AgentResponse> agentResponses = (List<DubboMeshProto.AgentResponse>) msg;
+            for (DubboMeshProto.AgentResponse agentResponse : agentResponses) {
+                callback(agentResponse);
             }
         }
-
     }
 
-    private void callback(DubboRpcResponse dubboRpcResponse) {
-        RpcCallbackFuture rpcCallbackFuture = ThreadBoundRpcResponseHolder.get(dubboRpcResponse.getRequestId());
+    private void callback(DubboMeshProto.AgentResponse agentResponse) {
+        RpcCallbackFuture rpcCallbackFuture = ThreadBoundRpcResponseHolder.get(agentResponse.getRequestId());
         if (rpcCallbackFuture != null) {
-            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(dubboRpcResponse.getBytes()));
+            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(agentResponse.getHash().toByteArray()));
             response.headers().set(CONTENT_TYPE, "text/plain");
             response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
             response.headers().set(CONNECTION, KEEP_ALIVE);
             rpcCallbackFuture.getChannel().writeAndFlush(response);
-            ThreadBoundRpcResponseHolder.remove(dubboRpcResponse.getRequestId());
+            ThreadBoundRpcResponseHolder.remove(agentResponse.getRequestId());
         }
     }
 

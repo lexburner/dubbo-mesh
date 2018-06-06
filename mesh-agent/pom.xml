@@ -78,6 +78,11 @@
             <artifactId>httpasyncclient</artifactId>
             <version>4.1.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.5.1</version>
+        </dependency>
     </dependencies>
 
     <!-- Package as an executable jar -->

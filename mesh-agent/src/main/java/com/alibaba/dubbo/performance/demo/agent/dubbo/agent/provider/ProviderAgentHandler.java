@@ -1,98 +1,95 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.DubboMeshProto;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcBatchDecoder;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcEncoder;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.common.JsonUtils;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcRequest;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.provider.RpcClientHandler;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author 徐靖峰
  * Date 2018-05-17
  */
-public class ProviderAgentHandler extends ChannelInboundHandlerAdapter {
+public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshProto.AgentRequest> {
 
     private Logger logger = LoggerFactory.getLogger(ProviderAgentHandler.class);
 
-    private final String remoteHost;
-    private final int remotePort;
+    public static ThreadLocal<Map<Long,Channel>> inboundChannelMap = ThreadLocal.withInitial(HashMap::new);
+    public static ThreadLocal<Channel> outboundChannelHolder = new ThreadLocal<>();
 
-    // As we use inboundChannel.eventLoop() when building the Bootstrap this does not need to be volatile as
-    // the outboundChannel will use the same EventLoop (and therefore Thread) as the inboundChannel.
-    private Channel outboundChannel;
-
-    public ProviderAgentHandler(String remoteHost, int remotePort) {
-        this.remoteHost = remoteHost;
-        this.remotePort = remotePort;
-    }
+    static final String REMOTE_HOST = "127.0.0.1";
+    static final int REMOTE_PORT = Integer.valueOf(System.getProperty("dubbo.protocol.port"));
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) {
-        final Channel inboundChannel = ctx.channel();
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        if(outboundChannelHolder.get()==null){
+            final Channel inboundChannel = ctx.channel();
 
-        // Start the connection attempt.
-        Bootstrap b = new Bootstrap();
-        b.group(inboundChannel.eventLoop())
-                .channel(ctx.channel().getClass())
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.TCP_NODELAY, true)
-                .handler(new RpcClientHandler(inboundChannel))
-                .option(ChannelOption.AUTO_READ, false);
-        ChannelFuture f = b.connect(remoteHost, remotePort);
-        outboundChannel = f.channel();
-        f.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) {
-                if (future.isSuccess()) {
-                    // connection complete start to read first data
-                    inboundChannel.read();
-                } else {
-                    // Close the connection if the connection attempt has failed.
-                    inboundChannel.close();
-                }
-            }
-        });
-    }
-
-    @Override
-    public void channelRead(final ChannelHandlerContext ctx, Object msg) {
-        if (outboundChannel.isActive()) {
-            outboundChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) {
-                    if (future.isSuccess()) {
-                        // was able to flush out data, start to read the next chunk
-                        ctx.channel().read();
-                    } else {
-                        future.channel().close();
-                    }
-                }
-            });
+            Bootstrap b = new Bootstrap();
+            b.group(inboundChannel.eventLoop())
+                    .channel(ctx.channel().getClass())
+                    .handler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel ch) throws Exception {
+                            ch.pipeline()
+                                    .addLast(new DubboRpcBatchDecoder())
+                                    .addLast(new DubboRpcEncoder())
+                                    .addLast(new RpcClientHandler());
+                        }
+                    });
+            ChannelFuture f = b.connect(REMOTE_HOST, REMOTE_PORT);
+            outboundChannelHolder.set(f.channel());
         }
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) {
-        if (outboundChannel != null) {
-            closeOnFlush(outboundChannel);
+    protected void channelRead0(ChannelHandlerContext ctx, DubboMeshProto.AgentRequest msg) throws Exception {
+        inboundChannelMap.get().put(msg.getRequestId(), ctx.channel());
+        outboundChannelHolder.get().writeAndFlush(messageToMessage(msg));
+    }
+
+    private DubboRpcRequest messageToMessage(DubboMeshProto.AgentRequest agentRequest){
+//        logger.info("接收到请求{}",agentRequest.toString());
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName(agentRequest.getMethod());
+        invocation.setAttachment("path", agentRequest.getInterfaceName());
+        invocation.setParameterTypes(agentRequest.getParameterTypesString());    // Dubbo内部用"Ljava/lang/String"来表示参数类型是String
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+        try {
+            JsonUtils.writeObject(agentRequest.getParameter(), writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+        invocation.setArguments(out.toByteArray());
+        DubboRpcRequest dubboRpcRequest = new DubboRpcRequest();
+        dubboRpcRequest.setId(agentRequest.getRequestId());
+        dubboRpcRequest.setVersion("2.0.0");
+        dubboRpcRequest.setTwoWay(true);
+        dubboRpcRequest.setData(invocation);
+//        logger.info("请求发送成功:{}",dubboRpcRequest.getId());
+        return dubboRpcRequest;
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
-        closeOnFlush(ctx.channel());
-    }
-
-    /**
-     * Closes the specified channel after all queued write requests are flushed.
-     */
-    public static void closeOnFlush(Channel ch) {
-        if (ch.isActive()) {
-            ch.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
-        }
+        ctx.channel().close();
     }
 
 }

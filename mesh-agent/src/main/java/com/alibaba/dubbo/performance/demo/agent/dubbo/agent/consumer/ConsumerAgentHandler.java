@@ -3,7 +3,6 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
 import com.alibaba.dubbo.performance.demo.agent.rpc.ThreadBoundRpcResponseHolder;
-import com.alibaba.dubbo.performance.demo.agent.transport.RateLimiter;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -32,7 +31,6 @@ public class ConsumerAgentHandler extends SimpleChannelInboundHandler<DubboRpcRe
     protected void channelRead0(ChannelHandlerContext ctx, DubboRpcResponse dubboRpcResponse) {
         RpcCallbackFuture rpcCallbackFuture = ThreadBoundRpcResponseHolder.get(dubboRpcResponse.getRequestId());
         if(rpcCallbackFuture!=null){
-//            RateLimiter.endpointAtomicIntegerMap.get(rpcCallbackFuture.getEndpoint()).decrementAndGet();
             DefaultFullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(dubboRpcResponse.getBytes()));
 
             response.headers().set(CONTENT_TYPE, "text/plain");

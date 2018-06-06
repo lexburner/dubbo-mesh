@@ -1,44 +1,40 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.provider;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.ProviderAgentHandler;
-import io.netty.channel.*;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
+import com.google.protobuf.ByteString;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 
-public class RpcClientHandler extends ChannelInboundHandlerAdapter {
-
-    private final Channel inboundChannel;
-
-    public RpcClientHandler(Channel inboundChannel) {
-        this.inboundChannel = inboundChannel;
-    }
-
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) {
-        ctx.read();
-    }
+public class RpcClientHandler extends SimpleChannelInboundHandler<DubboRpcResponse> {
 
     @Override
-    public void channelRead(final ChannelHandlerContext ctx, Object msg) {
-        inboundChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) {
-                if (future.isSuccess()) {
-                    ctx.channel().read();
-                } else {
-                    future.channel().close();
-                }
-            }
-        });
+    protected void channelRead0(ChannelHandlerContext ctx, DubboRpcResponse msg) throws Exception {
+        Channel inboundChannel = ProviderAgentHandler.inboundChannelMap.get().get(msg.getRequestId());
+        if(inboundChannel!=null){
+            inboundChannel.writeAndFlush(messageToMessage(msg));
+            ProviderAgentHandler.inboundChannelMap.get().remove(msg.getRequestId());
+        }
     }
 
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) {
-        ProviderAgentHandler.closeOnFlush(inboundChannel);
+    private DubboMeshProto.AgentResponse messageToMessage(DubboRpcResponse dubboRpcResponse){
+        ByteBuf bytes = dubboRpcResponse.getBytes();
+        byte[] result = new byte[bytes.readableBytes()];
+        bytes.readBytes(result);
+//        logger.info("接收到请求{}",agentRequest.toString());
+        return DubboMeshProto.AgentResponse.newBuilder()
+                .setRequestId(dubboRpcResponse.getRequestId())
+                .setHash(ByteString.copyFrom(result))
+                .build();
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
-        ProviderAgentHandler.closeOnFlush(ctx.channel());
+        ctx.channel().close();
     }
 
 }

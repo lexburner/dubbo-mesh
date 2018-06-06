@@ -2,9 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
 
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.WeightRoundRobinLoadBalance;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcBatchDecoder;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcDecoder;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcEncoder;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHolder;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
@@ -13,6 +11,10 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufEncoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 
 import java.util.HashMap;
 import java.util.List;
@@ -69,10 +71,10 @@ public class ThreadBoundClient implements Client{
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline()
-                                .addLast(new DubboRpcEncoder())
-//                                .addLast(new DubboRpcDecoder())
-//                                .addLast(new ConsumerAgentHandler());
-                        .addLast(new DubboRpcBatchDecoder())
+                                .addLast("protobufVarint32FrameDecoder", new ProtobufVarint32FrameDecoder())
+                                .addLast("protobufDecoder", new ProtobufDecoder(DubboMeshProto.AgentResponse.getDefaultInstance()))
+                                .addLast("protobufVarint32LengthFieldPrepender", new ProtobufVarint32LengthFieldPrepender())
+                                .addLast("protobufEncoder", new ProtobufEncoder())
                                 .addLast(new ConsumerAgentBatchHandler());
                     }
                 });
