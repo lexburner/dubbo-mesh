@@ -102,7 +102,8 @@ public class EtcdRegistry implements IRegistry {
             String host = endpointStr.split(":")[0];
             int port = Integer.valueOf(endpointStr.split(":")[1]);
             int weight = Integer.parseInt(kv.getValue().toStringUtf8());
-            Endpoint endpoint = new Endpoint(host,port);
+//            Endpoint endpoint = new Endpoint(host,port);
+            Endpoint endpoint = new Endpoint(host,20880);
             endpoint.setWeight(weight);
             endpoints.add(endpoint);
         }
