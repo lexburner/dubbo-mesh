@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.codec;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,7 @@ public class DubboRpcBatchDecoder extends AbstractBatchDecoder{
 
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
+
         int readable = byteBuf.readableBytes();
 
         // 确保拿到一个完整的header
@@ -50,7 +52,8 @@ public class DubboRpcBatchDecoder extends AbstractBatchDecoder{
             return ;
         }
         byteBuf.markReaderIndex();
-        byteBuf.skipBytes(4);
+        byteBuf.skipBytes(3);
+        byte status = byteBuf.readByte();
         long requestId = byteBuf.readLong();
         int len = byteBuf.readInt();
         if (byteBuf.readableBytes() < len) {
@@ -58,11 +61,16 @@ public class DubboRpcBatchDecoder extends AbstractBatchDecoder{
             return;
         }
         DubboRpcResponse response = new DubboRpcResponse();
-        response.setRequestId(requestId);
-        response.setBytes(byteBuf.retainedSlice(byteBuf.readerIndex() + 2, len - 3));
+        if(status != 20){
+            response.setBytes(Unpooled.wrappedBuffer(new byte[]{1}));
+        }else {
+            response.setBytes(byteBuf.retainedSlice(byteBuf.readerIndex() + 2, len - 3));
+        }
         byteBuf.skipBytes(len);
+        response.setRequestId(requestId);
         list.add(response);
     }
+
 
 
 }

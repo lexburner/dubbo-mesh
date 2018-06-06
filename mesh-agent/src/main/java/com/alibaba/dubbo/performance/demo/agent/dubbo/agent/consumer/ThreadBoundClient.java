@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
 
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.WeightRoundRobinLoadBalance;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcBatchDecoder;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcDecoder;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.codec.DubboRpcEncoder;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHolder;
@@ -69,10 +70,10 @@ public class ThreadBoundClient implements Client{
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline()
                                 .addLast(new DubboRpcEncoder())
-                                .addLast(new DubboRpcDecoder())
-                                .addLast(new ConsumerAgentHandler());
-//                        .addLast(new DubboRpcBatchDecoder())
-//                                .addLast(new ConsumerAgentBatchHandler());
+//                                .addLast(new DubboRpcDecoder())
+//                                .addLast(new ConsumerAgentHandler());
+                        .addLast(new DubboRpcBatchDecoder())
+                                .addLast(new ConsumerAgentBatchHandler());
                     }
                 });
         ChannelFuture f = b.connect(endpoint.getHost(), endpoint.getPort());
