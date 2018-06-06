@@ -4,6 +4,7 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.provider.RpcClientHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,8 @@ public class ProviderAgentHandler extends ChannelInboundHandlerAdapter {
 
     private final String remoteHost;
     private final int remotePort;
+
+    static NioEventLoopGroup singleLoop = new NioEventLoopGroup(1);
 
     // As we use inboundChannel.eventLoop() when building the Bootstrap this does not need to be volatile as
     // the outboundChannel will use the same EventLoop (and therefore Thread) as the inboundChannel.
@@ -34,7 +37,8 @@ public class ProviderAgentHandler extends ChannelInboundHandlerAdapter {
 
         // Start the connection attempt.
         Bootstrap b = new Bootstrap();
-        b.group(inboundChannel.eventLoop())
+//        b.group(inboundChannel.eventLoop())
+        b.group(singleLoop)
                 .channel(ctx.channel().getClass())
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)

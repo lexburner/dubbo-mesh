@@ -93,7 +93,7 @@ public class EtcdRegistry implements IRegistry {
         GetResponse response = kv.get(key, GetOption.newBuilder().withPrefix(key).build()).get();
 
         List<Endpoint> endpoints = new ArrayList<>();
-
+//        int i = 20880;
         for (com.coreos.jetcd.data.KeyValue kv : response.getKvs()) {
             String s = kv.getKey().toStringUtf8();
             int index = s.lastIndexOf("/");
@@ -102,8 +102,9 @@ public class EtcdRegistry implements IRegistry {
             String host = endpointStr.split(":")[0];
             int port = Integer.valueOf(endpointStr.split(":")[1]);
             int weight = Integer.parseInt(kv.getValue().toStringUtf8());
-//            Endpoint endpoint = new Endpoint(host,port);
-            Endpoint endpoint = new Endpoint(host,20880);
+            Endpoint endpoint = new Endpoint(host,port);
+//            Endpoint endpoint = new Endpoint(host,i);
+//            i++;
             endpoint.setWeight(weight);
             endpoints.add(endpoint);
         }
