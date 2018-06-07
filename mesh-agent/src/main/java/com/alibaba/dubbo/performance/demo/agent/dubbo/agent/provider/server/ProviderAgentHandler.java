@@ -1,11 +1,10 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.client.DubboClient;
+import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.DubboRpcRequest;
+import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import com.alibaba.dubbo.performance.demo.agent.util.JsonUtils;
-import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.DubboRpcRequest;
-import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.RpcInvocation;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -51,7 +50,7 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
         invocation.setMethodName(agentRequest.getMethod());
         invocation.setAttachment("path", agentRequest.getInterfaceName());
         invocation.setParameterTypes(agentRequest.getParameterTypesString());    // Dubbo内部用"Ljava/lang/String"来表示参数类型是String
-//        invocation.setAttachment("async","true");
+        invocation.setAttachment("async","true");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
         try {

@@ -1,8 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.protocol.dubbo;
 
 
-import java.util.concurrent.atomic.AtomicLong;
-
 public class DubboRpcRequest {
     private long id;
     private String interfaceName = "com.alibaba.dubbo.performance.demo.provider.IHelloService";
