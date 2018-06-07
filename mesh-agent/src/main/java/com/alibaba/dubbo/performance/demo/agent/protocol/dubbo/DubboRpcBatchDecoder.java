@@ -62,9 +62,9 @@ public class DubboRpcBatchDecoder extends AbstractBatchDecoder{
         }
         DubboRpcResponse response = new DubboRpcResponse();
         if(status != 20){
-            response.setBytes(Unpooled.wrappedBuffer(new byte[]{1}));
+            response.setBytes(new byte[]{1});
         }else {
-            response.setBytes(byteBuf.retainedSlice(byteBuf.readerIndex() + 2, len - 3));
+//            response.setBytes(byteBuf.retainedSlice(byteBuf.readerIndex() + 2, len - 3));
         }
         byteBuf.skipBytes(len);
         response.setRequestId(requestId);

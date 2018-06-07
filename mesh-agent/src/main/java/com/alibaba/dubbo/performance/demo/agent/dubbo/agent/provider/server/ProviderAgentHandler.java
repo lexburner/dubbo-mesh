@@ -51,7 +51,7 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
         invocation.setMethodName(agentRequest.getMethod());
         invocation.setAttachment("path", agentRequest.getInterfaceName());
         invocation.setParameterTypes(agentRequest.getParameterTypesString());    // Dubbo内部用"Ljava/lang/String"来表示参数类型是String
-
+//        invocation.setAttachment("async","true");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
         try {
