@@ -20,6 +20,7 @@ import com.alibaba.dubbo.performance.demo.agent.util.RequestParser;
 import com.alibaba.dubbo.performance.demo.agent.rpc.*;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import com.alibaba.dubbo.performance.demo.agent.transport.ThreadBoundClientHolder;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -34,6 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * company qianmi.com
  * Date 2018-05-22
  */
+@ChannelHandler.Sharable
 public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     public ConsumerAgentHttpServerHandler(){
