@@ -1,9 +1,11 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.DubboMeshProto;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.common.JsonUtils;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcRequest;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.client.DubboClient;
+import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
+import com.alibaba.dubbo.performance.demo.agent.transport.Client;
+import com.alibaba.dubbo.performance.demo.agent.util.JsonUtils;
+import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.DubboRpcRequest;
+import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.RpcInvocation;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -27,13 +29,16 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
 
     public static ThreadLocal<Map<Long,Channel>> inboundChannelMap = ThreadLocal.withInitial(HashMap::new);
 
-    static final String REMOTE_HOST = "127.0.0.1";
-    static final int REMOTE_PORT = Integer.valueOf(System.getProperty("dubbo.protocol.port"));
+    private Client dubboClient;
+
+    public ProviderAgentHandler(Client dubboClient){
+        this.dubboClient = dubboClient;
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DubboMeshProto.AgentRequest msg) throws Exception {
         inboundChannelMap.get().put(msg.getRequestId(), ctx.channel());
-        ProviderAgentServer.outboundChannel.writeAndFlush(messageToMessage(msg));
+        dubboClient.getChannel().getChannel().writeAndFlush(messageToMessage(msg));
     }
 
     private DubboRpcRequest messageToMessage(DubboMeshProto.AgentRequest agentRequest){

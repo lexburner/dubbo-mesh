@@ -1,8 +1,8 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.provider;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.client;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.DubboMeshProto;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.ProviderAgentHandler;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
+import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server.ProviderAgentHandler;
+import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.DubboRpcResponse;
 import com.google.protobuf.ByteString;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -11,7 +11,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
-public class RpcClientHandler extends SimpleChannelInboundHandler<DubboRpcResponse> {
+public class DubboRpcHandler extends SimpleChannelInboundHandler<DubboRpcResponse> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DubboRpcResponse msg) throws Exception {

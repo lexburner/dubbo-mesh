@@ -1,8 +1,8 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client;
 
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.WeightRoundRobinLoadBalance;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.DubboMeshProto;
+import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHolder;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;

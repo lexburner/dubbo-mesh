@@ -1,6 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.transport;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ThreadBoundClient;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.ThreadBoundClient;
 
 import java.util.HashMap;
 import java.util.Map;

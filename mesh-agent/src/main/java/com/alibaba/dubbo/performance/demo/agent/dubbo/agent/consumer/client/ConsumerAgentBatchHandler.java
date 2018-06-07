@@ -1,6 +1,6 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.DubboMeshProto;
+import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
 import com.alibaba.dubbo.performance.demo.agent.rpc.ThreadBoundRpcResponseHolder;
 import io.netty.buffer.Unpooled;

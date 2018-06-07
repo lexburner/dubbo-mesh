@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.model;
+package com.alibaba.dubbo.performance.demo.agent.protocol.dubbo;
 
 
 import java.util.concurrent.atomic.AtomicLong;

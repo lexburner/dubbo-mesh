@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;

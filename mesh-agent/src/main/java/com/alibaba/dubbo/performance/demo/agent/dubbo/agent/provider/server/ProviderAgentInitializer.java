@@ -1,6 +1,7 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.DubboMeshProto;
+import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
+import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -15,6 +16,12 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
  */
 public class ProviderAgentInitializer extends ChannelInitializer<SocketChannel> {
 
+    private Client client;
+
+    public ProviderAgentInitializer(Client client){
+        this.client = client;
+    }
+
     @Override
     protected void initChannel(SocketChannel socketChannel) {
         ChannelPipeline pipeline = socketChannel.pipeline();
@@ -22,6 +29,6 @@ public class ProviderAgentInitializer extends ChannelInitializer<SocketChannel> 
         pipeline.addLast("protobufDecoder", new ProtobufDecoder(DubboMeshProto.AgentRequest.getDefaultInstance()));
         pipeline.addLast("protobufVarint32LengthFieldPrepender", new ProtobufVarint32LengthFieldPrepender());
         pipeline.addLast("protobufEncoder", new ProtobufEncoder());
-        pipeline.addLast(new ProviderAgentHandler());
+        pipeline.addLast(new ProviderAgentHandler(client));
     }
 }

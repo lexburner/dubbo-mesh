@@ -1,6 +1,5 @@
-package com.alibaba.dubbo.performance.demo.agent.dubbo.codec;
+package com.alibaba.dubbo.performance.demo.agent.protocol.dubbo;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;

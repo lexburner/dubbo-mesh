@@ -13,12 +13,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.ThreadBoundClient;
-import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHolder;
-import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
-import com.alibaba.dubbo.performance.demo.agent.transport.RateLimiter;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.ThreadBoundClient;
 import com.alibaba.dubbo.performance.demo.agent.transport.ThreadBoundClientHolder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -30,9 +27,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.EventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author 徐靖峰[OF2938]

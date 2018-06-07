@@ -13,30 +13,20 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package com.alibaba.dubbo.performance.demo.agent.dubbo.consumer;
+package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.model.DubboMeshProto;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.common.JsonUtils;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.common.RequestParser;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcRequest;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.DubboRpcResponse;
-import com.alibaba.dubbo.performance.demo.agent.dubbo.model.RpcInvocation;
+import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
+import com.alibaba.dubbo.performance.demo.agent.util.RequestParser;
 import com.alibaba.dubbo.performance.demo.agent.rpc.*;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import com.alibaba.dubbo.performance.demo.agent.transport.ThreadBoundClientHolder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.util.AsciiString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
