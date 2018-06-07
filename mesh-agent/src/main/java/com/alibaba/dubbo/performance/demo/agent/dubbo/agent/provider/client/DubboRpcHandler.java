@@ -13,22 +13,15 @@ import io.netty.util.concurrent.GenericFutureListener;
 
 import java.util.List;
 
-public class DubboRpcHandler extends SimpleChannelInboundHandler<Object> {
+public class DubboRpcHandler extends SimpleChannelInboundHandler<DubboRpcResponse> {
 
     public DubboRpcHandler() {
         System.out.println("DubboRpcHandler...");
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof DubboRpcResponse) {
-            process((DubboRpcResponse) msg);
-        }else if(msg instanceof List){
-            List<DubboRpcResponse> responses = (List<DubboRpcResponse>) msg;
-            for (DubboRpcResponse response : responses) {
-                process(response);
-            }
-        }
+    protected void channelRead0(ChannelHandlerContext ctx, DubboRpcResponse msg) throws Exception {
+            process(msg);
     }
 
     private void process(DubboRpcResponse msg) {
