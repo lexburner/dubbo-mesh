@@ -5,10 +5,7 @@ import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.EventLoop;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
@@ -40,7 +37,9 @@ public class DubboClient implements Client {
         Bootstrap b = new Bootstrap();
         b.group(eventExecutors.next())
                 .channel(NioSocketChannel.class)
-                .handler(new DubboRpcInitializer());
+                .handler(new DubboRpcInitializer())
+                .option(ChannelOption.SO_KEEPALIVE, true)
+                .option(ChannelOption.TCP_NODELAY, true);
         ChannelFuture f = b.connect(REMOTE_HOST, REMOTE_PORT);
         MeshChannel meshChannel = new MeshChannel();
         meshChannel.setChannel(f.channel());

@@ -15,7 +15,7 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.ThreadBoundClient;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.ConsumerAgentClient;
 import com.alibaba.dubbo.performance.demo.agent.transport.ThreadBoundClientHolder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -75,9 +75,9 @@ public final class ConsumerAgentHttpServer {
     private void initThreadBoundClient(EventLoopGroup eventLoopGroup){
         for (EventExecutor eventExecutor : eventLoopGroup) {
             if(eventExecutor instanceof EventLoop){
-                ThreadBoundClient threadBoundClient = new ThreadBoundClient((EventLoop)eventExecutor);
-                threadBoundClient.init();
-                ThreadBoundClientHolder.put(eventExecutor.toString(), threadBoundClient);
+                ConsumerAgentClient consumerAgentClient = new ConsumerAgentClient((EventLoop)eventExecutor);
+                consumerAgentClient.init();
+                ThreadBoundClientHolder.put(eventExecutor.toString(), consumerAgentClient);
             }
 
         }

@@ -12,8 +12,6 @@ import io.netty.util.AsciiString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -21,13 +19,13 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * @author 徐靖峰
  * Date 2018-05-17
  */
-public class ConsumerAgentBatchHandler extends SimpleChannelInboundHandler<DubboMeshProto.AgentResponse> {
+public class ConsumerAgentClientHandler extends SimpleChannelInboundHandler<DubboMeshProto.AgentResponse> {
 
-    ConsumerAgentBatchHandler(){
-        System.out.println("ConsumerAgentBatchHandler...");
+    ConsumerAgentClientHandler(){
+        System.out.println("ConsumerAgentClientHandler...");
     }
 
-    private Logger logger = LoggerFactory.getLogger(ConsumerAgentBatchHandler.class);
+    private Logger logger = LoggerFactory.getLogger(ConsumerAgentClientHandler.class);
 
     private static final AsciiString CONTENT_TYPE = AsciiString.cached("Content-Type");
     private static final AsciiString CONTENT_LENGTH = AsciiString.cached("Content-Length");
@@ -36,9 +34,7 @@ public class ConsumerAgentBatchHandler extends SimpleChannelInboundHandler<Dubbo
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DubboMeshProto.AgentResponse msg) {
-        if (msg instanceof DubboMeshProto.AgentResponse) {
             callback(msg);
-        }
     }
 
     private void callback(DubboMeshProto.AgentResponse agentResponse) {

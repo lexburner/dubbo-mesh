@@ -24,14 +24,14 @@ import java.util.Map;
  * @author 徐靖峰
  * Date 2018-05-31
  */
-public class ThreadBoundClient implements Client{
+public class ConsumerAgentClient implements Client{
 
     private Map<Endpoint,Channel> channelMap = new HashMap<>(3);
     private LoadBalance loadBalance;
     private volatile boolean available = false;
     private EventLoop sharedEventLoop;
 
-    public ThreadBoundClient(EventLoop sharedEventLoop) {
+    public ConsumerAgentClient(EventLoop sharedEventLoop) {
         this.sharedEventLoop = sharedEventLoop;
     }
 
@@ -75,7 +75,7 @@ public class ThreadBoundClient implements Client{
                                 .addLast("protobufDecoder", new ProtobufDecoder(DubboMeshProto.AgentResponse.getDefaultInstance()))
                                 .addLast("protobufVarint32LengthFieldPrepender", new ProtobufVarint32LengthFieldPrepender())
                                 .addLast("protobufEncoder", new ProtobufEncoder())
-                                .addLast(new ConsumerAgentBatchHandler());
+                                .addLast(new ConsumerAgentClientHandler());
                     }
                 });
         ChannelFuture f = b.connect(endpoint.getHost(), endpoint.getPort());

@@ -1,6 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.transport;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.ThreadBoundClient;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.ConsumerAgentClient;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,13 +13,13 @@ public final class ThreadBoundClientHolder {
     private ThreadBoundClientHolder(){
     }
 
-    private static Map<String,ThreadBoundClient> threadBoundClientMap = new HashMap<>(8);
+    private static Map<String,ConsumerAgentClient> threadBoundClientMap = new HashMap<>(8);
 
-    public static void put(String eventLoopName,ThreadBoundClient threadBoundClient){
-        threadBoundClientMap.put(eventLoopName, threadBoundClient);
+    public static void put(String eventLoopName,ConsumerAgentClient consumerAgentClient){
+        threadBoundClientMap.put(eventLoopName, consumerAgentClient);
     }
 
-    public static ThreadBoundClient get(String eventLoopName){
+    public static ConsumerAgentClient get(String eventLoopName){
         return threadBoundClientMap.get(eventLoopName);
     }
 
