@@ -23,6 +23,10 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  */
 public class ConsumerAgentBatchHandler extends SimpleChannelInboundHandler<Object> {
 
+    ConsumerAgentBatchHandler(){
+        System.out.println("ConsumerAgentBatchHandler...");
+    }
+
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentBatchHandler.class);
 
     private static final AsciiString CONTENT_TYPE = AsciiString.cached("Content-Type");

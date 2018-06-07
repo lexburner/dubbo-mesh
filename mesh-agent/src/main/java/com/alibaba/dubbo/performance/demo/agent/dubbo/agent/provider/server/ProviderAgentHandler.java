@@ -25,6 +25,10 @@ import java.util.Map;
  */
 public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshProto.AgentRequest> {
 
+    public ProviderAgentHandler(){
+        System.out.println("ProviderAgentHandler...");
+    }
+
     private Logger logger = LoggerFactory.getLogger(ProviderAgentHandler.class);
 
     public static ThreadLocal<Map<Long,Channel>> inboundChannelMap = ThreadLocal.withInitial(HashMap::new);

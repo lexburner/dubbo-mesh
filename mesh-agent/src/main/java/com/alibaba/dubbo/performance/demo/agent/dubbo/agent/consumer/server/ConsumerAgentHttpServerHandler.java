@@ -36,6 +36,10 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
+    public ConsumerAgentHttpServerHandler(){
+        System.out.println("ConsumerAgentHttpServerHandler...");
+    }
+
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
 
     public static AtomicLong requestIdGenerator = new AtomicLong(0);

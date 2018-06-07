@@ -63,7 +63,7 @@ public final class ConsumerAgentHttpServer {
                     "export at http://127.0.0.1:{}", PORT);
             ch.closeFuture().sync();
         } catch (Exception e) {
-            logger.error("consumer-agent启动失败", e);
+            logger.error("consumer-agent start failed", e);
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();

@@ -13,6 +13,10 @@ import io.netty.util.concurrent.GenericFutureListener;
 
 public class DubboRpcHandler extends SimpleChannelInboundHandler<DubboRpcResponse> {
 
+    public DubboRpcHandler(){
+        System.out.println("DubboRpcHandler...");
+    }
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DubboRpcResponse msg) throws Exception {
         Channel inboundChannel = ProviderAgentHandler.inboundChannelMap.get().get(msg.getRequestId());
