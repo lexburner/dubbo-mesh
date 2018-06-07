@@ -11,16 +11,29 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
-public class DubboRpcHandler extends SimpleChannelInboundHandler<DubboRpcResponse> {
+import java.util.List;
 
-    public DubboRpcHandler(){
+public class DubboRpcHandler extends SimpleChannelInboundHandler<Object> {
+
+    public DubboRpcHandler() {
         System.out.println("DubboRpcHandler...");
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, DubboRpcResponse msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (msg instanceof DubboRpcResponse) {
+            process((DubboRpcResponse) msg);
+        }else if(msg instanceof List){
+            List<DubboRpcResponse> responses = (List<DubboRpcResponse>) msg;
+            for (DubboRpcResponse response : responses) {
+                process(response);
+            }
+        }
+    }
+
+    private void process(DubboRpcResponse msg) {
         Channel inboundChannel = ProviderAgentHandler.inboundChannelMap.get().get(msg.getRequestId());
-        if(inboundChannel!=null){
+        if (inboundChannel != null) {
             inboundChannel.writeAndFlush(messageToMessage(msg)).addListener(new GenericFutureListener<Future<? super Void>>() {
                 @Override
                 public void operationComplete(Future<? super Void> future) throws Exception {
@@ -31,11 +44,10 @@ public class DubboRpcHandler extends SimpleChannelInboundHandler<DubboRpcRespons
         }
     }
 
-    private DubboMeshProto.AgentResponse messageToMessage(DubboRpcResponse dubboRpcResponse){
+    private DubboMeshProto.AgentResponse messageToMessage(DubboRpcResponse dubboRpcResponse) {
         ByteBuf bytes = dubboRpcResponse.getBytes();
         byte[] result = new byte[bytes.readableBytes()];
         bytes.readBytes(result);
-//        logger.info("接收到请求{}",agentRequest.toString());
         return DubboMeshProto.AgentResponse.newBuilder()
                 .setRequestId(dubboRpcResponse.getRequestId())
                 .setHash(ByteString.copyFrom(result))

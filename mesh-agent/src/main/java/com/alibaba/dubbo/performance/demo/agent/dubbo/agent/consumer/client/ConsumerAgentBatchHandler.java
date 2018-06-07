@@ -21,7 +21,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * @author 徐靖峰
  * Date 2018-05-17
  */
-public class ConsumerAgentBatchHandler extends SimpleChannelInboundHandler<Object> {
+public class ConsumerAgentBatchHandler extends SimpleChannelInboundHandler<DubboMeshProto.AgentResponse> {
 
     ConsumerAgentBatchHandler(){
         System.out.println("ConsumerAgentBatchHandler...");
@@ -35,15 +35,9 @@ public class ConsumerAgentBatchHandler extends SimpleChannelInboundHandler<Objec
     private static final AsciiString KEEP_ALIVE = AsciiString.cached("keep-alive");
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+    protected void channelRead0(ChannelHandlerContext ctx, DubboMeshProto.AgentResponse msg) {
         if (msg instanceof DubboMeshProto.AgentResponse) {
-            DubboMeshProto.AgentResponse agentResponse = (DubboMeshProto.AgentResponse) msg;
-            callback(agentResponse);
-        } else if (msg instanceof List) {
-            List<DubboMeshProto.AgentResponse> agentResponses = (List<DubboMeshProto.AgentResponse>) msg;
-            for (DubboMeshProto.AgentResponse agentResponse : agentResponses) {
-                callback(agentResponse);
-            }
+            callback(msg);
         }
     }
 
