@@ -16,7 +16,6 @@ import java.util.List;
 public class DubboRpcHandler extends SimpleChannelInboundHandler<DubboRpcResponse> {
 
     public DubboRpcHandler() {
-        System.out.println("DubboRpcHandler...");
     }
 
     @Override

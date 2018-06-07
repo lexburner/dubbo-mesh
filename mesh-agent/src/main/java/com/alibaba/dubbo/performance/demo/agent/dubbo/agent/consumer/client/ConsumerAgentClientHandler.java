@@ -23,7 +23,6 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 public class ConsumerAgentClientHandler extends SimpleChannelInboundHandler<DubboMeshProto.AgentResponse> {
 
     ConsumerAgentClientHandler(){
-        System.out.println("ConsumerAgentClientHandler...");
     }
 
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentClientHandler.class);

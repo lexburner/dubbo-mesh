@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * company qianmi.com
  * Date 2018-05-22
  */
-@ChannelHandler.Sharable
 public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     public ConsumerAgentHttpServerHandler(){
