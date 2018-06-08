@@ -22,9 +22,12 @@ import com.alibaba.dubbo.performance.demo.agent.rpc.ThreadBoundRpcResponseHolder
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import com.alibaba.dubbo.performance.demo.agent.transport.ThreadBoundClientHolder;
 import com.alibaba.dubbo.performance.demo.agent.util.RequestParser;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelId;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.util.internal.ConcurrentSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +41,10 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
+//    static AtomicLong handlerCnt = new AtomicLong(0);
+
     public ConsumerAgentHttpServerHandler(){
-        System.out.println("ConsumerAgentHttpServerHandler...");
+//        System.out.println("ConsumerAgentHttpServerHandler..."+handlerCnt.incrementAndGet());
     }
 
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
@@ -67,10 +72,9 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
 
     public void call(ChannelHandlerContext ctx,DubboMeshProto.AgentRequest request) {
         MeshChannel meshChannel = ThreadBoundClientHolder.get(ctx.channel().eventLoop().toString()).getChannel();
-        Endpoint endpoint = meshChannel.getEndpoint();
         RpcCallbackFuture rpcCallbackFuture = new RpcCallbackFuture<>();
         rpcCallbackFuture.setChannel(ctx.channel());
-        rpcCallbackFuture.setEndpoint(endpoint);
+        rpcCallbackFuture.setEndpoint(meshChannel.getEndpoint());
         ThreadBoundRpcResponseHolder.put(request.getRequestId(), rpcCallbackFuture);
         meshChannel.getChannel().writeAndFlush(request);
     }

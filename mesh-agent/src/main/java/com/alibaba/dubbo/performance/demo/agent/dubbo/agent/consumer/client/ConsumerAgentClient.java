@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public class ConsumerAgentClient implements Client{
 
-    private Map<Endpoint,Channel> channelMap = new HashMap<>(3);
+    private Map<Endpoint,MeshChannel> channelMap = new HashMap<>(3);
     private LoadBalance loadBalance;
     private volatile boolean available = false;
     private EventLoop sharedEventLoop;
@@ -39,13 +39,14 @@ public class ConsumerAgentClient implements Client{
     public MeshChannel getChannel(){
         if(available){
             Endpoint selectEndpoint = loadBalance.select();
-            MeshChannel meshChannel = new MeshChannel();
-            Channel channel = channelMap.get(selectEndpoint);
-            meshChannel.setEndpoint(selectEndpoint);
-            meshChannel.setChannel(channel);
-            return meshChannel;
+            return channelMap.get(selectEndpoint);
         }
         throw new RuntimeException("client不可用");
+    }
+
+    @Override
+    public MeshChannel getChannel(Endpoint endpoint) {
+        return channelMap.get(endpoint);
     }
 
     @Override
@@ -56,7 +57,10 @@ public class ConsumerAgentClient implements Client{
         this.loadBalance.onRefresh(endpoints);
         for (Endpoint endpoint : endpoints) {
             Channel channel = connect(endpoint);
-            channelMap.put(endpoint, channel);
+            MeshChannel meshChannel = new MeshChannel();
+            meshChannel.setEndpoint(endpoint);
+            meshChannel.setChannel(channel);
+            channelMap.put(endpoint, meshChannel);
         }
         available = true;
     }

@@ -1,5 +1,7 @@
 package com.alibaba.dubbo.performance.demo.agent.transport;
 
+import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
+
 /**
  * @author 徐靖峰
  * Date 2018-05-25
@@ -11,5 +13,7 @@ public interface Client{
     void init();
 
     MeshChannel getChannel();
+
+    MeshChannel getChannel(Endpoint endpoint);
 
 }

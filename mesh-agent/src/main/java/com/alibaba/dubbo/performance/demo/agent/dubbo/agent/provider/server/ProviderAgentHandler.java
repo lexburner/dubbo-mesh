@@ -45,12 +45,10 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
     }
 
     private DubboRpcRequest messageToMessage(DubboMeshProto.AgentRequest agentRequest){
-//        logger.info("接收到请求{}",agentRequest.toString());
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName(agentRequest.getMethod());
         invocation.setAttachment("path", agentRequest.getInterfaceName());
-        invocation.setParameterTypes(agentRequest.getParameterTypesString());    // Dubbo内部用"Ljava/lang/String"来表示参数类型是String
-        invocation.setAttachment("async","true");
+        invocation.setParameterTypes(agentRequest.getParameterTypesString());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
         try {
@@ -64,7 +62,6 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
         dubboRpcRequest.setVersion("2.0.0");
         dubboRpcRequest.setTwoWay(true);
         dubboRpcRequest.setData(invocation);
-//        logger.info("请求发送成功:{}",dubboRpcRequest.getId());
         return dubboRpcRequest;
     }
 
