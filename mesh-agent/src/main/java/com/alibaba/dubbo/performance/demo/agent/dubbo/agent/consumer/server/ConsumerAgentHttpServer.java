@@ -15,7 +15,10 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server;
 
+import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.WeightRoundRobinLoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.ConsumerAgentClient;
+import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHolder;
+import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.ThreadBoundClientHolder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -27,6 +30,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.EventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * @author 徐靖峰[OF2938]
@@ -44,12 +49,15 @@ public final class ConsumerAgentHttpServer {
 
     static final int PORT = Integer.parseInt(System.getProperty("server.port"));
 
+    public static Endpoint[] remoteEndpoints;
+
     /**
      * 启动服务器接收来自 consumer 的 http 请求
      */
     public void startServer() {
         try {
             initThreadBoundClient(workerGroup);
+            extractEndpoints();
 
             bootstrap = new ServerBootstrap();
             bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
@@ -69,6 +77,13 @@ public final class ConsumerAgentHttpServer {
             workerGroup.shutdownGracefully();
             logger.info("consumer-agent provider was closed");
         }
+    }
+
+    private void extractEndpoints() {
+        WeightRoundRobinLoadBalance loadBalance = new WeightRoundRobinLoadBalance();
+        List<Endpoint> endpoints = EndpointHolder.getEndpoints();
+        loadBalance.onRefresh(endpoints);
+        remoteEndpoints = loadBalance.getOriginEndpoints();
     }
 
 

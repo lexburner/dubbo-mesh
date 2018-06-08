@@ -46,14 +46,17 @@ public class ConsumerAgentClient implements Client{
 
     @Override
     public MeshChannel getChannel(Endpoint endpoint) {
-        return channelMap.get(endpoint);
+        if(available){
+            return channelMap.get(endpoint);
+        }
+        throw new RuntimeException("client不可用");
+
     }
 
     @Override
     public void init() {
         this.loadBalance = new WeightRoundRobinLoadBalance();
         List<Endpoint> endpoints = EndpointHolder.getEndpoints();
-        System.out.println(endpoints);
         this.loadBalance.onRefresh(endpoints);
         for (Endpoint endpoint : endpoints) {
             Channel channel = connect(endpoint);

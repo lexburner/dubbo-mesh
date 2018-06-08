@@ -79,4 +79,8 @@ public class WeightRoundRobinLoadBalance implements LoadBalance {
         this.endpointHolder = new EndpointHolder(endpoints);
     }
 
+    public Endpoint[] getOriginEndpoints(){
+        return this.endpointHolder.randomKeyList.toArray(new Endpoint[]{});
+    }
+
 }

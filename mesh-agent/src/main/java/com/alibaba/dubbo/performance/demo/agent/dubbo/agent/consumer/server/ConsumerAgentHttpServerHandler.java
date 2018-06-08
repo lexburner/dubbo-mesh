@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -41,22 +42,31 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-//    static AtomicLong handlerCnt = new AtomicLong(0);
 
-    public ConsumerAgentHttpServerHandler(){
-//        System.out.println("ConsumerAgentHttpServerHandler..."+handlerCnt.incrementAndGet());
+    public ConsumerAgentHttpServerHandler() {
     }
 
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
 
     public static AtomicLong requestIdGenerator = new AtomicLong(0);
 
+    private static AtomicInteger handlerCnt = new AtomicInteger(0);
+
+    private Endpoint channelConsistenceHashEndpoint;
+
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) {
-        processRequest(ctx,req);
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        int handlerNo = handlerCnt.incrementAndGet();
+        this.channelConsistenceHashEndpoint = ConsumerAgentHttpServer.remoteEndpoints[handlerNo % ConsumerAgentHttpServer.remoteEndpoints.length];
+        logger.info("bound channel now is {}", handlerNo);
     }
 
-    private void processRequest(ChannelHandlerContext ctx,FullHttpRequest req) {
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) {
+        processRequest(ctx, req);
+    }
+
+    private void processRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
         Map<String, String> requestParams;
         requestParams = RequestParser.parse(req);
 
@@ -67,11 +77,11 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
                 .setParameter(requestParams.get("parameter"))
                 .build();
 
-        this.call(ctx,agentRequest);
+        this.call(ctx, agentRequest);
     }
 
-    public void call(ChannelHandlerContext ctx,DubboMeshProto.AgentRequest request) {
-        MeshChannel meshChannel = ThreadBoundClientHolder.get(ctx.channel().eventLoop().toString()).getChannel();
+    public void call(ChannelHandlerContext ctx, DubboMeshProto.AgentRequest request) {
+        MeshChannel meshChannel = ThreadBoundClientHolder.get(ctx.channel().eventLoop().toString()).getChannel(channelConsistenceHashEndpoint);
         RpcCallbackFuture rpcCallbackFuture = new RpcCallbackFuture<>();
         rpcCallbackFuture.setChannel(ctx.channel());
         rpcCallbackFuture.setEndpoint(meshChannel.getEndpoint());
@@ -84,7 +94,6 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         logger.error("http服务器响应出错", cause);
         ctx.channel().close();
     }
-
 
 
 }
