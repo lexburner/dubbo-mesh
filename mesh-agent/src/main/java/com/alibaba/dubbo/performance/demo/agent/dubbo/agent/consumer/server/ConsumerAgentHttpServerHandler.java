@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server.ProviderAgentHandler;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
@@ -42,8 +43,10 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
+    private static AtomicInteger cnt = new AtomicInteger(0);
 
-    public ConsumerAgentHttpServerHandler() {
+    public ConsumerAgentHttpServerHandler(){
+        logger.info("consumer => consumer-agent 连接数 {}", cnt.incrementAndGet());
     }
 
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);
@@ -58,7 +61,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         int handlerNo = handlerCnt.incrementAndGet();
         this.channelConsistenceHashEndpoint = ConsumerAgentHttpServer.remoteEndpoints[handlerNo % ConsumerAgentHttpServer.remoteEndpoints.length];
-        logger.info("bound channel now is {}", handlerNo);
+//        logger.info("bound channel now is {}", handlerNo);
     }
 
     @Override

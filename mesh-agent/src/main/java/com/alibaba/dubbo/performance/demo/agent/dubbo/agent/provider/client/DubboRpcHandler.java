@@ -7,10 +7,18 @@ import com.google.protobuf.ByteString;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DubboRpcHandler extends SimpleChannelInboundHandler<DubboRpcResponse> {
 
+    static final Logger logger = LoggerFactory.getLogger(DubboRpcHandler.class);
+
+    private static AtomicInteger cnt = new AtomicInteger(0);
     public DubboRpcHandler() {
+        logger.info("provider-agent => provider 连接数 {}", cnt.incrementAndGet());
     }
 
     @Override

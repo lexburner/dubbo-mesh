@@ -17,6 +17,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author 徐靖峰
@@ -24,9 +25,7 @@ import java.util.Map;
  */
 public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshProto.AgentRequest> {
 
-    public ProviderAgentHandler(){
-        System.out.println("ProviderAgentHandler...");
-    }
+    private static AtomicInteger cnt = new AtomicInteger(0);
 
     private Logger logger = LoggerFactory.getLogger(ProviderAgentHandler.class);
 
@@ -35,6 +34,7 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
     private Client dubboClient;
 
     public ProviderAgentHandler(Client dubboClient){
+        logger.info("consumer-agent => provider-agent 连接数 {}", cnt.incrementAndGet());
         this.dubboClient = dubboClient;
     }
 
