@@ -22,7 +22,7 @@ public class ProviderAgentServer {
     private Logger logger = LoggerFactory.getLogger(ProviderAgentServer.class);
 
     private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-    private EventLoopGroup workerGroup = new NioEventLoopGroup(1);
+    private EventLoopGroup workerGroup = new NioEventLoopGroup(2);
 
     private ServerBootstrap bootstrap;
 
@@ -32,14 +32,11 @@ public class ProviderAgentServer {
     public void startServer() {
         new EtcdRegistry(System.getProperty("etcd.url"));
 
-        Client client = new DubboClient(workerGroup);
-        client.init();
-
         try {
             bootstrap = new ServerBootstrap()
                     .group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ProviderAgentInitializer(client))
+                    .childHandler(new ProviderAgentInitializer())
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true);
             int port = Integer.valueOf(System.getProperty("server.port"));

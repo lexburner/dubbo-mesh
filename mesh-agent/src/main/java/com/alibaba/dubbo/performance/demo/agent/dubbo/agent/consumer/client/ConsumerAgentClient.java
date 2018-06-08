@@ -26,6 +26,16 @@ import java.util.Map;
  */
 public class ConsumerAgentClient implements Client{
 
+    private static Map<String,ConsumerAgentClient> threadBoundClientMap = new HashMap<>(8);
+
+    public static void put(String eventLoopName,ConsumerAgentClient consumerAgentClient){
+        threadBoundClientMap.put(eventLoopName, consumerAgentClient);
+    }
+
+    public static ConsumerAgentClient get(String eventLoopName){
+        return threadBoundClientMap.get(eventLoopName);
+    }
+
     private Map<Endpoint,MeshChannel> channelMap = new HashMap<>(3);
     private LoadBalance loadBalance;
     private volatile boolean available = false;
@@ -36,7 +46,7 @@ public class ConsumerAgentClient implements Client{
     }
 
     @Override
-    public MeshChannel getChannel(){
+    public MeshChannel getMeshChannel(){
         if(available){
             Endpoint selectEndpoint = loadBalance.select();
             return channelMap.get(selectEndpoint);
@@ -45,7 +55,7 @@ public class ConsumerAgentClient implements Client{
     }
 
     @Override
-    public MeshChannel getChannel(Endpoint endpoint) {
+    public MeshChannel getMeshChannel(Endpoint endpoint) {
         if(available){
             return channelMap.get(endpoint);
         }

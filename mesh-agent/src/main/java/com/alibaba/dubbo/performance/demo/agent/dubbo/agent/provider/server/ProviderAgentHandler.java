@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.client.DubboClient;
 import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.DubboRpcRequest;
 import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
@@ -31,17 +32,25 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
 
     public static ThreadLocal<Map<Long,Channel>> inboundChannelMap = ThreadLocal.withInitial(HashMap::new);
 
-    private Client dubboClient;
+    private static ThreadLocal<Client> dubboClientHolder = new ThreadLocal<>();
 
-    public ProviderAgentHandler(Client dubboClient){
+    public ProviderAgentHandler(){
         logger.info("consumer-agent => provider-agent 连接数 {}", cnt.incrementAndGet());
-        this.dubboClient = dubboClient;
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) {
+        if(dubboClientHolder.get()==null){
+            DubboClient dubboClient = new DubboClient(ctx.channel().eventLoop());
+            dubboClient.init();
+            dubboClientHolder.set(dubboClient);
+        }
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DubboMeshProto.AgentRequest msg) throws Exception {
         inboundChannelMap.get().put(msg.getRequestId(), ctx.channel());
-        dubboClient.getChannel().getChannel().writeAndFlush(messageToMessage(msg));
+        dubboClientHolder.get().getMeshChannel().getChannel().writeAndFlush(messageToMessage(msg));
     }
 
     private DubboRpcRequest messageToMessage(DubboMeshProto.AgentRequest agentRequest){

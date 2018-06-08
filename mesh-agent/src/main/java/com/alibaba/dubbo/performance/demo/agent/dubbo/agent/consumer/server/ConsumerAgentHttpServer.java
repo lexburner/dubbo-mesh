@@ -19,7 +19,6 @@ import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.WeightRoundR
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.ConsumerAgentClient;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHolder;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
-import com.alibaba.dubbo.performance.demo.agent.transport.ThreadBoundClientHolder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
@@ -92,7 +91,7 @@ public final class ConsumerAgentHttpServer {
             if(eventExecutor instanceof EventLoop){
                 ConsumerAgentClient consumerAgentClient = new ConsumerAgentClient((EventLoop)eventExecutor);
                 consumerAgentClient.init();
-                ThreadBoundClientHolder.put(eventExecutor.toString(), consumerAgentClient);
+                ConsumerAgentClient.put(eventExecutor.toString(), consumerAgentClient);
             }
 
         }

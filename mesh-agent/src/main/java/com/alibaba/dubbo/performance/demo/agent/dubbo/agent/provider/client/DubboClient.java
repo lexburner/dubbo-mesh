@@ -49,12 +49,12 @@ public class DubboClient implements Client {
     }
 
     @Override
-    public MeshChannel getChannel() {
+    public MeshChannel getMeshChannel() {
         return this.meshChannel;
     }
 
     @Override
-    public MeshChannel getChannel(Endpoint endpoint) {
+    public MeshChannel getMeshChannel(Endpoint endpoint) {
         return null;
     }
 }

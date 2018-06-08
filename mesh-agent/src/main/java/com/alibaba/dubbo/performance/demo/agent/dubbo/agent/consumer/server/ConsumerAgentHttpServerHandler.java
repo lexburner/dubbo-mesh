@@ -15,20 +15,16 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server.ProviderAgentHandler;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.ConsumerAgentClient;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
 import com.alibaba.dubbo.performance.demo.agent.rpc.ThreadBoundRpcResponseHolder;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
-import com.alibaba.dubbo.performance.demo.agent.transport.ThreadBoundClientHolder;
 import com.alibaba.dubbo.performance.demo.agent.util.RequestParser;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelId;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.util.internal.ConcurrentSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +80,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     }
 
     public void call(ChannelHandlerContext ctx, DubboMeshProto.AgentRequest request) {
-        MeshChannel meshChannel = ThreadBoundClientHolder.get(ctx.channel().eventLoop().toString()).getChannel(channelConsistenceHashEndpoint);
+        MeshChannel meshChannel = ConsumerAgentClient.get(ctx.channel().eventLoop().toString()).getMeshChannel(channelConsistenceHashEndpoint);
         RpcCallbackFuture rpcCallbackFuture = new RpcCallbackFuture<>();
         rpcCallbackFuture.setChannel(ctx.channel());
         rpcCallbackFuture.setEndpoint(meshChannel.getEndpoint());

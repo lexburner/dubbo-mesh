@@ -12,8 +12,8 @@ public interface Client{
 
     void init();
 
-    MeshChannel getChannel();
+    MeshChannel getMeshChannel();
 
-    MeshChannel getChannel(Endpoint endpoint);
+    MeshChannel getMeshChannel(Endpoint endpoint);
 
 }
