@@ -16,8 +16,8 @@ public class DubboRpcInitializer extends ChannelInitializer<SocketChannel> {
     protected void initChannel(SocketChannel ch) throws Exception {
         ch.pipeline()
                 .addLast(new DubboRpcEncoder())
-//                .addLast(new DubboRpcDecoder())
-                .addLast(new DubboRpcBatchDecoder())
+                .addLast(new DubboRpcDecoder())
+//                .addLast(new DubboRpcBatchDecoder())
                 .addLast(new DubboRpcHandler());
     }
 }
