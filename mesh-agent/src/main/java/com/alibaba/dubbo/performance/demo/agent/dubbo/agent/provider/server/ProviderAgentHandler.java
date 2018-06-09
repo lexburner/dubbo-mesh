@@ -10,6 +10,7 @@ import com.alibaba.dubbo.performance.demo.agent.util.JsonUtils;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.collection.LongObjectHashMap;
 import io.netty.util.concurrent.FastThreadLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,10 +34,10 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
     private Logger logger = LoggerFactory.getLogger(ProviderAgentHandler.class);
 
 //    public static ThreadLocal<Map<Long,Channel>> inboundChannelMap = ThreadLocal.withInitial(HashMap::new);
-    public static FastThreadLocal<HashMap<Long,Channel>> inboundChannelMap = new FastThreadLocal<HashMap<Long,Channel>>() {
+    public static FastThreadLocal<LongObjectHashMap<Channel>> inboundChannelMap = new FastThreadLocal<LongObjectHashMap<Channel>>() {
         @Override
-        protected HashMap<Long,Channel> initialValue() throws Exception {
-            return new HashMap<>();
+        protected LongObjectHashMap<Channel> initialValue() throws Exception {
+            return new LongObjectHashMap<>();
         }
     };
 //    private static ThreadLocal<Client> dubboClientHolder = new ThreadLocal<>();

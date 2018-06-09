@@ -1,16 +1,18 @@
 package com.alibaba.dubbo.performance.demo.agent.rpc;
 
+import io.netty.util.collection.LongObjectHashMap;
 import io.netty.util.concurrent.FastThreadLocal;
 
 import java.util.HashMap;
 
 public class ThreadBoundRpcResponseHolder {
 
+
     //    public static ThreadLocal<HashMap<Long, RpcCallbackFuture>> futureMapHolder = ThreadLocal.withInitial(HashMap::new);
-    public static FastThreadLocal<HashMap<Long, RpcCallbackFuture>> futureMapHolder = new FastThreadLocal<HashMap<Long, RpcCallbackFuture>>() {
+    public static FastThreadLocal<LongObjectHashMap<RpcCallbackFuture>> futureMapHolder = new FastThreadLocal<LongObjectHashMap<RpcCallbackFuture>>() {
         @Override
-        protected HashMap<Long, RpcCallbackFuture> initialValue() throws Exception {
-            return new HashMap<>();
+        protected LongObjectHashMap<RpcCallbackFuture> initialValue() throws Exception {
+            return new LongObjectHashMap<>();
         }
     };
 
