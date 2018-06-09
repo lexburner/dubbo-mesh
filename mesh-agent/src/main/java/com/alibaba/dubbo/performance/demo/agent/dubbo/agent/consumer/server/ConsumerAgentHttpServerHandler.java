@@ -100,7 +100,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     }
 
     public void call(ChannelHandlerContext ctx, DubboMeshProto.AgentRequest request) {
-        Promise<DubboMeshProto.AgentResponse> agentResponsePromise = new DefaultPromise<>(ctx.executor());
+        Promise<DubboMeshProto.AgentResponse> agentResponsePromise = new DefaultPromise<>(ctx.channel().eventLoop());
         agentResponsePromise.addListener(future -> {
             DubboMeshProto.AgentResponse agentResponse = (DubboMeshProto.AgentResponse) future.get();
             FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(agentResponse.getHash().toByteArray()));
