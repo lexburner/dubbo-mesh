@@ -4,11 +4,13 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.client.Dubb
 import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.DubboRpcRequest;
 import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
+import com.alibaba.dubbo.performance.demo.agent.rpc.RpcCallbackFuture;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import com.alibaba.dubbo.performance.demo.agent.util.JsonUtils;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.concurrent.FastThreadLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +32,15 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
 
     private Logger logger = LoggerFactory.getLogger(ProviderAgentHandler.class);
 
-    public static ThreadLocal<Map<Long,Channel>> inboundChannelMap = ThreadLocal.withInitial(HashMap::new);
-
-    private static ThreadLocal<Client> dubboClientHolder = new ThreadLocal<>();
+//    public static ThreadLocal<Map<Long,Channel>> inboundChannelMap = ThreadLocal.withInitial(HashMap::new);
+    public static FastThreadLocal<HashMap<Long,Channel>> inboundChannelMap = new FastThreadLocal<HashMap<Long,Channel>>() {
+        @Override
+        protected HashMap<Long,Channel> initialValue() throws Exception {
+            return new HashMap<>();
+        }
+    };
+//    private static ThreadLocal<Client> dubboClientHolder = new ThreadLocal<>();
+    private static FastThreadLocal<Client> dubboClientHolder = new FastThreadLocal<>();
 
     public ProviderAgentHandler(){
         logger.info("consumer-agent => provider-agent 连接数 {}", cnt.incrementAndGet());
