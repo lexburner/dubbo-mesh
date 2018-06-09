@@ -10,8 +10,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class DubboRpcHandler extends SimpleChannelInboundHandler<DubboRpcResponse> {
 
     static final Logger logger = LoggerFactory.getLogger(DubboRpcHandler.class);

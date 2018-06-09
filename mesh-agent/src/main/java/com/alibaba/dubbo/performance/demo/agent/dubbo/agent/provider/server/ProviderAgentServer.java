@@ -1,9 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.client.DubboClient;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
-import com.alibaba.dubbo.performance.demo.agent.registry.IpHelper;
-import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
@@ -25,7 +22,7 @@ public class ProviderAgentServer {
     private Logger logger = LoggerFactory.getLogger(ProviderAgentServer.class);
 
     private EventLoopGroup bossGroup = Epoll.isAvailable() ? new EpollEventLoopGroup(1) : new NioEventLoopGroup(1);
-    private EventLoopGroup workerGroup = Epoll.isAvailable() ? new EpollEventLoopGroup(2) : new NioEventLoopGroup(2);
+    private EventLoopGroup workerGroup = Epoll.isAvailable() ? new EpollEventLoopGroup(4) : new NioEventLoopGroup(4);
 
     private ServerBootstrap bootstrap;
 
