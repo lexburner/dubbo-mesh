@@ -48,13 +48,13 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
 
     private static AtomicInteger handlerCnt = new AtomicInteger(0);
 
-//    private Endpoint channelConsistenceHashEndpoint;
+    private Endpoint channelConsistenceHashEndpoint;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-//        int handlerNo = handlerCnt.incrementAndGet();
-//        this.channelConsistenceHashEndpoint = ConsumerAgentHttpServer.remoteEndpoints[handlerNo % ConsumerAgentHttpServer.remoteEndpoints.length];
-//        logger.info("bound channel now is {}", handlerNo);
+        int handlerNo = handlerCnt.incrementAndGet();
+        this.channelConsistenceHashEndpoint = ConsumerAgentHttpServer.remoteEndpoints[handlerNo % ConsumerAgentHttpServer.remoteEndpoints.length];
+        logger.info("bound channel now is {}", handlerNo);
     }
 
     @Override
@@ -80,7 +80,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     }
 
     public void call(ChannelHandlerContext ctx, DubboMeshProto.AgentRequest request) {
-        MeshChannel meshChannel = ConsumerAgentClient.get(ctx.channel().eventLoop().toString()).getMeshChannel();
+        MeshChannel meshChannel = ConsumerAgentClient.get(ctx.channel().eventLoop().toString()).getMeshChannel(channelConsistenceHashEndpoint);
         RpcCallbackFuture rpcCallbackFuture = new RpcCallbackFuture<>();
         rpcCallbackFuture.setChannel(ctx.channel());
         rpcCallbackFuture.setEndpoint(meshChannel.getEndpoint());
