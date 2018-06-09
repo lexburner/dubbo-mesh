@@ -10,7 +10,9 @@ import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DubboRpcHandler extends SimpleChannelInboundHandler<DubboRpcResponse> {
+import java.util.List;
+
+public class DubboRpcHandler extends SimpleChannelInboundHandler<Object> {
 
     static final Logger logger = LoggerFactory.getLogger(DubboRpcHandler.class);
 
@@ -18,8 +20,16 @@ public class DubboRpcHandler extends SimpleChannelInboundHandler<DubboRpcRespons
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, DubboRpcResponse msg) throws Exception {
-        process(msg);
+    protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if(msg instanceof List){
+            List<DubboRpcResponse> responses = (List<DubboRpcResponse>) msg;
+            for (DubboRpcResponse response : responses) {
+                process(response);
+            }
+        }else if(msg instanceof DubboRpcResponse){
+            process((DubboRpcResponse) msg);
+        }
+
     }
 
     private void process(DubboRpcResponse msg) {

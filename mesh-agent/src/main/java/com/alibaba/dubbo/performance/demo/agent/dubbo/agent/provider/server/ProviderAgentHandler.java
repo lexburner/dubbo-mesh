@@ -53,7 +53,7 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
         Promise<DubboMeshProto.AgentResponse> promise = new DefaultPromise<>(ctx.executor());
         promise.addListener(future -> {
             DubboMeshProto.AgentResponse agentResponse = (DubboMeshProto.AgentResponse) future.get();
-            ctx.channel().writeAndFlush(agentResponse);
+            ctx.writeAndFlush(agentResponse,ctx.voidPromise());
 
         });
         promiseHolder.get().put(msg.getRequestId(), promise);
