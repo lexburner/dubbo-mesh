@@ -39,10 +39,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private static AtomicInteger cnt = new AtomicInteger(0);
-
     public ConsumerAgentHttpServerHandler() {
-        logger.info("consumer => consumer-agent 连接数 {}", cnt.incrementAndGet());
     }
 
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerHandler.class);

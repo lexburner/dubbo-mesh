@@ -29,22 +29,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshProto.AgentRequest> {
 
-    private static AtomicInteger cnt = new AtomicInteger(0);
-
     private Logger logger = LoggerFactory.getLogger(ProviderAgentHandler.class);
 
-    //    public static ThreadLocal<Map<Long,Channel>> inboundChannelMap = ThreadLocal.withInitial(HashMap::new);
     public static FastThreadLocal<LongObjectHashMap<Channel>> inboundChannelMap = new FastThreadLocal<LongObjectHashMap<Channel>>() {
         @Override
         protected LongObjectHashMap<Channel> initialValue() throws Exception {
             return new LongObjectHashMap<>();
         }
     };
-    //    private static ThreadLocal<Client> dubboClientHolder = new ThreadLocal<>();
     private static FastThreadLocal<Client> dubboClientHolder = new FastThreadLocal<>();
 
     public ProviderAgentHandler() {
-        logger.info("consumer-agent => provider-agent 连接数 {}", cnt.incrementAndGet());
     }
 
     @Override

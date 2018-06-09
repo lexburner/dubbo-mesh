@@ -8,7 +8,6 @@ import java.util.HashMap;
 public class ThreadBoundRpcResponseHolder {
 
 
-    //    public static ThreadLocal<HashMap<Long, RpcCallbackFuture>> futureMapHolder = ThreadLocal.withInitial(HashMap::new);
     public static FastThreadLocal<LongObjectHashMap<RpcCallbackFuture>> futureMapHolder = new FastThreadLocal<LongObjectHashMap<RpcCallbackFuture>>() {
         @Override
         protected LongObjectHashMap<RpcCallbackFuture> initialValue() throws Exception {
