@@ -7,6 +7,7 @@ public class IpHelper {
     public static String getHostIp() throws Exception {
 
         String ip = InetAddress.getLocalHost().getHostAddress();
+//        String ip = "127.0.0.1";
         return ip;
     }
 }

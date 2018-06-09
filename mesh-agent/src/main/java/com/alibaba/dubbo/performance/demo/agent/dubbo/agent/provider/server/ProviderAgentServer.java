@@ -40,7 +40,8 @@ public class ProviderAgentServer {
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true);
             int port = Integer.valueOf(System.getProperty("server.port"));
-            Channel channel = bootstrap.bind(IpHelper.getHostIp(), port + 50).sync().channel();
+            //IpHelper.getHostIp(),
+            Channel channel = bootstrap.bind(port + 50).sync().channel();
             logger.info("provider-agent provider is ready to receive request from consumer-agent\n" +
                     "export at 127.0.0.1:{}", port + 50);
             channel.closeFuture().sync();

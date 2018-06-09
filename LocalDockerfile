@@ -1,0 +1,11 @@
+FROM registry.cn-hangzhou.aliyuncs.com/aliware2018/debian-jdk8-devel
+
+COPY ./mesh-agent/target/mesh-agent-1.0-SNAPSHOT.jar /app.jar
+
+WORKDIR /
+
+EXPOSE 20000:20000 30000:30000 30050:30050
+
+ENTRYPOINT ["sh", "-c","java $JAVA_OPTS -jar /app.jar"]
+
+

@@ -66,13 +66,12 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     }
 
     private void processRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
-        Map<String, String> requestParams;
-        requestParams = RequestParser.parse(req);
+        Map<String, String> requestParams = RequestParser.fastParse(req);
 
         DubboMeshProto.AgentRequest agentRequest = DubboMeshProto.AgentRequest.newBuilder().setRequestId(requestIdGenerator.incrementAndGet())
-                .setInterfaceName(requestParams.get("interface"))
-                .setMethod(requestParams.get("method"))
-                .setParameterTypesString(requestParams.get("parameterTypesString"))
+//                .setInterfaceName(requestParams.get("interface"))
+//                .setMethod(requestParams.get("method"))
+//                .setParameterTypesString(requestParams.get("parameterTypesString"))
                 .setParameter(requestParams.get("parameter"))
                 .build();
 

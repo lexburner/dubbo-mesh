@@ -60,3 +60,15 @@ commitId :  3c9fc688 , qps : 4395      3*8 ThreadBoundClient + ThreadLocal<Map>
 56  100 100
 28  50  50
 14  25  25
+
+### 本地镜像构建
+
+java -jar -Dtype=provider -Dserver.port=30000 -Ddubbo.protocol.port=20880 -Detcd.url=http://localhost:2379 -Dlb.weight=3 -Xms2536M -Xmx2536M mesh-agent/target/mesh-agent-1.0-SNAPSHOT.jar
+
+docker build -f LocalDockerfile -t kiritomoe/agent-demo .
+
+docker run --network=host -e JAVA_OPTS='-Dtype=provider -Dserver.port=30000 -Ddubbo.protocol.port=20880 -Detcd.url=http://localhost:2379 -Dlb.weight=3 -Xms2536M -Xmx2536M' \
+--name=agent-provider -it kiritomoe/agent-demo
+
+docker run --network=host -e JAVA_OPTS='-Dtype=consumer -Dserver.port=20000 -Detcd.url=http://localhost:2379' \
+--name=agent-consumer -it kiritomoe/agent-demo

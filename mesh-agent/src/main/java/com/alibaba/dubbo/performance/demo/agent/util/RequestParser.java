@@ -1,13 +1,17 @@
 package com.alibaba.dubbo.performance.demo.agent.util;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.MemoryAttribute;
 
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,22 +45,27 @@ public final class RequestParser {
         return params;
     }
 
-    public static Map<String, String> parseContent(FullHttpRequest req) {
+    public static Map<String, String> fastParse(FullHttpRequest httpRequest) {
+        String content = httpRequest.content().toString(StandardCharsets.UTF_8);
+        QueryStringDecoder qs = new QueryStringDecoder(content, StandardCharsets.UTF_8, false);
+        Map<String, List<String>> parameters = qs.parameters();
+        String interfaceName = parameters.get("interface").get(0);
+        String method = parameters.get("method").get(0);
+        String parameterTypesString = parameters.get("parameterTypesString").get(0);
+        String parameter = parameters.get("parameter").get(0);
         Map<String, String> params = new HashMap<>();
-        req.content().retain();
-        ByteBuf content = req.content();
-        byte[] contentBytes = new byte[content.readableBytes()];
-        content.getBytes(0,contentBytes);
-        String paramsStr = URLDecoder.decode(new String(contentBytes));
-        try{
-            String[] paramPair = paramsStr.split("&");
-            for (String param : paramPair) {
-                params.put(param.substring(0,param.indexOf('=')),param.substring(param.indexOf('=') + 1));
-            }
-        }finally {
-            req.content().release();
-        }
+        params.put("interface", interfaceName);
+        params.put("method", method);
+        params.put("parameterTypesString", parameterTypesString);
+        params.put("parameter", parameter);
         return params;
     }
+
+//    public static Map<String, String> cheatParse(FullHttpRequest req) {
+//        req.retain();//Increases the reference count by 1
+//        req.content().skipBytes(136);
+//        ByteBuf slice = req.content().slice();
+//        return
+//    }
 
 }
