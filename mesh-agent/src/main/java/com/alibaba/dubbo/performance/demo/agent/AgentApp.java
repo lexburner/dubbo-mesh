@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server.ConsumerAgentHttpServer;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server.ProviderAgentServer;
+import io.netty.channel.epoll.Epoll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -21,6 +22,7 @@ public class AgentApp {
 
     public static void main(String[] args) {
         SpringApplication.run(AgentApp.class, args);
+        logger.info("Epoll.isAvailable()={}", Epoll.isAvailable());
 
         String type = System.getProperty("type");   // 获取type参数
         if ("provider".equals(type)) {

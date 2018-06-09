@@ -41,7 +41,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
 
     private static AtomicInteger cnt = new AtomicInteger(0);
 
-    public ConsumerAgentHttpServerHandler(){
+    public ConsumerAgentHttpServerHandler() {
         logger.info("consumer => consumer-agent 连接数 {}", cnt.incrementAndGet());
     }
 

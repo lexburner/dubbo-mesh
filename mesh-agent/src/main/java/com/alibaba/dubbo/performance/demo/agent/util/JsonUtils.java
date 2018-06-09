@@ -36,15 +36,16 @@ public final class JsonUtils {
 
     /**
      * 字符串专用序列化
+     *
      * @param param
      * @param writer
      * @throws IOException
      */
-    public static void writeString(String param,PrintWriter writer) throws IOException{
-        if(param!=null){
+    public static void writeString(String param, PrintWriter writer) throws IOException {
+        if (param != null) {
             writer.println(new StringBuffer().append("\"").append(param).append("\""));
             writer.flush();
-        }else {
+        } else {
             writer.println("null");
             writer.flush();
         }

@@ -9,6 +9,8 @@ import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
@@ -24,19 +26,19 @@ import java.util.Map;
  * @author 徐靖峰
  * Date 2018-05-31
  */
-public class ConsumerAgentClient implements Client{
+public class ConsumerAgentClient implements Client {
 
-    private static Map<String,ConsumerAgentClient> threadBoundClientMap = new HashMap<>(8);
+    private static Map<String, ConsumerAgentClient> threadBoundClientMap = new HashMap<>(8);
 
-    public static void put(String eventLoopName,ConsumerAgentClient consumerAgentClient){
+    public static void put(String eventLoopName, ConsumerAgentClient consumerAgentClient) {
         threadBoundClientMap.put(eventLoopName, consumerAgentClient);
     }
 
-    public static ConsumerAgentClient get(String eventLoopName){
+    public static ConsumerAgentClient get(String eventLoopName) {
         return threadBoundClientMap.get(eventLoopName);
     }
 
-    private Map<Endpoint,MeshChannel> channelMap = new HashMap<>(3);
+    private Map<Endpoint, MeshChannel> channelMap = new HashMap<>(3);
     private LoadBalance loadBalance;
     private volatile boolean available = false;
     private EventLoop sharedEventLoop;
@@ -46,8 +48,8 @@ public class ConsumerAgentClient implements Client{
     }
 
     @Override
-    public MeshChannel getMeshChannel(){
-        if(available){
+    public MeshChannel getMeshChannel() {
+        if (available) {
             Endpoint selectEndpoint = loadBalance.select();
             return channelMap.get(selectEndpoint);
         }
@@ -56,7 +58,7 @@ public class ConsumerAgentClient implements Client{
 
     @Override
     public MeshChannel getMeshChannel(Endpoint endpoint) {
-        if(available){
+        if (available) {
             return channelMap.get(endpoint);
         }
         throw new RuntimeException("client不可用");
@@ -78,11 +80,10 @@ public class ConsumerAgentClient implements Client{
         available = true;
     }
 
-    private Channel connect(Endpoint endpoint){
+    private Channel connect(Endpoint endpoint) {
         Bootstrap b = new Bootstrap();
         b.group(sharedEventLoop)//复用sharedEventLoop就发不出去请求
-                .channel(NioSocketChannel.class)
-                .option(ChannelOption.SO_KEEPALIVE, true)
+                .channel(Epoll.isAvailable() ? EpollSocketChannel.class : NioSocketChannel.class)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override

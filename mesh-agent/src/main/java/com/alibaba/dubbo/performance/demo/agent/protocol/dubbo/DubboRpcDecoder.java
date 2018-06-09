@@ -23,7 +23,7 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
 
         // 确保拿到一个完整的header
         if (readable < HEADER_LENGTH) {
-            return ;
+            return;
         }
         byteBuf.markReaderIndex();
         byteBuf.skipBytes(3);
@@ -35,9 +35,9 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
             return;
         }
         DubboRpcResponse response = new DubboRpcResponse();
-        if(status != 20){
+        if (status != 20) {
             response.setBytes(new byte[]{1});
-        }else {
+        } else {
             byte[] bytes = new byte[len - 3];
             byteBuf.getBytes(byteBuf.readerIndex() + 2, bytes);
             response.setBytes(bytes);

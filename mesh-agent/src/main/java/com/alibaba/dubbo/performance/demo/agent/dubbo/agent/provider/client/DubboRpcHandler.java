@@ -17,13 +17,14 @@ public class DubboRpcHandler extends SimpleChannelInboundHandler<DubboRpcRespons
     static final Logger logger = LoggerFactory.getLogger(DubboRpcHandler.class);
 
     private static AtomicInteger cnt = new AtomicInteger(0);
+
     public DubboRpcHandler() {
         logger.info("provider-agent => provider 连接数 {}", cnt.incrementAndGet());
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DubboRpcResponse msg) throws Exception {
-            process(msg);
+        process(msg);
     }
 
     private void process(DubboRpcResponse msg) {

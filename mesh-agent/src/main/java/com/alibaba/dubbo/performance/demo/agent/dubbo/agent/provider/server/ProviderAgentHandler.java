@@ -33,23 +33,23 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
 
     private Logger logger = LoggerFactory.getLogger(ProviderAgentHandler.class);
 
-//    public static ThreadLocal<Map<Long,Channel>> inboundChannelMap = ThreadLocal.withInitial(HashMap::new);
+    //    public static ThreadLocal<Map<Long,Channel>> inboundChannelMap = ThreadLocal.withInitial(HashMap::new);
     public static FastThreadLocal<LongObjectHashMap<Channel>> inboundChannelMap = new FastThreadLocal<LongObjectHashMap<Channel>>() {
         @Override
         protected LongObjectHashMap<Channel> initialValue() throws Exception {
             return new LongObjectHashMap<>();
         }
     };
-//    private static ThreadLocal<Client> dubboClientHolder = new ThreadLocal<>();
+    //    private static ThreadLocal<Client> dubboClientHolder = new ThreadLocal<>();
     private static FastThreadLocal<Client> dubboClientHolder = new FastThreadLocal<>();
 
-    public ProviderAgentHandler(){
+    public ProviderAgentHandler() {
         logger.info("consumer-agent => provider-agent 连接数 {}", cnt.incrementAndGet());
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        if(dubboClientHolder.get()==null){
+        if (dubboClientHolder.get() == null) {
             DubboClient dubboClient = new DubboClient(ctx.channel().eventLoop());
             dubboClient.init();
             dubboClientHolder.set(dubboClient);
@@ -62,7 +62,7 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
         dubboClientHolder.get().getMeshChannel().getChannel().writeAndFlush(messageToMessage(msg));
     }
 
-    private DubboRpcRequest messageToMessage(DubboMeshProto.AgentRequest agentRequest){
+    private DubboRpcRequest messageToMessage(DubboMeshProto.AgentRequest agentRequest) {
         RpcInvocation invocation = new RpcInvocation();
 //        invocation.setMethodName(agentRequest.getMethod());
 //        invocation.setAttachment("path", agentRequest.getInterfaceName());

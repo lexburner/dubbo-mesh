@@ -25,7 +25,7 @@ public class ConsumerAgentClientHandler extends SimpleChannelInboundHandler<Dubb
 
     private static AtomicInteger cnt = new AtomicInteger(0);
 
-    public ConsumerAgentClientHandler(){
+    public ConsumerAgentClientHandler() {
         logger.info("consumer-agent 出站连接数 {}", cnt.incrementAndGet());
     }
 
@@ -38,7 +38,7 @@ public class ConsumerAgentClientHandler extends SimpleChannelInboundHandler<Dubb
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DubboMeshProto.AgentResponse msg) {
-            callback(msg);
+        callback(msg);
     }
 
     private void callback(DubboMeshProto.AgentResponse agentResponse) {
