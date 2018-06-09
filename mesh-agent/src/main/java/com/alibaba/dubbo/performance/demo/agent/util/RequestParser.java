@@ -61,11 +61,13 @@ public final class RequestParser {
         return params;
     }
 
-//    public static Map<String, String> cheatParse(FullHttpRequest req) {
-//        req.retain();//Increases the reference count by 1
-//        req.content().skipBytes(136);
-//        ByteBuf slice = req.content().slice();
-//        return
-//    }
+    public static String cheatParse(FullHttpRequest req) {
+        req.retain();
+        // 跳过parameter之前的部分
+        req.content().skipBytes(136);
+        String parameter = req.content().readCharSequence(req.content().readableBytes(), StandardCharsets.UTF_8).toString();
+        req.content().release();
+        return parameter;
+    }
 
 }
