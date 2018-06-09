@@ -17,7 +17,6 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.ConsumerAgentClient;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
-import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import com.alibaba.dubbo.performance.demo.agent.util.RequestParser;
 import io.netty.buffer.Unpooled;
@@ -34,7 +33,6 @@ import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;

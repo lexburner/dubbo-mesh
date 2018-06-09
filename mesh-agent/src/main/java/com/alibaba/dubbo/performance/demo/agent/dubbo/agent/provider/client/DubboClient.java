@@ -6,10 +6,9 @@ import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.EventLoop;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 /**
@@ -23,14 +22,10 @@ public class DubboClient implements Client {
 
     private static final Endpoint providerEndponit = new Endpoint(REMOTE_HOST, REMOTE_PORT);
 
-    private EventLoopGroup eventExecutors;
+    private EventLoop eventLoop;
 
-    public DubboClient() {
-        this.eventExecutors = new NioEventLoopGroup(1);
-    }
-
-    public DubboClient(EventLoopGroup eventExecutors) {
-        this.eventExecutors = eventExecutors;
+    public DubboClient(EventLoop eventLoop) {
+        this.eventLoop = eventLoop;
     }
 
     private MeshChannel meshChannel;
@@ -38,7 +33,7 @@ public class DubboClient implements Client {
     @Override
     public void init() {
         Bootstrap b = new Bootstrap();
-        b.group(eventExecutors.next())
+        b.group(eventLoop)
                 .channel(Epoll.isAvailable() ? EpollSocketChannel.class : NioSocketChannel.class)
                 .handler(new DubboRpcInitializer())
                 .option(ChannelOption.SO_KEEPALIVE, true)

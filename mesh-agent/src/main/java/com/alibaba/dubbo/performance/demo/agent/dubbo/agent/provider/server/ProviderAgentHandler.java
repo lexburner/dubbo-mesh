@@ -6,11 +6,12 @@ import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import com.alibaba.dubbo.performance.demo.agent.util.JsonUtils;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.collection.LongObjectHashMap;
+import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.FastThreadLocal;
+import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,9 +28,9 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
 
     private Logger logger = LoggerFactory.getLogger(ProviderAgentHandler.class);
 
-    public static FastThreadLocal<LongObjectHashMap<Channel>> inboundChannelMap = new FastThreadLocal<LongObjectHashMap<Channel>>() {
+    public static FastThreadLocal<LongObjectHashMap<Promise<DubboMeshProto.AgentResponse>>> promiseHolder = new FastThreadLocal<LongObjectHashMap<Promise<DubboMeshProto.AgentResponse>>>() {
         @Override
-        protected LongObjectHashMap<Channel> initialValue() throws Exception {
+        protected LongObjectHashMap<Promise<DubboMeshProto.AgentResponse>> initialValue() throws Exception {
             return new LongObjectHashMap<>();
         }
     };
@@ -49,7 +50,13 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DubboMeshProto.AgentRequest msg) throws Exception {
-        inboundChannelMap.get().put(msg.getRequestId(), ctx.channel());
+        Promise<DubboMeshProto.AgentResponse> promise = new DefaultPromise<>(ctx.executor());
+        promise.addListener(future -> {
+            DubboMeshProto.AgentResponse agentResponse = (DubboMeshProto.AgentResponse) future.get();
+            ctx.channel().writeAndFlush(agentResponse);
+
+        });
+        promiseHolder.get().put(msg.getRequestId(), promise);
         dubboClientHolder.get().getMeshChannel().getChannel().writeAndFlush(messageToMessage(msg));
     }
 

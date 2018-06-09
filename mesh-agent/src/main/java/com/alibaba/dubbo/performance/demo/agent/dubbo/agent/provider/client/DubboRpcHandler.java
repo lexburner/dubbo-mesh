@@ -4,9 +4,9 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server.Prov
 import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.DubboRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import com.google.protobuf.ByteString;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,10 +23,9 @@ public class DubboRpcHandler extends SimpleChannelInboundHandler<DubboRpcRespons
     }
 
     private void process(DubboRpcResponse msg) {
-        Channel inboundChannel = ProviderAgentHandler.inboundChannelMap.get().get(msg.getRequestId());
-        if (inboundChannel != null) {
-            inboundChannel.writeAndFlush(messageToMessage(msg));
-            ProviderAgentHandler.inboundChannelMap.get().remove(msg.getRequestId());
+        Promise<DubboMeshProto.AgentResponse> promise = ProviderAgentHandler.promiseHolder.get().remove(msg.getRequestId());
+        if (promise != null) {
+            promise.trySuccess(messageToMessage(msg));
         }
     }
 
