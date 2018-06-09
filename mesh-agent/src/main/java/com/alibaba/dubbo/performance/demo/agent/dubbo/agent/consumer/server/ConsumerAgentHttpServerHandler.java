@@ -17,6 +17,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.ConsumerAgentClient;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
+import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import com.alibaba.dubbo.performance.demo.agent.util.RequestParser;
 import io.netty.buffer.Unpooled;
@@ -33,6 +34,7 @@ import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -57,7 +59,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
 
     public static AtomicLong requestIdGenerator = new AtomicLong(0);
 
-//    private static AtomicInteger handlerCnt = new AtomicInteger(0);
+    private static AtomicInteger handlerCnt = new AtomicInteger(0);
 
     public static FastThreadLocal<LongObjectHashMap<Promise>> promiseHolder = new FastThreadLocal<LongObjectHashMap<Promise>>() {
         @Override
@@ -66,12 +68,12 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         }
     };
 
-//    private Endpoint channelConsistenceHashEndpoint;
+    private Endpoint channelConsistenceHashEndpoint;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-//        int handlerNo = handlerCnt.incrementAndGet();
-//        this.channelConsistenceHashEndpoint = ConsumerAgentHttpServer.remoteEndpoints[handlerNo % ConsumerAgentHttpServer.remoteEndpoints.length];
+        int handlerNo = handlerCnt.incrementAndGet();
+        this.channelConsistenceHashEndpoint = ConsumerAgentHttpServer.remoteEndpoints[handlerNo % ConsumerAgentHttpServer.remoteEndpoints.length];
 //        logger.info("bound channel now is {}", handlerNo);
     }
 
@@ -108,7 +110,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
             ctx.writeAndFlush(response);
         });
         promiseHolder.get().put(request.getRequestId(), agentResponsePromise);
-        MeshChannel meshChannel = ConsumerAgentClient.get(ctx.channel().eventLoop().toString()).getMeshChannel();
+        MeshChannel meshChannel = ConsumerAgentClient.get(ctx.channel().eventLoop().toString()).getMeshChannel(channelConsistenceHashEndpoint);
         meshChannel.getChannel().writeAndFlush(request);
     }
 
