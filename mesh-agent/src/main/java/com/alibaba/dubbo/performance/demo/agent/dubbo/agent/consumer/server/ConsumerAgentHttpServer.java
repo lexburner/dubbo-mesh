@@ -45,7 +45,7 @@ public final class ConsumerAgentHttpServer {
     private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServer.class);
 
     private EventLoopGroup bossGroup = Epoll.isAvailable() ? new EpollEventLoopGroup(1) : new NioEventLoopGroup(1);
-    private EventLoopGroup workerGroup = Epoll.isAvailable() ? new EpollEventLoopGroup(4) : new NioEventLoopGroup(4);
+    private EventLoopGroup workerGroup = Epoll.isAvailable() ? new EpollEventLoopGroup(8) : new NioEventLoopGroup(8);
 
     private ServerBootstrap bootstrap;
 
