@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server.ConsumerAgentHttpServerHandler;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.concurrent.Promise;
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * @author 徐靖峰
  * Date 2018-05-17
  */
-public class ConsumerAgentClientHandler extends SimpleChannelInboundHandler<DubboMeshProto.AgentResponse> {
+public class ConsumerAgentClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
     public ConsumerAgentClientHandler() {
     }
@@ -21,14 +22,16 @@ public class ConsumerAgentClientHandler extends SimpleChannelInboundHandler<Dubb
 
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, DubboMeshProto.AgentResponse msg) {
+    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
         callback(msg);
     }
 
-    private void callback(DubboMeshProto.AgentResponse agentResponse) {
-        Promise promise = ConsumerAgentHttpServerHandler.promiseHolder.get().remove(agentResponse.getRequestId());
+    private void callback(ByteBuf agentResponse) {
+        long requestId = agentResponse.readLong();
+        int hash = agentResponse.readInt();
+        Promise<Integer> promise = ConsumerAgentHttpServerHandler.promiseHolder.get().remove(requestId);
         if(promise !=null){
-            promise.trySuccess(agentResponse);
+            promise.trySuccess(hash);
         }
     }
 

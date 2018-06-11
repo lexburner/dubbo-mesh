@@ -13,6 +13,8 @@ import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
@@ -89,11 +91,13 @@ public class ConsumerAgentClient implements Client {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline()
-                                .addLast("protobufVarint32FrameDecoder", new ProtobufVarint32FrameDecoder())
-                                .addLast("protobufDecoder", new ProtobufDecoder(DubboMeshProto.AgentResponse.getDefaultInstance()))
-                                .addLast("protobufVarint32LengthFieldPrepender", new ProtobufVarint32LengthFieldPrepender())
-                                .addLast("protobufEncoder", new ProtobufEncoder())
-                                .addLast(new ConsumerAgentClientHandler());
+//                                .addLast("protobufVarint32FrameDecoder", new ProtobufVarint32FrameDecoder())
+//                                .addLast("protobufDecoder", new ProtobufDecoder(DubboMeshProto.AgentResponse.getDefaultInstance()))
+//                                .addLast("protobufVarint32LengthFieldPrepender", new ProtobufVarint32LengthFieldPrepender())
+//                                .addLast("protobufEncoder", new ProtobufEncoder())
+                            .addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2))
+                            .addLast(new LengthFieldPrepender(2))
+                            .addLast(new ConsumerAgentClientHandler());
                     }
                 });
         ChannelFuture f = b.connect(endpoint.getHost(), endpoint.getPort());

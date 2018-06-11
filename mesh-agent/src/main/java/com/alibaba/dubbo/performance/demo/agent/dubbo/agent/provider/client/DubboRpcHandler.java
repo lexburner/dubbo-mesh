@@ -33,17 +33,14 @@ public class DubboRpcHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private void process(DubboRpcResponse msg) {
-        Promise<DubboMeshProto.AgentResponse> promise = ProviderAgentHandler.promiseHolder.get().remove(msg.getRequestId());
+        Promise<Integer> promise = ProviderAgentHandler.promiseHolder.get().remove(msg.getRequestId());
         if (promise != null) {
             promise.trySuccess(messageToMessage(msg));
         }
     }
 
-    private DubboMeshProto.AgentResponse messageToMessage(DubboRpcResponse dubboRpcResponse) {
-        return DubboMeshProto.AgentResponse.newBuilder()
-                .setRequestId(dubboRpcResponse.getRequestId())
-                .setHash(ByteString.copyFrom(dubboRpcResponse.getBytes()))
-                .build();
+    private int messageToMessage(DubboRpcResponse dubboRpcResponse) {
+        return Integer.parseInt(new String(dubboRpcResponse.getBytes()));
     }
 
     @Override

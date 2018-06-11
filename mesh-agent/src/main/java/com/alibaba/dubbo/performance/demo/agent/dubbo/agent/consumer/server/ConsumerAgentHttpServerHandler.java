@@ -20,6 +20,8 @@ import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import com.alibaba.dubbo.performance.demo.agent.util.RequestParser;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -83,36 +85,63 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     }
 
     private void processRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
-//        Map<String, String> requestParams = RequestParser.fastParse(req);
-//
-//        DubboMeshProto.AgentRequest agentRequest = DubboMeshProto.AgentRequest.newBuilder().setRequestId(requestIdGenerator.incrementAndGet())
-//                .setInterfaceName(requestParams.get("interface"))
-//                .setMethod(requestParams.get("method"))
-//                .setParameterTypesString(requestParams.get("parameterTypesString"))
-//                .setParameter(requestParams.get("parameter"))
-//                .build();
 
-        DubboMeshProto.AgentRequest agentRequest = DubboMeshProto.AgentRequest.newBuilder().setRequestId(requestIdGenerator.incrementAndGet())
-                .setParameter(RequestParser.cheatParse(req))
-                .build();
+        long requestId = requestIdGenerator.incrementAndGet();
 
-        this.call(ctx, agentRequest);
-    }
+        req.retain();//Increases the reference count by 1
+        CompositeByteBuf agentRequest = Unpooled.compositeBuffer();
+        req.content().skipBytes(136);
+        agentRequest
+                .addComponents(true,
+                        Unpooled.copyLong(requestId),
+                        req.content().slice());
 
-    public void call(ChannelHandlerContext ctx, DubboMeshProto.AgentRequest request) {
-        Promise<DubboMeshProto.AgentResponse> agentResponsePromise = new DefaultPromise<>(ctx.executor());
+        Promise<Integer> agentResponsePromise = new DefaultPromise<>(ctx.executor());
         agentResponsePromise.addListener(future -> {
-            DubboMeshProto.AgentResponse agentResponse = (DubboMeshProto.AgentResponse) future.get();
-            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(agentResponse.getHash().toByteArray()));
+            int agentResponse = (Integer) future.get();
+            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(Integer.toString(agentResponse).getBytes()));
             response.headers().set(CONTENT_TYPE, "text/plain");
             response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
             response.headers().set(CONNECTION, KEEP_ALIVE);
             ctx.writeAndFlush(response);
         });
-        promiseHolder.get().put(request.getRequestId(), agentResponsePromise);
+        promiseHolder.get().put(requestId, agentResponsePromise);
         MeshChannel meshChannel = ConsumerAgentClient.get(ctx.channel().eventLoop().toString()).getMeshChannel(channelConsistenceHashEndpoint);
-        meshChannel.getChannel().writeAndFlush(request);
+        meshChannel.getChannel().writeAndFlush(agentRequest);
     }
+
+
+//    private void processRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
+////        Map<String, String> requestParams = RequestParser.fastParse(req);
+////
+////        DubboMeshProto.AgentRequest agentRequest = DubboMeshProto.AgentRequest.newBuilder().setRequestId(requestIdGenerator.incrementAndGet())
+////                .setInterfaceName(requestParams.get("interface"))
+////                .setMethod(requestParams.get("method"))
+////                .setParameterTypesString(requestParams.get("parameterTypesString"))
+////                .setParameter(requestParams.get("parameter"))
+////                .build();
+//
+//        DubboMeshProto.AgentRequest agentRequest = DubboMeshProto.AgentRequest.newBuilder().setRequestId(requestIdGenerator.incrementAndGet())
+//                .setParameter(RequestParser.cheatParse(req))
+//                .build();
+//
+//        this.call(ctx, agentRequest);
+//    }
+
+//    public void call(ChannelHandlerContext ctx, DubboMeshProto.AgentRequest request) {
+//        Promise<DubboMeshProto.AgentResponse> agentResponsePromise = new DefaultPromise<>(ctx.executor());
+//        agentResponsePromise.addListener(future -> {
+//            DubboMeshProto.AgentResponse agentResponse = (DubboMeshProto.AgentResponse) future.get();
+//            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(agentResponse.getHash().toByteArray()));
+//            response.headers().set(CONTENT_TYPE, "text/plain");
+//            response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
+//            response.headers().set(CONNECTION, KEEP_ALIVE);
+//            ctx.writeAndFlush(response);
+//        });
+//        promiseHolder.get().put(request.getRequestId(), agentResponsePromise);
+//        MeshChannel meshChannel = ConsumerAgentClient.get(ctx.channel().eventLoop().toString()).getMeshChannel(channelConsistenceHashEndpoint);
+//        meshChannel.getChannel().writeAndFlush(request);
+//    }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {

@@ -6,6 +6,8 @@ import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import com.alibaba.dubbo.performance.demo.agent.util.JsonUtils;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.collection.LongObjectHashMap;
@@ -19,18 +21,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author 徐靖峰
  * Date 2018-05-17
  */
-public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshProto.AgentRequest> {
+public class ProviderAgentHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
     private Logger logger = LoggerFactory.getLogger(ProviderAgentHandler.class);
 
-    public static FastThreadLocal<LongObjectHashMap<Promise<DubboMeshProto.AgentResponse>>> promiseHolder = new FastThreadLocal<LongObjectHashMap<Promise<DubboMeshProto.AgentResponse>>>() {
+    public static FastThreadLocal<LongObjectHashMap<Promise<Integer>>> promiseHolder = new FastThreadLocal<LongObjectHashMap<Promise<Integer>>>() {
         @Override
-        protected LongObjectHashMap<Promise<DubboMeshProto.AgentResponse>> initialValue() throws Exception {
+        protected LongObjectHashMap<Promise<Integer>> initialValue() throws Exception {
             return new LongObjectHashMap<>();
         }
     };
@@ -49,18 +52,23 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, DubboMeshProto.AgentRequest msg) throws Exception {
-        Promise<DubboMeshProto.AgentResponse> promise = new DefaultPromise<>(ctx.executor());
+    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
+        long requestId = msg.readLong();
+        String param = msg.toString(StandardCharsets.UTF_8);
+        Promise<Integer> promise = new DefaultPromise<>(ctx.executor());
         promise.addListener(future -> {
-            DubboMeshProto.AgentResponse agentResponse = (DubboMeshProto.AgentResponse) future.get();
-            ctx.writeAndFlush(agentResponse);
+            ByteBuf buffer = Unpooled.buffer();
+            int hash = (Integer) future.get();
+            buffer.writeLong(requestId);
+            buffer.writeInt(hash);
+            ctx.writeAndFlush(buffer);
 
         });
-        promiseHolder.get().put(msg.getRequestId(), promise);
-        dubboClientHolder.get().getMeshChannel().getChannel().writeAndFlush(messageToMessage(msg));
+        promiseHolder.get().put(requestId, promise);
+        dubboClientHolder.get().getMeshChannel().getChannel().writeAndFlush(messageToMessage(requestId,param));
     }
 
-    private DubboRpcRequest messageToMessage(DubboMeshProto.AgentRequest agentRequest) {
+    private DubboRpcRequest messageToMessage(Long requestId,String param) {
         RpcInvocation invocation = new RpcInvocation();
 //        invocation.setMethodName(agentRequest.getMethod());
 //        invocation.setAttachment("path", agentRequest.getInterfaceName());
@@ -71,13 +79,13 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
         try {
-            JsonUtils.writeObject(agentRequest.getParameter(), writer);
+            JsonUtils.writeObject(param, writer);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         invocation.setArguments(out.toByteArray());
         DubboRpcRequest dubboRpcRequest = new DubboRpcRequest();
-        dubboRpcRequest.setId(agentRequest.getRequestId());
+        dubboRpcRequest.setId(requestId);
         dubboRpcRequest.setVersion("2.0.0");
         dubboRpcRequest.setTwoWay(true);
         dubboRpcRequest.setData(invocation);
