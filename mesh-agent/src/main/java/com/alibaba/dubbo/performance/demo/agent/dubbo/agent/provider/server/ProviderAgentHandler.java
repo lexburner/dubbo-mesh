@@ -80,14 +80,7 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<ByteBuf> {
         invocation.setMethodName("hash");
         invocation.setAttachment("path", "com.alibaba.dubbo.performance.demo.provider.IHelloService");
         invocation.setParameterTypes("Ljava/lang/String;");
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
-        try {
-            JsonUtils.writeObject(param, writer);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        invocation.setArguments(out.toByteArray());
+        invocation.setArguments(param.getBytes());
         DubboRpcRequest dubboRpcRequest = new DubboRpcRequest();
         dubboRpcRequest.setId(requestId);
         dubboRpcRequest.setVersion("2.0.0");
