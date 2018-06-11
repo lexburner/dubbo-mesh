@@ -36,7 +36,8 @@ public class DubboRpcDecoder extends ByteToMessageDecoder {
         }
         DubboRpcResponse response = new DubboRpcResponse();
         if (status != 20) {
-            response.setBytes(new byte[]{1});
+            response.setBytes("1".getBytes());
+//            response.setBytes(new byte[]{1});
         } else {
             byte[] bytes = new byte[len - 3];
             byteBuf.getBytes(byteBuf.readerIndex() + 2, bytes);
