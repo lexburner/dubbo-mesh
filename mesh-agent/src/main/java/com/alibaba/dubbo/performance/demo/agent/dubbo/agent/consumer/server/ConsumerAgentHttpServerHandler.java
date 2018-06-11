@@ -103,11 +103,14 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
             response.headers().set(CONTENT_TYPE, "text/plain");
             response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
             response.headers().set(CONNECTION, KEEP_ALIVE);
-            ctx.writeAndFlush(response);
+            ctx.channel().writeAndFlush(response);
         });
         promiseHolder.get().put(requestId, agentResponsePromise);
         MeshChannel meshChannel = ConsumerAgentClient.get(ctx.channel().eventLoop().toString()).getMeshChannel(channelConsistenceHashEndpoint);
-        meshChannel.getChannel().writeAndFlush(agentRequest);
+        meshChannel.getChannel().write(agentRequest);
+        if(meshChannel.getWriteCnt().incrementAndGet()%5==0){
+            meshChannel.getChannel().flush();
+        }
     }
 
 

@@ -5,9 +5,11 @@ import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.DubboRpcRequest;
 import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
+import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import com.alibaba.dubbo.performance.demo.agent.util.JsonUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.collection.LongObjectHashMap;
@@ -61,14 +63,18 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<ByteBuf> {
             int hash = (Integer) future.get();
             buffer.writeLong(requestId);
             buffer.writeInt(hash);
-            ctx.writeAndFlush(buffer);
+            ctx.channel().writeAndFlush(buffer);
 
         });
         promiseHolder.get().put(requestId, promise);
-        dubboClientHolder.get().getMeshChannel().getChannel().writeAndFlush(messageToMessage(requestId,param));
+        MeshChannel channel = dubboClientHolder.get().getMeshChannel();
+        channel.getChannel().write(messageToMessage(requestId, param));
+        if (channel.getWriteCnt().incrementAndGet() % 5 == 0) {
+            channel.getChannel().flush();
+        }
     }
 
-    private DubboRpcRequest messageToMessage(Long requestId,String param) {
+    private DubboRpcRequest messageToMessage(Long requestId, String param) {
         RpcInvocation invocation = new RpcInvocation();
 //        invocation.setMethodName(agentRequest.getMethod());
 //        invocation.setAttachment("path", agentRequest.getInterfaceName());
