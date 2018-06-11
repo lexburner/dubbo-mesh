@@ -69,7 +69,7 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<ByteBuf> {
         promiseHolder.get().put(requestId, promise);
         MeshChannel channel = dubboClientHolder.get().getMeshChannel();
         channel.getChannel().write(messageToMessage(requestId, param));
-        if (channel.getWriteCnt().incrementAndGet() % 5 == 0) {
+        if (channel.getWriteCnt().incrementAndGet() % 2 == 0) {
             channel.getChannel().flush();
         }
     }
