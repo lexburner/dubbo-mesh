@@ -15,6 +15,9 @@ if [[ "$1" == "consumer" ]]; then
        -Dserver.port=20000 \
        -Detcd.url=$ETCD_URL \
        -Dlogs.dir=/root/logs \
+       -Dio.netty.leakDetectionLevel=disabled \
+       -Dio.netty.noJdkZlibDecoder=true \
+       -Dio.netty.allocator.pageSize=2048 \
        /root/dists/mesh-agent.jar
 elif [[ "$1" == "provider-small" ]]; then
   echo "Starting small provider agent..."
@@ -27,6 +30,9 @@ elif [[ "$1" == "provider-small" ]]; then
        -Dserver.port=30000 \
        -Detcd.url=$ETCD_URL \
        -Dlogs.dir=/root/logs \
+       -Dio.netty.leakDetectionLevel=disabled \
+       -Dio.netty.noJdkZlibDecoder=true \
+       -Dio.netty.allocator.pageSize=2048 \
        /root/dists/mesh-agent.jar
 elif [[ "$1" == "provider-medium" ]]; then
   echo "Starting medium provider agent..."
@@ -39,6 +45,9 @@ elif [[ "$1" == "provider-medium" ]]; then
        -Dserver.port=30000 \
        -Detcd.url=$ETCD_URL \
        -Dlogs.dir=/root/logs \
+       -Dio.netty.leakDetectionLevel=disabled \
+       -Dio.netty.noJdkZlibDecoder=true \
+       -Dio.netty.allocator.pageSize=2048 \
        /root/dists/mesh-agent.jar
 elif [[ "$1" == "provider-large" ]]; then
   echo "Starting large provider agent..."
@@ -51,6 +60,9 @@ elif [[ "$1" == "provider-large" ]]; then
        -Dserver.port=30000 \
        -Detcd.url=$ETCD_URL \
        -Dlogs.dir=/root/logs \
+       -Dio.netty.leakDetectionLevel=disabled \
+       -Dio.netty.noJdkZlibDecoder=true \
+       -Dio.netty.allocator.pageSize=2048 \
        /root/dists/mesh-agent.jar
 else
   echo "Unrecognized arguments, exit."
