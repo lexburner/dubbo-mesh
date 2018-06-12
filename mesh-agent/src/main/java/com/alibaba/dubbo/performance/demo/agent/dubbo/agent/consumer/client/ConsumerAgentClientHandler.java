@@ -1,5 +1,6 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server.ConsumerAgentHttpServerCheatHandler;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server.ConsumerAgentHttpServerHandler;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import io.netty.buffer.ByteBuf;
@@ -29,7 +30,7 @@ public class ConsumerAgentClientHandler extends SimpleChannelInboundHandler<Byte
     private void callback(ByteBuf agentResponse) {
         long requestId = agentResponse.readLong();
         int hash = agentResponse.readInt();
-        Promise<Integer> promise = ConsumerAgentHttpServerHandler.promiseHolder.get().remove(requestId);
+        Promise<Integer> promise = ConsumerAgentHttpServerCheatHandler.promiseHolder.get().remove(requestId);
         if(promise !=null){
             promise.trySuccess(hash);
         }

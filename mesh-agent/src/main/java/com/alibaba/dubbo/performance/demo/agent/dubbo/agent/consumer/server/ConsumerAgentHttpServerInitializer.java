@@ -15,7 +15,8 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.BatchFlushHandler;
+import com.alibaba.dubbo.performance.demo.agent.protocol.http.HttpRequestCheatDecoder;
+import com.alibaba.dubbo.performance.demo.agent.protocol.http.HttpResponseCheatEncoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -33,9 +34,12 @@ public class ConsumerAgentHttpServerInitializer extends ChannelInitializer<Socke
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline p = ch.pipeline();
-        p.addLast("encoder", new HttpResponseEncoder());
-        p.addLast("decoder", new HttpRequestDecoder());
-        p.addLast("aggregator", new HttpObjectAggregator(10 * 1024 * 1024));
-        p.addLast(new ConsumerAgentHttpServerHandler());
+//        p.addLast("encoder", new HttpResponseEncoder());
+//        p.addLast("decoder", new HttpRequestDecoder());
+//        p.addLast("aggregator", new HttpObjectAggregator(10 * 1024 * 1024));
+//        p.addLast(new ConsumerAgentHttpServerHandler());
+        p.addLast("encoder", new HttpResponseCheatEncoder());
+        p.addLast("decoder", new HttpRequestCheatDecoder());
+        p.addLast(new ConsumerAgentHttpServerCheatHandler());
     }
 }

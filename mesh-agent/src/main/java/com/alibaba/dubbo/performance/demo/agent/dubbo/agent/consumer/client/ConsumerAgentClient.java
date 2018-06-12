@@ -83,7 +83,7 @@ public class ConsumerAgentClient implements Client {
         Bootstrap b = new Bootstrap();
         b.group(sharedEventLoop)//复用sharedEventLoop就发不出去请求
                 .channel(Epoll.isAvailable() ? EpollSocketChannel.class : NioSocketChannel.class)
-                .option(ChannelOption.TCP_NODELAY, false)
+                .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
