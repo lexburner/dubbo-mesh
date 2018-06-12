@@ -4,6 +4,7 @@ import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoop;
@@ -36,8 +37,8 @@ public class DubboClient implements Client {
         b.group(eventLoop)
                 .channel(Epoll.isAvailable() ? EpollSocketChannel.class : NioSocketChannel.class)
                 .handler(new DubboRpcInitializer())
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.TCP_NODELAY, true);
+                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         ChannelFuture f = b.connect(REMOTE_HOST, REMOTE_PORT);
         MeshChannel meshChannel = new MeshChannel();
         meshChannel.setChannel(f.channel());

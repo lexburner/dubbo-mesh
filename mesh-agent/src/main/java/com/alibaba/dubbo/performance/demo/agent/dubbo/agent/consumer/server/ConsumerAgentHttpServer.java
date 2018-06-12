@@ -20,6 +20,7 @@ import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.Cons
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHolder;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoop;
@@ -66,7 +67,9 @@ public final class ConsumerAgentHttpServer {
             bootstrap.group(bossGroup, workerGroup)
                     .channel(Epoll.isAvailable() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                     .childHandler(new ConsumerAgentHttpServerInitializer())
-                    .childOption(ChannelOption.TCP_NODELAY, true);
+                    .childOption(ChannelOption.TCP_NODELAY, true)
+                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+            ;
             Channel ch = bootstrap.bind(PORT).sync().channel();
             logger.info("consumer-agent provider is ready to receive request from consumer\n" +
                     "export at http://127.0.0.1:{}", PORT);

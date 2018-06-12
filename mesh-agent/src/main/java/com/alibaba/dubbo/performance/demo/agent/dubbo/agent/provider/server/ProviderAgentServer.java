@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server;
 
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -37,7 +38,7 @@ public class ProviderAgentServer {
                     .group(bossGroup, workerGroup)
                     .channel(Epoll.isAvailable() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                     .childHandler(new ProviderAgentInitializer())
-                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                     .childOption(ChannelOption.TCP_NODELAY, true);
             int port = Integer.valueOf(System.getProperty("server.port"));
             //IpHelper.getHostIp(),

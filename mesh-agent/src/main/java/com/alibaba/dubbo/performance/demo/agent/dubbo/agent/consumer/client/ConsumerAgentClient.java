@@ -7,6 +7,7 @@ import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollSocketChannel;
@@ -83,6 +84,7 @@ public class ConsumerAgentClient implements Client {
         b.group(sharedEventLoop)//复用sharedEventLoop就发不出去请求
                 .channel(Epoll.isAvailable() ? EpollSocketChannel.class : NioSocketChannel.class)
                 .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) {
