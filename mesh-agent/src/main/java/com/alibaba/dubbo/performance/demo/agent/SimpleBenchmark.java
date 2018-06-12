@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-@SpringBootApplication
+//@SpringBootApplication
 public class SimpleBenchmark {
     private static AsyncHttpClient asyncHttpClient = org.asynchttpclient.Dsl.asyncHttpClient();
     private static Random r = new Random(1);
