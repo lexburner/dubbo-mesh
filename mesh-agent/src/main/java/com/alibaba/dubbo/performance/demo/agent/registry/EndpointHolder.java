@@ -23,7 +23,7 @@ public final class EndpointHolder {
             synchronized (EndpointHolder.class) {
                 if (endpoints == null) {
                     IRegistry registry = new EtcdRegistry(System.getProperty("etcd.url"));
-                    List<Endpoint> remoteEndpoints = null;
+                    List<Endpoint> remoteEndpoints;
                     try {
                         remoteEndpoints = registry.find("com.alibaba.dubbo.performance.demo.provider.IHelloService");
                     } catch (Exception e) {

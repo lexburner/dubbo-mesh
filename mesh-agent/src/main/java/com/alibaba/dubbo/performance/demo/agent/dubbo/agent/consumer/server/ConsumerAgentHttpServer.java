@@ -93,7 +93,7 @@ public final class ConsumerAgentHttpServer {
             if (eventExecutor instanceof EventLoop) {
                 ConsumerAgentClient consumerAgentClient = new ConsumerAgentClient((EventLoop) eventExecutor);
                 consumerAgentClient.init();
-                ConsumerAgentClient.put(eventExecutor.toString(), consumerAgentClient);
+                ConsumerAgentClient.put(eventExecutor, consumerAgentClient);
             }
 
         }

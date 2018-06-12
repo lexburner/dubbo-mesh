@@ -15,6 +15,7 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.BatchFlushHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;

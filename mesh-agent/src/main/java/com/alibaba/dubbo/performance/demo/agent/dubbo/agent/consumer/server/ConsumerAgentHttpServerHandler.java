@@ -16,12 +16,10 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.ConsumerAgentClient;
-import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
-import com.alibaba.dubbo.performance.demo.agent.util.RequestParser;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -65,7 +63,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
 
     public static FastThreadLocal<LongObjectHashMap<Promise>> promiseHolder = new FastThreadLocal<LongObjectHashMap<Promise>>() {
         @Override
-        protected LongObjectHashMap<Promise> initialValue() throws Exception {
+        protected LongObjectHashMap<Promise> initialValue() {
             return new LongObjectHashMap<>();
         }
     };
@@ -73,7 +71,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     private Endpoint channelConsistenceHashEndpoint;
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
         int handlerNo = handlerCnt.incrementAndGet();
         this.channelConsistenceHashEndpoint = ConsumerAgentHttpServer.remoteEndpoints[handlerNo % ConsumerAgentHttpServer.remoteEndpoints.length];
 //        logger.info("bound channel now is {}", handlerNo);
@@ -89,7 +87,7 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
         long requestId = requestIdGenerator.incrementAndGet();
 
         req.retain();//Increases the reference count by 1
-        CompositeByteBuf agentRequest = Unpooled.compositeBuffer();
+        CompositeByteBuf agentRequest = PooledByteBufAllocator.DEFAULT.compositeBuffer();
         req.content().skipBytes(136);
         agentRequest
                 .addComponents(true,
@@ -106,9 +104,8 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
             ctx.channel().writeAndFlush(response);
         });
         promiseHolder.get().put(requestId, agentResponsePromise);
-        MeshChannel meshChannel = ConsumerAgentClient.get(ctx.channel().eventLoop().toString()).getMeshChannel(channelConsistenceHashEndpoint);
-        meshChannel.getChannel().write(agentRequest);
-        meshChannel.getChannel().flush();
+        MeshChannel meshChannel = ConsumerAgentClient.get(ctx.channel().eventLoop()).getMeshChannel(channelConsistenceHashEndpoint);
+        meshChannel.getChannel().writeAndFlush(agentRequest, meshChannel.getChannel().voidPromise());
     }
 
 

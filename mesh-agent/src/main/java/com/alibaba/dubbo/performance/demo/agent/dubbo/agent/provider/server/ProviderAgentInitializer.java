@@ -1,15 +1,11 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server;
 
-import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.BatchFlushHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.codec.protobuf.ProtobufDecoder;
-import io.netty.handler.codec.protobuf.ProtobufEncoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 
 /**
  * @author 徐靖峰
@@ -26,6 +22,7 @@ public class ProviderAgentInitializer extends ChannelInitializer<SocketChannel> 
 //        pipeline.addLast("protobufEncoder", new ProtobufEncoder());
         pipeline
                 .addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2))
+                .addLast(new BatchFlushHandler())
                 .addLast(new LengthFieldPrepender(2))
                 .addLast(new ProviderAgentHandler());
     }

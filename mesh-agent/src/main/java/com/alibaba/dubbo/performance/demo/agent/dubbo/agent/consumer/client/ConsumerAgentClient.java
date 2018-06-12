@@ -2,7 +2,6 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client;
 
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.WeightRoundRobinLoadBalance;
-import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHolder;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
@@ -15,10 +14,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.codec.protobuf.ProtobufDecoder;
-import io.netty.handler.codec.protobuf.ProtobufEncoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
+import io.netty.util.concurrent.EventExecutor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,14 +26,14 @@ import java.util.Map;
  */
 public class ConsumerAgentClient implements Client {
 
-    private static Map<String, ConsumerAgentClient> threadBoundClientMap = new HashMap<>(8);
+    private static Map<EventExecutor, ConsumerAgentClient> threadBoundClientMap = new HashMap<>(8);
 
-    public static void put(String eventLoopName, ConsumerAgentClient consumerAgentClient) {
-        threadBoundClientMap.put(eventLoopName, consumerAgentClient);
+    public static void put(EventExecutor eventExecutor, ConsumerAgentClient consumerAgentClient) {
+        threadBoundClientMap.put(eventExecutor, consumerAgentClient);
     }
 
-    public static ConsumerAgentClient get(String eventLoopName) {
-        return threadBoundClientMap.get(eventLoopName);
+    public static ConsumerAgentClient get(EventExecutor eventExecutor) {
+        return threadBoundClientMap.get(eventExecutor);
     }
 
     private Map<Endpoint, MeshChannel> channelMap = new HashMap<>(3);
@@ -89,13 +85,14 @@ public class ConsumerAgentClient implements Client {
                 .option(ChannelOption.TCP_NODELAY, true)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    protected void initChannel(SocketChannel ch) throws Exception {
+                    protected void initChannel(SocketChannel ch) {
                         ch.pipeline()
 //                                .addLast("protobufVarint32FrameDecoder", new ProtobufVarint32FrameDecoder())
 //                                .addLast("protobufDecoder", new ProtobufDecoder(DubboMeshProto.AgentResponse.getDefaultInstance()))
 //                                .addLast("protobufVarint32LengthFieldPrepender", new ProtobufVarint32LengthFieldPrepender())
 //                                .addLast("protobufEncoder", new ProtobufEncoder())
                             .addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2))
+                            .addLast(new BatchFlushHandler())
                             .addLast(new LengthFieldPrepender(2))
                             .addLast(new ConsumerAgentClientHandler());
                     }

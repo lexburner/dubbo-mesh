@@ -26,20 +26,10 @@ public class AgentApp {
 
         String type = System.getProperty("type");   // 获取type参数
         if ("provider".equals(type)) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    new ProviderAgentServer().startServer();
-                }
-            }).start();
+            new Thread(() -> new ProviderAgentServer().startServer()).start();
         }
         if ("consumer".equals(type)) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    new ConsumerAgentHttpServer().startServer();
-                }
-            }).start();
+            new Thread(() -> new ConsumerAgentHttpServer().startServer()).start();
         }
 
 
