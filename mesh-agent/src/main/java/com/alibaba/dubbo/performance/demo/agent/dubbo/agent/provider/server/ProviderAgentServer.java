@@ -39,7 +39,7 @@ public class ProviderAgentServer {
                     .channel(Epoll.isAvailable() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                     .childHandler(new ProviderAgentInitializer())
                     .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                    .childOption(ChannelOption.TCP_NODELAY, true);
+                    .childOption(ChannelOption.TCP_NODELAY, false);
             int port = Integer.valueOf(System.getProperty("server.port"));
             //IpHelper.getHostIp(),
             Channel channel = bootstrap.bind(port + 50).sync().channel();

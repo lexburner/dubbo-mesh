@@ -67,7 +67,7 @@ public final class ConsumerAgentHttpServer {
             bootstrap.group(bossGroup, workerGroup)
                     .channel(Epoll.isAvailable() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                     .childHandler(new ConsumerAgentHttpServerInitializer())
-                    .childOption(ChannelOption.TCP_NODELAY, true)
+                    .childOption(ChannelOption.TCP_NODELAY, false)
                     .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
             ;
             Channel ch = bootstrap.bind(PORT).sync().channel();

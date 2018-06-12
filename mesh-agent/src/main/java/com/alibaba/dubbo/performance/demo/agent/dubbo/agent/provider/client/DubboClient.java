@@ -37,7 +37,7 @@ public class DubboClient implements Client {
         b.group(eventLoop)
                 .channel(Epoll.isAvailable() ? EpollSocketChannel.class : NioSocketChannel.class)
                 .handler(new DubboRpcInitializer())
-                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.TCP_NODELAY, false)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         ChannelFuture f = b.connect(REMOTE_HOST, REMOTE_PORT);
         MeshChannel meshChannel = new MeshChannel();
