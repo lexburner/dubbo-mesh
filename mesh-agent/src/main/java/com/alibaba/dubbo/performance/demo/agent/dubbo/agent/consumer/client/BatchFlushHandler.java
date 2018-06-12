@@ -8,7 +8,7 @@ import io.netty.channel.ChannelPromise;
 
 public class BatchFlushHandler extends ChannelOutboundHandlerAdapter {
     private long nBatch = 0;
-    private static final int MAX_BATCH_COUNT = 5;
+    private static final int MAX_BATCH_COUNT = 10;
 
     private CompositeByteBuf compositeByteBuf;
     private boolean preferComposite;

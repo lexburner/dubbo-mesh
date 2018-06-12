@@ -94,7 +94,7 @@ public class ConsumerAgentClient implements Client {
 //                                .addLast("protobufVarint32LengthFieldPrepender", new ProtobufVarint32LengthFieldPrepender())
 //                                .addLast("protobufEncoder", new ProtobufEncoder())
                             .addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2))
-                            .addLast(new BatchFlushHandler())
+                            .addLast(new BatchFlushHandler(false))
                             .addLast(new LengthFieldPrepender(2))
                             .addLast(new ConsumerAgentClientHandler());
                     }
