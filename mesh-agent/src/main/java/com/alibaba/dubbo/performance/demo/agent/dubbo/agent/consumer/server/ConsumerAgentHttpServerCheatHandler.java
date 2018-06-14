@@ -54,7 +54,7 @@ public class ConsumerAgentHttpServerCheatHandler extends SimpleChannelInboundHan
 
     public static AtomicLong requestIdGenerator = new AtomicLong(0);
 
-    private static AtomicInteger handlerCnt = new AtomicInteger(0);
+//    private static AtomicInteger handlerCnt = new AtomicInteger(0);
 
     public static FastThreadLocal<LongObjectHashMap<Promise>> promiseHolder = new FastThreadLocal<LongObjectHashMap<Promise>>() {
         @Override
@@ -63,12 +63,12 @@ public class ConsumerAgentHttpServerCheatHandler extends SimpleChannelInboundHan
         }
     };
 
-    private Endpoint channelConsistenceHashEndpoint;
+//    private Endpoint channelConsistenceHashEndpoint;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        int handlerNo = handlerCnt.incrementAndGet();
-        this.channelConsistenceHashEndpoint = ConsumerAgentHttpServer.remoteEndpoints[handlerNo % ConsumerAgentHttpServer.remoteEndpoints.length];
+//        int handlerNo = handlerCnt.incrementAndGet();
+//        this.channelConsistenceHashEndpoint = ConsumerAgentHttpServer.remoteEndpoints[handlerNo % ConsumerAgentHttpServer.remoteEndpoints.length];
 //        logger.info("bound channel now is {}", handlerNo);
     }
 
@@ -93,7 +93,7 @@ public class ConsumerAgentHttpServerCheatHandler extends SimpleChannelInboundHan
             ctx.channel().writeAndFlush(agentResponse+"");
         });
         promiseHolder.get().put(requestId, agentResponsePromise);
-        MeshChannel meshChannel = ConsumerAgentClient.get(ctx.channel().eventLoop()).getMeshChannel(channelConsistenceHashEndpoint);
+        MeshChannel meshChannel = ConsumerAgentClient.get(ctx.channel().eventLoop()).getMeshChannel();
         meshChannel.getChannel().writeAndFlush(agentRequest, meshChannel.getChannel().voidPromise());
     }
 

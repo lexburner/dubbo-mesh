@@ -1,14 +1,13 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server;
 
+import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server.ConsumerAgentHttpServerInitializer;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.epoll.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
@@ -38,8 +37,17 @@ public class ProviderAgentServer {
                     .group(bossGroup, workerGroup)
                     .channel(Epoll.isAvailable() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                     .childHandler(new ProviderAgentInitializer())
+                    .option(ChannelOption.SO_BACKLOG, 1024)
+                    .option(ChannelOption.ALLOCATOR,PooledByteBufAllocator.DEFAULT)
+                    .childOption(ChannelOption.TCP_NODELAY, true)
                     .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                    .childOption(ChannelOption.TCP_NODELAY, true);
+                    .childOption(ChannelOption.SO_KEEPALIVE,true)
+                    .childOption(ChannelOption.SO_RCVBUF, 1024 * 100)
+                    .childOption(ChannelOption.SO_SNDBUF, 1024 * 100);
+            if(Epoll.isAvailable()){
+                bootstrap.option(EpollChannelOption.EPOLL_MODE, EpollMode.LEVEL_TRIGGERED)
+                        .option(EpollChannelOption.TCP_QUICKACK, java.lang.Boolean.TRUE);
+            }
             int port = Integer.valueOf(System.getProperty("server.port"));
             //IpHelper.getHostIp(),
             Channel channel = bootstrap.bind(port + 50).sync().channel();

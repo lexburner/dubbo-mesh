@@ -9,6 +9,8 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoop;
 import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollChannelOption;
+import io.netty.channel.epoll.EpollMode;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
@@ -38,7 +40,12 @@ public class DubboClient implements Client {
                 .channel(Epoll.isAvailable() ? EpollSocketChannel.class : NioSocketChannel.class)
                 .handler(new DubboRpcInitializer())
                 .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        if(Epoll.isAvailable()){
+            b.option(EpollChannelOption.EPOLL_MODE, EpollMode.LEVEL_TRIGGERED)
+                    .option(EpollChannelOption.TCP_QUICKACK, java.lang.Boolean.TRUE);
+        }
         ChannelFuture f = b.connect(REMOTE_HOST, REMOTE_PORT);
         MeshChannel meshChannel = new MeshChannel();
         meshChannel.setChannel(f.channel());

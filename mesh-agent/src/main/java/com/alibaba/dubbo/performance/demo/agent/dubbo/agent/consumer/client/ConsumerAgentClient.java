@@ -10,6 +10,8 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollChannelOption;
+import io.netty.channel.epoll.EpollMode;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -85,6 +87,7 @@ public class ConsumerAgentClient implements Client {
                 .channel(Epoll.isAvailable() ? EpollSocketChannel.class : NioSocketChannel.class)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .option(ChannelOption.SO_KEEPALIVE, true)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) {
@@ -99,6 +102,10 @@ public class ConsumerAgentClient implements Client {
                             .addLast(new ConsumerAgentClientHandler());
                     }
                 });
+        if(Epoll.isAvailable()){
+            b.option(EpollChannelOption.EPOLL_MODE, EpollMode.LEVEL_TRIGGERED)
+            .option(EpollChannelOption.TCP_QUICKACK, java.lang.Boolean.TRUE);
+        }
         ChannelFuture f = b.connect(endpoint.getHost(), endpoint.getPort());
         return f.channel();
     }

@@ -20,9 +20,6 @@ import com.alibaba.dubbo.performance.demo.agent.protocol.http.HttpResponseCheatE
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpResponseEncoder;
 
 /**
  * @author 徐靖峰[OF2938]

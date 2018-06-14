@@ -25,9 +25,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.epoll.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.EventExecutor;
@@ -63,13 +61,20 @@ public final class ConsumerAgentHttpServer {
             extractEndpoints();
 
             bootstrap = new ServerBootstrap();
-            bootstrap.option(ChannelOption.SO_BACKLOG, 1024);
             bootstrap.group(bossGroup, workerGroup)
                     .channel(Epoll.isAvailable() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
+                    .option(ChannelOption.SO_BACKLOG, 1024)
+                    .option(ChannelOption.ALLOCATOR,PooledByteBufAllocator.DEFAULT)
                     .childHandler(new ConsumerAgentHttpServerInitializer())
                     .childOption(ChannelOption.TCP_NODELAY, true)
                     .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            ;
+                    .childOption(ChannelOption.SO_KEEPALIVE,true)
+                    .childOption(ChannelOption.SO_RCVBUF, 1024 * 100)
+                    .childOption(ChannelOption.SO_SNDBUF, 1024 * 100);
+            if(Epoll.isAvailable()){
+                bootstrap.option(EpollChannelOption.EPOLL_MODE, EpollMode.LEVEL_TRIGGERED)
+                        .option(EpollChannelOption.TCP_QUICKACK, java.lang.Boolean.TRUE);
+            }
             Channel ch = bootstrap.bind(PORT).sync().channel();
             logger.info("consumer-agent provider is ready to receive request from consumer\n" +
                     "export at http://127.0.0.1:{}", PORT);
