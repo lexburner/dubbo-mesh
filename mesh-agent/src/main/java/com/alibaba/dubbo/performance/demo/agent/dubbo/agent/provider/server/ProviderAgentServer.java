@@ -45,7 +45,7 @@ public class ProviderAgentServer {
                     .childOption(ChannelOption.SO_RCVBUF, 1024 * 100)
                     .childOption(ChannelOption.SO_SNDBUF, 1024 * 100);
             if(Epoll.isAvailable()){
-                bootstrap.option(EpollChannelOption.EPOLL_MODE, EpollMode.LEVEL_TRIGGERED)
+                bootstrap.option(EpollChannelOption.EPOLL_MODE, EpollMode.EDGE_TRIGGERED)
                         .option(EpollChannelOption.TCP_QUICKACK, java.lang.Boolean.TRUE);
             }
             int port = Integer.valueOf(System.getProperty("server.port"));

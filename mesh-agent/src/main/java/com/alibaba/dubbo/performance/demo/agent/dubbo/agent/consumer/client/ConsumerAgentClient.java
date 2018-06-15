@@ -97,13 +97,13 @@ public class ConsumerAgentClient implements Client {
 //                                .addLast("protobufVarint32LengthFieldPrepender", new ProtobufVarint32LengthFieldPrepender())
 //                                .addLast("protobufEncoder", new ProtobufEncoder())
                             .addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2))
-                            .addLast(new BatchFlushHandler(false))
                             .addLast(new LengthFieldPrepender(2))
+//                            .addLast(new BatchFlushHandler(false))
                             .addLast(new ConsumerAgentClientHandler());
                     }
                 });
         if(Epoll.isAvailable()){
-            b.option(EpollChannelOption.EPOLL_MODE, EpollMode.LEVEL_TRIGGERED)
+            b.option(EpollChannelOption.EPOLL_MODE, EpollMode.EDGE_TRIGGERED)
             .option(EpollChannelOption.TCP_QUICKACK, java.lang.Boolean.TRUE);
         }
         ChannelFuture f = b.connect(endpoint.getHost(), endpoint.getPort());

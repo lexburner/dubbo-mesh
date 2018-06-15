@@ -22,8 +22,8 @@ public class ProviderAgentInitializer extends ChannelInitializer<SocketChannel> 
 //        pipeline.addLast("protobufEncoder", new ProtobufEncoder());
         pipeline
                 .addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2))
-                .addLast(new BatchFlushHandler(false))
                 .addLast(new LengthFieldPrepender(2))
+//                .addLast(new BatchFlushHandler(false))
                 .addLast(new ProviderAgentHandler());
     }
 }
