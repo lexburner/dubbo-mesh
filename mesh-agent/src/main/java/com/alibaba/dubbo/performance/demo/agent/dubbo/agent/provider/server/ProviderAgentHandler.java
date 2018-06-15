@@ -6,8 +6,11 @@ import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.RpcInvocation;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
+import com.alibaba.dubbo.performance.demo.agent.util.Bytes;
 import com.alibaba.dubbo.performance.demo.agent.util.JsonUtils;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -24,18 +27,19 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * @author 徐靖峰
  * Date 2018-05-17
  */
-public class ProviderAgentHandler extends SimpleChannelInboundHandler<ByteBuf> {
+public class ProviderAgentHandler extends SimpleChannelInboundHandler<Object> {
 
     private Logger logger = LoggerFactory.getLogger(ProviderAgentHandler.class);
 
-    public static FastThreadLocal<LongObjectHashMap<Promise<Integer>>> promiseHolder = new FastThreadLocal<LongObjectHashMap<Promise<Integer>>>() {
+    public static FastThreadLocal<LongObjectHashMap<Promise<byte[]>>> promiseHolder = new FastThreadLocal<LongObjectHashMap<Promise<byte[]>>>() {
         @Override
-        protected LongObjectHashMap<Promise<Integer>> initialValue() throws Exception {
+        protected LongObjectHashMap<Promise<byte[]>> initialValue() throws Exception {
             return new LongObjectHashMap<>();
         }
     };
@@ -54,40 +58,82 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<ByteBuf> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-        long requestId = msg.readLong();
-        String param = msg.toString(StandardCharsets.UTF_8);
-        Promise<Integer> promise = new DefaultPromise<>(ctx.executor());
+    protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if(msg instanceof List){
+            List<byte[]> requests = (List<byte[]>) msg;
+            ctx.channel().eventLoop().execute(new Runnable() {
+                @Override
+                public void run() {
+                    for (byte[] request : requests) {
+                        process(ctx,request);
+                    }
+                }
+            });
+        }else {
+            process(ctx,(byte[]) msg);
+        }
+
+    }
+
+    private void process(ChannelHandlerContext ctx,byte[] msgBytes){
+        long requestId = Bytes.bytes2long(msgBytes, 0);
+        String param = new String(msgBytes,8,msgBytes.length-8);
+        Promise<byte[]> promise = new DefaultPromise<>(ctx.executor());
         promise.addListener(future -> {
             ByteBuf buffer = Unpooled.buffer();
-            int hash = (Integer) future.get();
-            buffer.writeLong(requestId);
-            buffer.writeInt(hash);
+            buffer.writeInt(8+4);
+            buffer.writeBytes((byte[]) future.get());
             ctx.channel().writeAndFlush(buffer);
-
         });
         promiseHolder.get().put(requestId, promise);
         MeshChannel channel = dubboClientHolder.get().getMeshChannel();
-        channel.getChannel().write(messageToMessage(requestId, param));
+        channel.getChannel().write(messageToMessage(ctx,requestId, param));
         channel.getChannel().flush();
     }
 
-    private DubboRpcRequest messageToMessage(Long requestId, String param) {
-        RpcInvocation invocation = new RpcInvocation();
-//        invocation.setMethodName(agentRequest.getMethod());
-//        invocation.setAttachment("path", agentRequest.getInterfaceName());
-//        invocation.setParameterTypes(agentRequest.getParameterTypesString());
-        invocation.setMethodName("hash");
-        invocation.setAttachment("path", "com.alibaba.dubbo.performance.demo.provider.IHelloService");
-        invocation.setParameterTypes("Ljava/lang/String;");
-        invocation.setArguments(param.getBytes());
-        DubboRpcRequest dubboRpcRequest = new DubboRpcRequest();
-        dubboRpcRequest.setId(requestId);
-        dubboRpcRequest.setVersion("2.0.0");
-        dubboRpcRequest.setTwoWay(true);
-        dubboRpcRequest.setData(invocation);
-        return dubboRpcRequest;
+    // header length.
+    protected static final int HEADER_LENGTH = 16;
+    // magic header.
+    protected static final short MAGIC = (short) 0xdabb;
+
+    static {
+        ByteBuf buffer = Unpooled.buffer();
+        buffer.writeCharSequence("\"2.6.1\"\n", StandardCharsets.UTF_8);
+        buffer.writeCharSequence("\"com.alibaba.dubbo.performance.demo.provider.IHelloService\"\n", StandardCharsets
+                .UTF_8);
+        buffer.writeCharSequence("null\n", StandardCharsets.UTF_8);
+        buffer.writeCharSequence("\"hash\"\n", StandardCharsets.UTF_8);
+        buffer.writeCharSequence("\"Ljava/lang/String;\"\n", StandardCharsets.UTF_8);
+        byte[] bytes = new byte[buffer.readableBytes()];
+        buffer.readBytes(bytes);
+        buffer.release();
+        fixedBytes = bytes;
+
     }
+
+    private static final byte[] fixedBytes;
+
+    protected CompositeByteBuf messageToMessage(ChannelHandlerContext ctx, long requestId, String param) {
+        ByteBuf bodyBuf = ctx.alloc().ioBuffer();
+        bodyBuf.writeBytes(fixedBytes);
+        bodyBuf.writeCharSequence("\""+param+"\"\n", StandardCharsets.UTF_8);
+        bodyBuf.writeCharSequence("null\n", StandardCharsets.UTF_8);
+
+        ByteBuf headerBuf = ctx.alloc().ioBuffer(HEADER_LENGTH);
+        headerBuf.writeShort(MAGIC);
+        headerBuf.writeByte(-58);
+        headerBuf.writeByte(20);
+        headerBuf.writeLong(requestId);
+        headerBuf.writeInt(bodyBuf.readableBytes());
+
+        CompositeByteBuf dubboRequest = PooledByteBufAllocator.DEFAULT.compositeBuffer();
+        dubboRequest
+                .addComponents(true,
+                        headerBuf,
+                        bodyBuf);
+        return dubboRequest;
+    }
+
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {

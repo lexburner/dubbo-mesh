@@ -2,6 +2,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client;
 
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.LoadBalance;
 import com.alibaba.dubbo.performance.demo.agent.cluster.loadbalance.WeightRoundRobinLoadBalance;
+import com.alibaba.dubbo.performance.demo.agent.protocol.simple.SimpleDecoder;
 import com.alibaba.dubbo.performance.demo.agent.registry.EndpointHolder;
 import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
@@ -96,9 +97,10 @@ public class ConsumerAgentClient implements Client {
 //                                .addLast("protobufDecoder", new ProtobufDecoder(DubboMeshProto.AgentResponse.getDefaultInstance()))
 //                                .addLast("protobufVarint32LengthFieldPrepender", new ProtobufVarint32LengthFieldPrepender())
 //                                .addLast("protobufEncoder", new ProtobufEncoder())
-                            .addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2))
-                            .addLast(new LengthFieldPrepender(2))
-//                            .addLast(new BatchFlushHandler(false))
+//                            .addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2))
+//                            .addLast(new LengthFieldPrepender(2))
+                                .addLast(new SimpleDecoder())
+                            .addLast(new BatchFlushHandler(false))
                             .addLast(new ConsumerAgentClientHandler());
                     }
                 });

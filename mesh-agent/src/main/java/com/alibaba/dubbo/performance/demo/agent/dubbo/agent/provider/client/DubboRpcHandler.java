@@ -3,6 +3,7 @@ package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.client;
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server.ProviderAgentHandler;
 import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.DubboRpcResponse;
 import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
+import com.alibaba.dubbo.performance.demo.agent.util.Bytes;
 import com.google.protobuf.ByteString;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -22,26 +23,23 @@ public class DubboRpcHandler extends SimpleChannelInboundHandler<Object> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         if(msg instanceof List){
-            List<DubboRpcResponse> responses = (List<DubboRpcResponse>) msg;
-            for (DubboRpcResponse response : responses) {
+            List<byte[]> responses = (List<byte[]>) msg;
+            for (byte[] response : responses) {
                 process(response);
             }
-        }else if(msg instanceof DubboRpcResponse){
-            process((DubboRpcResponse) msg);
+        }else {
+            process((byte[]) msg);
         }
-
     }
 
-    private void process(DubboRpcResponse msg) {
-        Promise<Integer> promise = ProviderAgentHandler.promiseHolder.get().remove(msg.getRequestId());
+    private void process(byte[] msg) {
+        long requestId = Bytes.bytes2long(msg, 0);
+        Promise<byte[]> promise = ProviderAgentHandler.promiseHolder.get().remove(requestId);
         if (promise != null) {
-            promise.trySuccess(messageToMessage(msg));
+            promise.trySuccess(msg);
         }
     }
 
-    private int messageToMessage(DubboRpcResponse dubboRpcResponse) {
-        return Integer.parseInt(new String(dubboRpcResponse.getBytes()));
-    }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {

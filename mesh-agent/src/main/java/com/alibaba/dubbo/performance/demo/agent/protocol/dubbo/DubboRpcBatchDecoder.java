@@ -1,6 +1,7 @@
 package com.alibaba.dubbo.performance.demo.agent.protocol.dubbo;
 
 import com.alibaba.dubbo.performance.demo.agent.codec.AbstractBatchDecoder;
+import com.alibaba.dubbo.performance.demo.agent.util.Bytes;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -39,17 +40,19 @@ public class DubboRpcBatchDecoder extends AbstractBatchDecoder {
             byteBuf.resetReaderIndex();
             return;
         }
-        DubboRpcResponse response = new DubboRpcResponse();
+        byte[] intBytes = new byte[4];
         if (status != 20) {
-            response.setBytes("1".getBytes());
+            Bytes.int2bytes(1, intBytes, 0);
         } else {
             byte[] bytes = new byte[len - 3];
             byteBuf.getBytes(byteBuf.readerIndex() + 2, bytes);
-            response.setBytes(bytes);
+            int hash = Integer.parseInt(new String(bytes));
+            Bytes.int2bytes(hash, intBytes, 0);
         }
         byteBuf.skipBytes(len);
-        response.setRequestId(requestId);
-        list.add(response);
+        byte[] requestIdBytes = new byte[8];
+        Bytes.long2bytes(requestId,requestIdBytes, 0);
+        list.add(com.google.common.primitives.Bytes.concat(requestIdBytes,intBytes));
     }
 
 

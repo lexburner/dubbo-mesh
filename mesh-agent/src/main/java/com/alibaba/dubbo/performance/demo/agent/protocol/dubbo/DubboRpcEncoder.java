@@ -16,10 +16,6 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
     protected static final int HEADER_LENGTH = 16;
     // magic header.
     protected static final short MAGIC = (short) 0xdabb;
-    // message flag.
-    protected static final byte FLAG_REQUEST = (byte) 0x80;
-    protected static final byte FLAG_TWOWAY = (byte) 0x40;
-    protected static final byte FLAG_EVENT = (byte) 0x20;
 
     static {
         ByteBuf buffer = Unpooled.buffer();
@@ -57,7 +53,7 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
 
         ByteBuf headerBuf = ctx.alloc().ioBuffer(HEADER_LENGTH);
         headerBuf.writeShort(MAGIC);
-        headerBuf.writeByte(getFlag(req));
+        headerBuf.writeByte(-58);
         headerBuf.writeByte(20);
         headerBuf.writeLong(req.getId());
         headerBuf.writeInt(bodyBuf.readableBytes());
@@ -65,35 +61,6 @@ public class DubboRpcEncoder extends MessageToByteEncoder {
         ((CompositeByteBuf) buffer).addComponent(headerBuf);
         ((CompositeByteBuf) buffer).addComponent(bodyBuf);
         ((CompositeByteBuf) buffer).writerIndex(headerBuf.readableBytes() + bodyBuf.readableBytes());
-    }
-
-//    @Override
-//    protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf buffer) throws Exception {
-//        DubboRpcRequest req = (DubboRpcRequest) msg;
-//
-//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-//        encodeRequestData(bos, req.getData());
-//        ByteBuf bodyBuf = Unpooled.wrappedBuffer(bos.toByteArray());
-//
-//        ByteBuf headerBuf = ctx.alloc().ioBuffer(HEADER_LENGTH);
-//        headerBuf.writeShort(MAGIC);
-//        headerBuf.writeByte(getFlag(req));
-//        headerBuf.writeByte(20);
-//        headerBuf.writeLong(req.getId());
-//        headerBuf.writeInt(bodyBuf.readableBytes());
-//
-//        ((CompositeByteBuf) buffer).addComponent(headerBuf);
-//        ((CompositeByteBuf) buffer).addComponent(bodyBuf);
-//        ((CompositeByteBuf) buffer).writerIndex(headerBuf.readableBytes() + bodyBuf.readableBytes());
-//    }
-
-    private byte getFlag(DubboRpcRequest req) {
-//        byte flag = FLAG_REQUEST | 6;
-//        if (req.isTwoWay()) flag |= FLAG_TWOWAY;
-//        if (req.isEvent()) flag |= FLAG_EVENT;
-
-//        return flag;
-        return -58;
     }
 
 

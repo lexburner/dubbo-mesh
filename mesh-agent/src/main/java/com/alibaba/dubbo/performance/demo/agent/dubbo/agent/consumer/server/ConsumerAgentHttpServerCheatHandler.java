@@ -84,6 +84,7 @@ public class ConsumerAgentHttpServerCheatHandler extends SimpleChannelInboundHan
         CompositeByteBuf agentRequest = PooledByteBufAllocator.DEFAULT.compositeBuffer();
         agentRequest
                 .addComponents(true,
+                        Unpooled.copyInt(8+req.length()),
                         Unpooled.copyLong(requestId),
                         Unpooled.wrappedBuffer(req.getBytes()));
 
