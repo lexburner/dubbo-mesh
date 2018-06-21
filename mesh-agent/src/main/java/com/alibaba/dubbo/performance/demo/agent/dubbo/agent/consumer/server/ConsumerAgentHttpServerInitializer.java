@@ -15,15 +15,14 @@
  */
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server;
 
-import com.alibaba.dubbo.performance.demo.agent.protocol.http.HttpRequestCheatDecoder;
-import com.alibaba.dubbo.performance.demo.agent.protocol.http.HttpResponseCheatEncoder;
+import com.alibaba.dubbo.performance.demo.agent.protocol.http.HttpRequestFastDecoder;
+import com.alibaba.dubbo.performance.demo.agent.protocol.http.HttpResponseFastEncoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 
 /**
- * @author 徐靖峰[OF2938]
- * company qianmi.com
+ * @author 徐靖峰
  * Date 2018-05-22
  */
 public class ConsumerAgentHttpServerInitializer extends ChannelInitializer<SocketChannel> {
@@ -31,12 +30,8 @@ public class ConsumerAgentHttpServerInitializer extends ChannelInitializer<Socke
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline p = ch.pipeline();
-//        p.addLast("encoder", new HttpResponseEncoder());
-//        p.addLast("decoder", new HttpRequestDecoder());
-//        p.addLast("aggregator", new HttpObjectAggregator(10 * 1024 * 1024));
-//        p.addLast(new ConsumerAgentHttpServerHandler());
-        p.addLast("encoder", new HttpResponseCheatEncoder());
-        p.addLast("decoder", new HttpRequestCheatDecoder());
-        p.addLast(new ConsumerAgentHttpServerCheatHandler());
+        p.addLast("encoder", new HttpResponseFastEncoder());
+        p.addLast("decoder", new HttpRequestFastDecoder());
+        p.addLast(new ConsumerAgentHttpServerFastHandler());
     }
 }

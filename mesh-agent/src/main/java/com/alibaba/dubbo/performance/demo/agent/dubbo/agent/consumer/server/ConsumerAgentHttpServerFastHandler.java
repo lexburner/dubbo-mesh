@@ -16,17 +16,12 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.client.ConsumerAgentClient;
-import com.alibaba.dubbo.performance.demo.agent.rpc.Endpoint;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.util.AsciiString;
 import io.netty.util.collection.LongObjectHashMap;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.FastThreadLocal;
@@ -34,27 +29,21 @@ import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
 /**
- * @author 徐靖峰[OF2938]
- * company qianmi.com
+ * @author 徐靖峰
  * Date 2018-05-22
  */
-public class ConsumerAgentHttpServerCheatHandler extends SimpleChannelInboundHandler<String> {
+public class ConsumerAgentHttpServerFastHandler extends SimpleChannelInboundHandler<String> {
 
-    public ConsumerAgentHttpServerCheatHandler() {
+    public ConsumerAgentHttpServerFastHandler() {
     }
 
-    private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerCheatHandler.class);
+    private Logger logger = LoggerFactory.getLogger(ConsumerAgentHttpServerFastHandler.class);
 
     public static AtomicLong requestIdGenerator = new AtomicLong(0);
 
-//    private static AtomicInteger handlerCnt = new AtomicInteger(0);
 
     public static FastThreadLocal<LongObjectHashMap<Promise>> promiseHolder = new FastThreadLocal<LongObjectHashMap<Promise>>() {
         @Override
@@ -63,13 +52,8 @@ public class ConsumerAgentHttpServerCheatHandler extends SimpleChannelInboundHan
         }
     };
 
-//    private Endpoint channelConsistenceHashEndpoint;
-
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-//        int handlerNo = handlerCnt.incrementAndGet();
-//        this.channelConsistenceHashEndpoint = ConsumerAgentHttpServer.remoteEndpoints[handlerNo % ConsumerAgentHttpServer.remoteEndpoints.length];
-//        logger.info("bound channel now is {}", handlerNo);
     }
 
     @Override

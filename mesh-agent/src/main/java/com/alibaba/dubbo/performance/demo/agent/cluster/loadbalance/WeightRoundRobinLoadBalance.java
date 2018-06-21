@@ -13,10 +13,10 @@ import java.util.stream.Collectors;
 /**
  * @author 徐靖峰
  * Date 2018-05-19
+ *
+ * 借鉴 weibo 的加权负载均衡算法
  */
 public class WeightRoundRobinLoadBalance implements LoadBalance {
-
-    private Logger logger = LoggerFactory.getLogger(WeightRoundRobinLoadBalance.class);
 
     private volatile EndpointHolder endpointHolder;
 
@@ -30,7 +30,6 @@ public class WeightRoundRobinLoadBalance implements LoadBalance {
         AtomicInteger cursor = new AtomicInteger(0);
 
         EndpointHolder(List<Endpoint> endpoints) {
-            logger.info("WeightRoundRobinLoadBalance build new EndpointHolder. weights:" + endpoints);
             List<Integer> weightsArr = endpoints.stream().map(Endpoint::getWeight).collect(Collectors.toList());
             // 求出最大公约数，若不为1，对权重做除法
             int weightGcd = findGcd(weightsArr.toArray(new Integer[]{}));

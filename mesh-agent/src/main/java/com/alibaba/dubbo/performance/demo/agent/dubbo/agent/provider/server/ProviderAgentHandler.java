@@ -1,41 +1,29 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server;
 
 import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.client.DubboClient;
-import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.DubboRpcRequest;
-import com.alibaba.dubbo.performance.demo.agent.protocol.dubbo.RpcInvocation;
-import com.alibaba.dubbo.performance.demo.agent.protocol.pb.DubboMeshProto;
 import com.alibaba.dubbo.performance.demo.agent.transport.Client;
 import com.alibaba.dubbo.performance.demo.agent.transport.MeshChannel;
 import com.alibaba.dubbo.performance.demo.agent.util.Bytes;
-import com.alibaba.dubbo.performance.demo.agent.util.JsonUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.collection.LongObjectHashMap;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.FastThreadLocal;
 import io.netty.util.concurrent.Promise;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
  * @author 徐靖峰
  * Date 2018-05-17
+ *
  */
 public class ProviderAgentHandler extends SimpleChannelInboundHandler<Object> {
-
-    private Logger logger = LoggerFactory.getLogger(ProviderAgentHandler.class);
 
     public static FastThreadLocal<LongObjectHashMap<Promise<byte[]>>> promiseHolder = new FastThreadLocal<LongObjectHashMap<Promise<byte[]>>>() {
         @Override
@@ -96,7 +84,9 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<Object> {
     // magic header.
     protected static final short MAGIC = (short) 0xdabb;
 
-    static {
+    protected CompositeByteBuf messageToMessage(ChannelHandlerContext ctx, long requestId, String param) {
+        ByteBuf bodyBuf = ctx.alloc().ioBuffer();
+
         ByteBuf buffer = Unpooled.buffer();
         buffer.writeCharSequence("\"2.6.1\"\n", StandardCharsets.UTF_8);
         buffer.writeCharSequence("\"com.alibaba.dubbo.performance.demo.provider.IHelloService\"\n", StandardCharsets
@@ -107,16 +97,11 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<Object> {
         byte[] bytes = new byte[buffer.readableBytes()];
         buffer.readBytes(bytes);
         buffer.release();
-        fixedBytes = bytes;
 
-    }
+        String randomStr = param.substring(param.lastIndexOf("=")+1);
 
-    private static final byte[] fixedBytes;
-
-    protected CompositeByteBuf messageToMessage(ChannelHandlerContext ctx, long requestId, String param) {
-        ByteBuf bodyBuf = ctx.alloc().ioBuffer();
-        bodyBuf.writeBytes(fixedBytes);
-        bodyBuf.writeCharSequence("\""+param+"\"\n", StandardCharsets.UTF_8);
+        bodyBuf.writeBytes(bytes);
+        bodyBuf.writeCharSequence("\""+randomStr+"\"\n", StandardCharsets.UTF_8);
         bodyBuf.writeCharSequence("null\n", StandardCharsets.UTF_8);
 
         ByteBuf headerBuf = ctx.alloc().ioBuffer(HEADER_LENGTH);

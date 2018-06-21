@@ -13,7 +13,6 @@ import java.util.List;
 public class SimpleDecoder extends AbstractBatchDecoder {
 
     private final static int HEADER_LEN = 4;
-    private final static int REQUEST_ID_LEN = 8;
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {

@@ -37,6 +37,11 @@ import java.util.List;
  * </pre>
  * You can check the method {@link AbstractBatchDecoder#channelRead(ChannelHandlerContext, Object)} ()}
  * to know the detail modification.
+ *
+ * @author 徐靖峰
+ * Date 2018-05-19
+ *
+ * 借鉴蚂蚁金服 sofa-bolt 的批量 decoder
  */
 public abstract class AbstractBatchDecoder extends ChannelInboundHandlerAdapter {
     /**

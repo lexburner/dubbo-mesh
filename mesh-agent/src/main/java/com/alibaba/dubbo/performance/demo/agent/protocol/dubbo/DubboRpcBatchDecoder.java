@@ -4,23 +4,18 @@ import com.alibaba.dubbo.performance.demo.agent.codec.AbstractBatchDecoder;
 import com.alibaba.dubbo.performance.demo.agent.util.Bytes;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageDecoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 /**
  * @author 徐靖峰
  * Date 2018-06-09
+ *
+ * 优化之后的 dubbo 批量解码器
  */
 public class DubboRpcBatchDecoder extends AbstractBatchDecoder {
     // header length.
     protected static final int HEADER_LENGTH = 16;
-
-    protected static final byte FLAG_EVENT = (byte) 0x20;
-
-    private static final Logger logger = LoggerFactory.getLogger(DubboRpcDecoder.class);
 
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {

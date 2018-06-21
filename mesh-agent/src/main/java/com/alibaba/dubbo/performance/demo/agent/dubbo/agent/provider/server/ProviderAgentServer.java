@@ -1,6 +1,5 @@
 package com.alibaba.dubbo.performance.demo.agent.dubbo.agent.provider.server;
 
-import com.alibaba.dubbo.performance.demo.agent.dubbo.agent.consumer.server.ConsumerAgentHttpServerInitializer;
 import com.alibaba.dubbo.performance.demo.agent.registry.EtcdRegistry;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;

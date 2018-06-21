@@ -6,6 +6,13 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 
+/**
+ * @author 俞超
+ * Date 2018-05-23
+ *
+ * 批量提交类 每 10 次 write 触发一次 flush
+ * warn 仅仅适用于比赛测评，不满 10 次不会刷新
+ */
 public class BatchFlushHandler extends ChannelOutboundHandlerAdapter {
     private long nBatch = 0;
     private static final int MAX_BATCH_COUNT = 10;

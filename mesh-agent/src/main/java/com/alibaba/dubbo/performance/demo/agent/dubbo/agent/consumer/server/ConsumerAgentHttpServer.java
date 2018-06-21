@@ -35,8 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * @author 徐靖峰[OF2938]
- * company qianmi.com
+ * @author 徐靖峰
  * Date 2018-05-22
  */
 public final class ConsumerAgentHttpServer {

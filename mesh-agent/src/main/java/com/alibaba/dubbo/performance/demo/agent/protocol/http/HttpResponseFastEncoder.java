@@ -8,8 +8,10 @@ import io.netty.handler.codec.MessageToByteEncoder;
 /**
  * @author 徐靖峰
  * Date 2018-06-12
+ *
+ * 自定义http response 编码器，仅适用于比赛
  */
-public class HttpResponseCheatEncoder extends MessageToByteEncoder<String>{
+public class HttpResponseFastEncoder extends MessageToByteEncoder<String>{
 
     @Override
     protected void encode(ChannelHandlerContext ctx, String msg, ByteBuf out) throws Exception {
