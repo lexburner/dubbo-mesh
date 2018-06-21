@@ -62,12 +62,12 @@ public class ProviderAgentHandler extends SimpleChannelInboundHandler<DubboMeshP
 
     private DubboRpcRequest messageToMessage(DubboMeshProto.AgentRequest agentRequest) {
         RpcInvocation invocation = new RpcInvocation();
-//        invocation.setMethodName(agentRequest.getMethod());
-//        invocation.setAttachment("path", agentRequest.getInterfaceName());
-//        invocation.setParameterTypes(agentRequest.getParameterTypesString());
-        invocation.setMethodName("hash");
-        invocation.setAttachment("path", "com.alibaba.dubbo.performance.demo.provider.IHelloService");
-        invocation.setParameterTypes("Ljava/lang/String;");
+        invocation.setMethodName(agentRequest.getMethod());
+        invocation.setAttachment("path", agentRequest.getInterfaceName());
+        invocation.setParameterTypes(agentRequest.getParameterTypesString());
+//        invocation.setMethodName("hash");
+//        invocation.setAttachment("path", "com.alibaba.dubbo.performance.demo.provider.IHelloService");
+//        invocation.setParameterTypes("Ljava/lang/String;");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
         try {

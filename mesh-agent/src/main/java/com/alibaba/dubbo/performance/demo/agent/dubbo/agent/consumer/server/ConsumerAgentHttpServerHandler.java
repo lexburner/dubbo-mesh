@@ -34,6 +34,7 @@ import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -83,18 +84,18 @@ public class ConsumerAgentHttpServerHandler extends SimpleChannelInboundHandler<
     }
 
     private void processRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
-//        Map<String, String> requestParams = RequestParser.fastParse(req);
-//
-//        DubboMeshProto.AgentRequest agentRequest = DubboMeshProto.AgentRequest.newBuilder().setRequestId(requestIdGenerator.incrementAndGet())
-//                .setInterfaceName(requestParams.get("interface"))
-//                .setMethod(requestParams.get("method"))
-//                .setParameterTypesString(requestParams.get("parameterTypesString"))
-//                .setParameter(requestParams.get("parameter"))
-//                .build();
+        Map<String, String> requestParams = RequestParser.fastParse(req);
 
         DubboMeshProto.AgentRequest agentRequest = DubboMeshProto.AgentRequest.newBuilder().setRequestId(requestIdGenerator.incrementAndGet())
-                .setParameter(RequestParser.cheatParse(req))
+                .setInterfaceName(requestParams.get("interface"))
+                .setMethod(requestParams.get("method"))
+                .setParameterTypesString(requestParams.get("parameterTypesString"))
+                .setParameter(requestParams.get("parameter"))
                 .build();
+
+//        DubboMeshProto.AgentRequest agentRequest = DubboMeshProto.AgentRequest.newBuilder().setRequestId(requestIdGenerator.incrementAndGet())
+//                .setParameter(RequestParser.cheatParse(req))
+//                .build();
 
         this.call(ctx, agentRequest);
     }
