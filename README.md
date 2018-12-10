@@ -1,6 +1,6 @@
 # 天池中间件大赛dubboMesh优化总结（qps从1000到6850）
 
-![最终排名](http://ov0zuistv.bkt.clouddn.com/image-20180619190732570.png)
+![最终排名](http://kirito.iocoder.cn/image-20180619190732570.png)
 
 ### Dubbo Mesh 是什么？
 
